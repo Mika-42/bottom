@@ -25,7 +25,7 @@ static void print_help(){
 
 int command_run(int argc, char *argv[]){
 	int opt = 0;
-	struct option my_opts[] = {
+	struct option long_opts[] = {
 		{.name="help",.has_arg=0,.flag=0,.val='h'},
 		{.name="dry-run",.has_arg=0,.flag=0,.val=129},
 		{.name="remote-config",.has_arg=1,.flag=0,.val='c'},
@@ -38,7 +38,7 @@ int command_run(int argc, char *argv[]){
 		{.name="all",.has_arg=1,.flag=0,.val='a'},
 		{.name=0,.has_arg=0,.flag=0,.val=0},
 	};
-	while((opt = getopt_long(argc, argv, "", my_opts, NULL)) != -1) {
+	while((opt = getopt_long(argc, argv, "hc:t:P:l:s:u:p:a:", long_opts, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 				print_help();
