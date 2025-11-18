@@ -1,4 +1,4 @@
-PROJECT_NAME := lp25-project
+PROJECT_NAME := lo21
 
 CC := gcc
 DEBUGGER := gdb
@@ -45,7 +45,11 @@ run-unit-test:
 	./$(BUILD_UNIT_TEST_DIRECTORY)/$(FILENAME)
 
 run-all-unit-test:
-	./$(BUILD_UNIT_TEST_DIRECTORY)/*
+	@for exe in $(BUILD_UNIT_TEST_DIRECTORY)/*; do \
+		if [ -x $$exe ]; then \
+			./$$exe; \
+		fi \
+	done
 
 run-unit-test-debug:
 	$(DEBUGGER) ./$(BUILD_UNIT_TEST_DIRECTORY)/$(FILENAME)
