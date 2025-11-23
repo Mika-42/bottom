@@ -5,23 +5,13 @@
 
 int main(int argc, char *argv[])
 {	
-    program_state_t *state = command_parse_options(argc, argv);
-    if (state == NULL) {
-        // ya une erreur 
-        return EXIT_FAILURE;
-    }
-
-    if (state->help) {
+    
+    if () {
         // si l'option --help est demandée
-        print_help();
-        manager_free_state(state);
+        print_help()
         return EXIT_SUCCESS;
     }
 
 
-    // libération de la mémoire
-    manager_free_state(state);
-
-    return EXIT_SUCCESS;
 }
 
