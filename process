@@ -1,3 +1,17 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <ctype.h>
+
+//dirent.h c'est une structure permettant de parcourir le repertoire /proc, de l'ouvrir et le lire 
+
+int main() {
+    DIR *rep_proc = opendir("/proc");
+    struct dirent *ent; //permet d'utiliser les elements de la strcture dirent afin d'accéder au nom, type, etc..
+
+    if (rep == NULL)
+    {  perror("Erreur d'ouverture de /proc");
+    }
+    while ((ent = readdir(rep_proc)) != NULL) {
+          if (isdigit(ent->d_name[0])) {
+            int i = 0;
+            while (ent->d_name[i] != '\0' && isdigit(ent->d_name[i])) i++;
