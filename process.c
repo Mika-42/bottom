@@ -37,10 +37,23 @@ int main() {
                     printf("PID : %s | Nom : %s ", ent->d_name, nom_proc);
                     fclose(f);
                 }
-
+                char etats_proc[300];
+                snprintf(etats_proc,sizeof(etats_proc),"/proc/%s/stat",ent->d_name); // pareil que pour le nom mais pour l'etat
+                
+                FILE *f_etats = fopen(etats_proc,"r"); // ouvre /proc/<PID>/stat issus du snprinf
+ 
+                if(f_etats != NULL){
+                    char buffer[1024];
+                    int pid;
+                    char etat;
+                    fgets(buffer,sizeof(buffer),f_etats); // lire la ligne du fichier stat
+                    sscanf(buffer, "%d (%*[^)]) %c", &pid, &etat);
+                    printf(" Etat du processus : %c \n", etat);
+                    fclose(f_etats);
+                } 
             }
         }
-    }
+    } // penser a regrouper les deux printf pour renvoyer tout d'un coup
     closedir(rep_proc);
     return 0;
 }
