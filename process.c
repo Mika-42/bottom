@@ -32,7 +32,7 @@ int main() {
                 FILE *f = fopen(dossier, "r");
 
                 if (f != NULL) { //verifier si le fichier il est bien ouvert 
-                    char nom_proc[300];  //sotckage des noms
+                    char nom_proc[300];  //stockage des noms
                     fgets(nom_proc, sizeof(nom_proc),f); // récuperer le nom dans le fichier proc/pid/comm et le stocker dans nom_proc
                     printf("PID : %s | Nom : %s \n", ent->d_name, nom_proc);
                     fclose(f);
