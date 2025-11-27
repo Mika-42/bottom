@@ -47,7 +47,7 @@ int main() {
                     int pid;
                     char etat;
                     fgets(buffer,sizeof(buffer),f_etats); // lire la ligne du fichier stat
-                    sscanf(buffer, "%d (%*[^)]) %c", &pid, &etat);
+                    sscanf(buffer, "%d (%*[^)]) %c", &pid, &etat); //recuperer juste le pid et l'etat du processus ( %* permet d'ignorer le nom vu qu'on la deja recuperer juste avant)
                     printf(" Etat du processus : %c \n", etat);
                     fclose(f_etats);
                 } 
