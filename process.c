@@ -49,7 +49,7 @@ char lire_etat_processus(const char *pid) {
     char etat_proc[260];
     char etat = '?'; 
 
-    // snprintf sert a stocker dans chemin_stat le chemin du fichier stat pour le PID donné
+    // snprintf sert a stocker dans etat_proc le chemin du fichier stat pour le PID donné
     snprintf(etat_proc, sizeof(etat_proc), "/proc/%s/stat", pid); 
     
     FILE *f_etats = fopen(etat_proc, "r"); // ouvre /proc/<PID>/stat issue du snprinf
