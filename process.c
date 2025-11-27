@@ -26,7 +26,18 @@ int main() {
 
             // Si on arrive à la fin de la chaîne alors on a trouvé le PID 
             if (ent->d_name[i] == '\0') {
-                printf("Le PID est : %s\n", ent->d_name);
+                char dossier[300];
+
+                snprintf(dossier, sizeof(dossier), "/proc/%s/comm",ent->d_name); // stocker dans dossier le nom correspondant a chaque PID  
+                FILE *f = fopen(dossier, "r");
+
+                if (f != NULL) { //verifier si le fichier il est bien ouvert 
+                    char nom_proc[300];  //sotckage des noms
+                    fgets(nom_proc, sizeof(nom_proc),f); // récuperer le nom dans le fichier proc/pid/comm et le stocker dans nom_proc
+                    printf("PID : %s | Nom : %s \n", ent->d_name, nom_proc);
+                    fclose(f);
+                }
+
             }
         }
     }
