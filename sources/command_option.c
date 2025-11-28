@@ -41,38 +41,53 @@ int command_run(int argc, char *argv[], options_prog *options){
 	while((opt = getopt_long(argc, argv, "hc:t:P:l:s:u:p:a", long_opts, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
+				options->help = true;
 				print_help();
+				exit(0);
 				break;
 				
 			case 129:
+				options->dry_run = true;
 				break;
 				
 			case 'c':
+				options->remote_config = optarg;
 				break;
 
 			case 't':
+				options->connexion_type =  optarg;
 				break;
 
 			case 'P':
+				options->port = atoi(optarg);
 				break;
 
 			case 'l':
+				options->login = optarg;
 				break;
 
 			case 's':
+				options->remote_server = optarg;
 				break;
 			
 			case 'u':
+				options->username = optarg;
 				break;
 			
 			case 'p':
+				options->password = optarg;
 				break;
 			
 			case 'a':
+				options->all = true;
+				break;
+			case '?':
+				exit(1);
 				break;
 
 		}
 	}
+)
 	return 0;
 }
 
