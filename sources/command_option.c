@@ -23,7 +23,7 @@ static void print_help(){
 	printf("%s", help_message);
 }
 
-int command_run(int argc, char *argv[]){
+int command_run(int argc, char *argv[], options_prog *options){
 	int opt = 0;
 	struct option long_opts[] = {
 		{.name="help",.has_arg=0,.flag=0,.val='h'},
@@ -35,10 +35,10 @@ int command_run(int argc, char *argv[]){
 		{.name="remote-server",.has_arg=1,.flag=0,.val='s'},
 		{.name="username",.has_arg=1,.flag=0,.val='u'},
 		{.name="password",.has_arg=1,.flag=0,.val='p'},
-		{.name="all",.has_arg=1,.flag=0,.val='a'},
+		{.name="all",.has_arg=0,.flag=0,.val='a'},
 		{.name=0,.has_arg=0,.flag=0,.val=0},
 	};
-	while((opt = getopt_long(argc, argv, "hc:t:P:l:s:u:p:a:", long_opts, NULL)) != -1) {
+	while((opt = getopt_long(argc, argv, "hc:t:P:l:s:u:p:a", long_opts, NULL)) != -1) {
 		switch (opt) {
 			case 'h':
 				print_help();
