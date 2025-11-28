@@ -6,15 +6,18 @@ int command_run(int argc, char *argv[]);
 
 typedef struct 
 {
-    bool help
-    bool dry_run
-    *char remote_config
-    *char connexion_type
-    int port
-    *char login
-    *char remote_server
+    bool help;
+    bool dry_run;
+    char *remote_config;    
+    char *connexion_type;
+    int port;
+    char *login; 
+    char *remote_server; 
+    char *username;
+    char *password; 
+    bool all;
+
+} options_prog; 
 
 
-} options_t
-
-#endif //COMMAND_OPTION_H
+#endif 
