@@ -8,18 +8,17 @@
 
 #include "process.h"
 
-// Fonction pour vérifier si le nom du répertoire est un PID (composé uniquement de chiffres)
-int est_un_pid(const char *d_name) {
-    if (!isdigit(d_name[0])) {
-        return 0; 
-    }
+bool is_pid(const char *d_name) {
+   	
+	if(d_name == nullptr || *d_name == '\0') return false;
 
-    int i = 0;
-    while (d_name[i] != '\0' && isdigit(d_name[i])) {  // conditon pour savoir si cest un PID
-        i++;
-    }
-
-    return (d_name[i] == '\0');
+	while (*d_name) {
+		if(!isdigit((unsigned char)*d_name)) {
+			return false;
+		}
+		++d_name;
+	}
+	return true;
 }
 
 
