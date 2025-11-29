@@ -18,7 +18,7 @@ C_FILES := $(SOURCES_WITH_HEADER:.h=.c)
 
 DEBUG_FLAG := -g -Og
 RELEASE_FLAG := -DNDEBUG -O3
-FLAGS := -Wall -Wextra -Werror -Wpedantic -lncurses
+FLAGS := -Wall -Wextra -Werror -Wpedantic -lncursesw
 
 
 MAKEFLAGS += --no-print-directory
