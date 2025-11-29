@@ -90,7 +90,7 @@ int command_run(int argc, char *argv[], options_prog *options){
 		}
 	}
 
-	if (options->port == NULL)    {
+	if (options->port == 0)    {
 		if (options->connexion_type  == "ssh"){
 			options->port = 22;
 		}
