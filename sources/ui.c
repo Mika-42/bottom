@@ -3,7 +3,7 @@
 #include <locale.h>
 #include <signal.h>
 
-static WINDOW *ui_pad = NULL;
+static WINDOW *ui_pad = nullptr;
 
 static int ui_pad_lines = 200;
 static int ui_pad_columns = 134;
@@ -73,7 +73,7 @@ void ui_scroll(const int dx, const int dy)
 
 	if(ui_scroll_x < 0) ui_scroll_x = 0;
   
-	if(ui_scroll_x > ui_pad_columns - terminal_width || terminal_width >= ui_pad_columns) 
+	if(ui_scroll_x > ui_pad_columns - terminal_width) 
 	{
 		ui_scroll_x = ui_pad_columns - terminal_width;
 	}
