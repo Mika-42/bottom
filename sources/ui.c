@@ -3,7 +3,7 @@
 #include <locale.h>
 #include <signal.h>
 
-static WINDOW *ui_pad = nullptr;
+static WINDOW *ui_pad = NULL;
 
 static int ui_pad_lines = 200;
 static int ui_pad_columns = 134;
