@@ -1,4 +1,4 @@
-PROJECT_NAME := lo21
+PROJECT_NAME := bottom
 
 CC := gcc
 DEBUGGER := gdb
