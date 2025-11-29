@@ -2,8 +2,6 @@
 #define COMMAND_OPTION_H
 #include <stdbool.h>
 
-int command_run(int argc, char *argv[],options_prog *options);
-
 typedef struct 
 {
     bool help;
@@ -19,5 +17,6 @@ typedef struct
 
 } options_prog; 
 
+int command_run(int argc, char *argv[],options_prog *options);
 
 #endif 

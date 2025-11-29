@@ -1,7 +1,6 @@
 #ifndef UI_H
 #define UI_H
-
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 
 void ui_init();
 
