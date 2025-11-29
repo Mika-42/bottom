@@ -87,7 +87,7 @@ int command_run(int argc, char *argv[], options_prog *options){
 
 		}
 	}
-)
+
 	return 0;
 }
 
