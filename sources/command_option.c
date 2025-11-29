@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <string.h>
 
 static void print_help(){
 
@@ -91,10 +92,10 @@ int command_run(int argc, char *argv[], options_prog *options){
 	}
 
 	if (options->port == 0)    {
-		if (options->connexion_type  == "ssh"){
+		if (strcmp(options->connexion_type, "ssh") == 0){
 			options->port = 22;
 		}
-		else if (options->connexion_type  == "telnet"){
+		else if (strcmp(options->connexion_type, "telnet") == 0){
 			options->port = 23;
 		}
 	}
@@ -114,7 +115,7 @@ int command_run(int argc, char *argv[], options_prog *options){
 	}
 	struct stat fichier;
 	if (options->remote_config != NULL) {
-		if (fichier.st_mode & 0777 != 0600) {
+		if ((fichier.st_mode & 0777) != 0600) {
 			printf("Le fichier de configuration doit avoir les permissions 600 ( rw-------)\n");
 			exit(1);
 		}
