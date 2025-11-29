@@ -1,6 +1,5 @@
 #ifndef SIGNALS_H
 #define SIGNALS_H
-
 #include "process.h"
 
 void kill_process(Processus p);
