@@ -1,7 +1,11 @@
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
 
-void kill_process(Processus, p){}
 #include "signal_process.h"
+
+void kill_process(Processus p);
+
+void stop_process(Processus p);
+
+void term_process(Processus p);
+
+void reboot_process(Processus p);
 

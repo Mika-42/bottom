@@ -1,13 +1,9 @@
-#ifndef SIGNALS_H
-#define SIGNALS_H
-#include "process.h"
+#ifndef PROCESSUS_H
+#define PROCESSUS_H
 
-void kill_process(Processus p);
+typedef struct {
+    int pid;
+    char name[50];
+} Processus;
 
-void stop_process(Processus p);
-
-void term_process(Processus p);
-
-void reboot_process(Processus p);
-
-#endif //SIGNALS_H
+#endif
