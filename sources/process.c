@@ -4,7 +4,7 @@
 #include <string.h> 
 #include <stdlib.h>
 #include <pwd.h>
-
+#include <sys/types.h>
 
 
 // Structure pour stocker les informations d'un seul processus
