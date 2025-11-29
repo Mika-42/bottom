@@ -1,5 +1,6 @@
 #ifndef COMMAND_OPTION_H
 #define COMMAND_OPTION_H
+
 #include <stdbool.h>
 
 typedef struct 
