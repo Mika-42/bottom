@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <dirent.h>
+
 
 static void print_help(){
 
@@ -87,8 +89,34 @@ int command_run(int argc, char *argv[], options_prog *options){
 
 		}
 	}
+	
+	if (options->port == NULL)    {
+		if (options->connexion_type  == "ssh"){
+			options->port = 22;
+		}
+		else if (options->connexion_type  == "telnet"){
+			options->port = 23;
+		}
+	}
+
+	if (options->remote_config == NULL && options->remote_server == NULL) {
+		options->all=false;
+	}
+
+	if (options->remote_config == NULL) {
+		DIR *d = opendir(".");
+		for (struct dirent *element; (element = readdir(d)) != NULL; ) {
+			if (strcmp(element->d_name, ".config") == 0) {
+				options->remote_config = ".config";
+			}
+		}
+		closedir(d);
+	}
+
+	
 
 	return 0;
+
 }
 
 
