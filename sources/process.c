@@ -6,46 +6,43 @@
 #include <pwd.h>
 #include <sys/types.h>
 
+
 #include "process.h"
 
-bool is_pid(const char *d_name) {
+bool proc_is_pid(const char *filename) {
    	
-	if(d_name == nullptr || *d_name == '\0') return false;
+	if(filename == nullptr || *filename == '\0') return false;
 
-	while (*d_name) {
-		if(!isdigit((unsigned char)*d_name)) {
+	while (*filename) {
+		if(!isdigit((unsigned char)(*filename))) {
 			return false;
 		}
-		++d_name;
+		++filename;
 	}
 	return true;
 }
 
-
-// Fonction pour lire le nom du processus à partir de /proc/<PID>/comm
-void lire_nom_processus(const char *pid_proc, char *nom_proc_tab, size_t stock_taille) {
-    char chemin[300];
+proc_err_t proc_get_name(const char *pid, char *name) {
+	
+	char path[PATH_MAX];
     
-    // snprintf : stocker dans chemin le chemin du fichier comm pour le PID donné
-    snprintf(chemin, sizeof(chemin), "/proc/%s/comm", pid_proc); 
+	snprintf(path, sizeof(path), "/proc/%s/comm", pid); 
 
-    FILE *f = fopen(chemin, "r");
+	FILE *f = fopen(path, "r");
 
-    if (f != NULL) { // vérifier si le fichier est bien ouvert
-        // fgets : récupérer le nom et le stocker dans nom_proc_tab
-        if (fgets(nom_proc_tab, stock_taille, f) != NULL) {
+	if (f == nullptr) return proc_err_t::open_file_failed;
 
-            nom_proc_tab[strcspn(nom_proc_tab, "\n")] = 0; // faciliter l'affichage pour Matis 
+        if (fgets(name, PROC_NAME_SIZE, f) == nullptr) {
+		fclose(f);
+		return proc_err_t::reading_failed;
+	}
+	
+	const int end_of_str = strcspn(name, "\n");
+	name[end_of_str] = '\0';
 
-        } else {
-            snprintf(nom_proc_tab, stock_taille, "probleme de lecture");
-        }
         fclose(f);
 
-    } else {
-        // En cas d'échec d'ouverture du fichier
-        snprintf(nom_proc_tab, stock_taille, "fichier non accessible");
-    }
+	return proc_err_t::success;
 }
 
 // Fonction pour lire l'état du processus à partir de /proc/(PID)/stat
