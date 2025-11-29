@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "command_option.h": "c",
-        "stdio.h": "c",
-        "locale.h": "c",
-        "types.h": "c",
-        "pwd.h": "c"
-    }
-}
