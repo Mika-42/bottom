@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <dirent.h>
-
+#include <sys/stat.h>
 
 static void print_help(){
 
@@ -89,7 +89,7 @@ int command_run(int argc, char *argv[], options_prog *options){
 
 		}
 	}
-	
+
 	if (options->port == NULL)    {
 		if (options->connexion_type  == "ssh"){
 			options->port = 22;
@@ -112,9 +112,14 @@ int command_run(int argc, char *argv[], options_prog *options){
 		}
 		closedir(d);
 	}
-
+	struct stat fichier;
+	if (options->remote_config != NULL) {
+		if (fichier.st_mode & 0777 != 0600) {
+			printf("Le fichier de configuration doit avoir les permissions 600 ( rw-------)\n");
+			exit(1);
+		}
+	}
 	
-
 	return 0;
 
 }
