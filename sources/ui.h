@@ -1,6 +1,10 @@
 #ifndef UI_H
 #define UI_H
 
-void show_fn_cmd();
+#include <ncursesw/ncurses.h>
+
+void ui_init();
+
+void ui_show_fn_cmd();
 
 #endif //UI_H
