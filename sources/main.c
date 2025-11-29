@@ -7,11 +7,11 @@
 int main(int argc, char *argv[])
 {	
     
-    ///if () {
-        /// si l'option --help est demandée
-       /// print_help();
-       /// return EXIT_SUCCESS;
-    
+    if () {
+        // si l'option --help est demandée
+        print_help()
+        return EXIT_SUCCESS;
+    }
 
 
 }
