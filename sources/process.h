@@ -11,7 +11,7 @@ typedef enum proc_err_t : int {
 	generic_error,
 	nullptr_parameter_error,
 	open_file_failed,
-	reading_failed,
+	read_failed,
 	malformed_status_line,
 	uid_not_found,
 	user_not_found,

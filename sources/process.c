@@ -44,7 +44,7 @@ proc_err_t proc_get_name(const char *pid, char *name) {
 
         if (!fgets(name, PROC_NAME_SIZE, f)) {
 		fclose(f);
-		return proc_err_t::reading_failed;
+		return proc_err_t::read_failed;
 	}
 	
 	const int end_of_str = strcspn(name, "\n");
@@ -117,27 +117,29 @@ proc_err_t proc_get_user(const char *pid, char *username){
 }
 
     
-long lire_memoire_rss(const char *pid){
-    char memory[300];
-    char ligne[300];
-    long rss_pages = 0; //  la 6e valeur (en pages)
-    long rss_octets=0;//  le résultat final
+proc_err_t proc_get_rss(const char *pid, long* rss){
+	
+	if(!pid || !rss) return proc_err_t::nullptr_parameter_error;
 
+	char line[200];
 
-    snprintf(memory,sizeof(memory),"/proc/%s/statm", pid);
+	FILE *f = proc_file_open(pid, "statm");
 
-    FILE *f_memory = fopen(memory, "r");
+	if (!f) return proc_err_t::open_file_failed;
 
-    if (f_memory !=NULL){
-        if(fgets(ligne, sizeof(ligne), f_memory)){
+	if(fgets(line, sizeof(line), f)) {
+		fclose(f);
+		return proc_err_t::read_failed;
+	}
 
-            sscanf(ligne,"%*lu %*lu %*lu %*lu %*lu %lu", &rss_pages );
-            long taille_page = sysconf(_SC_PAGESIZE);
-            rss_octets = rss_pages * taille_page; 
-        }
-        fclose(f_memory);
-    }
-    return rss_octets;
+	long resident = 0;
+	sscanf(ligne,"%*lu %ld", &resident);
+	const long page_size = sysconf(_SC_PAGESIZE);
+	*rss = resident * page_size; 
+	
+	fclose(f);
+	
+	return proc_err_t::success;
 }
     
 
@@ -149,7 +151,7 @@ void lire_temps_cpu_proc(const char *pid, unsigned long *utime, unsigned long *s
 
 
 Processus* ajouter_processus(Processus *tete_liste, const char *pid_proc, const char *nom_proc, char etat, const char *user_proc, long ram_rss, unsigned long utime, unsigned long stime, float cpu_percent)) {
-    Processus *nouveau_proc = (Processus*)malloc(sizeof(Processus));
+    Processus *nouveau_proc = malloc(sizeof(Processus));
 
     if (nouveau_proc == NULL) {
         perror("Erreur d'allocation mémoire");
