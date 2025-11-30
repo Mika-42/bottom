@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <pwd.h>
 
-
 #include "process.h"
+#include <unistd.h>
 
 bool str_is_numeric(const char *str) {
    	
@@ -30,7 +30,7 @@ bool proc_is_valid_pid(const char *pid) {
 FILE *proc_file_open(const pid_t pid, const char *file) {
 	if(!file) return nullptr;
 
-	char path[PATH_MAX];
+	char path[PROC_PATH_SIZE];
 
         snprintf(path, sizeof(path), "/proc/%d/%s", pid, file);
 
@@ -39,15 +39,15 @@ FILE *proc_file_open(const pid_t pid, const char *file) {
 
 proc_err_t proc_get_name(const pid_t pid, char *name) {
 	
-	if(!name) return proc_err_t::nullptr_parameter_error;
+	if(!name) return NULLPTR_PARAMETER_ERROR;
 	
 	FILE *f = proc_file_open(pid, "comm");
 
-	if (!f) return proc_err_t::open_file_failed;
+	if (!f) return OPEN_FILE_FAILED;
 
         if (!fgets(name, PROC_NAME_SIZE, f)) {
 		fclose(f);
-		return proc_err_t::read_failed;
+		return READ_FAILED;
 	}
 	
 	const int end_of_str = strcspn(name, "\n");
@@ -55,22 +55,22 @@ proc_err_t proc_get_name(const pid_t pid, char *name) {
 
         fclose(f);
 
-	return proc_err_t::success;
+	return SUCCESS;
 }
 
 proc_err_t proc_get_state(const pid_t pid, proc_state_t *state) {
 	
-	if (!state) return proc_err_t::nullptr_parameter_error;
+	if (!state) return NULLPTR_PARAMETER_ERROR;
 
 	FILE *f = proc_file_open(pid, "stat");
 
-	if (!f) return proc_err_t::open_file_failed; 
+	if (!f) return OPEN_FILE_FAILED; 
         
 	char buffer[512];
         
 	if (!fgets(buffer, sizeof(buffer), f)) { 
 		fclose(f);
-		return proc_err_t::read_failed;
+		return READ_FAILED;
 	}
 
 	fclose(f);
@@ -86,82 +86,85 @@ proc_err_t proc_get_state(const pid_t pid, proc_state_t *state) {
 	 */
 	const int ret = sscanf(buffer, "%*d (%*[^)]) %c", &temp);
 
-	if(ret != 1) return proc_err_t::malformed_status_line; 
+	if(ret != 1) return MALFORMED_STATUS_LINE; 
         
 	switch(temp)
 	{
-		case 'R': *state = running;	break;
-		case 'S': *state = sleeping;	break;
-		case 'D': *state = disk_sleep;	break;
-		case 'T': *state = stopped;	break;
-		case 't': *state = traced;	break;
-		case 'Z': *state = zombie;	break;
-		case 'X': *state = dead;	break;
-		default:  *state = unknow;
+		case 'R': *state = RUNNING;	break;
+		case 'S': *state = SLEEPING;	break;
+		case 'D': *state = DISK_SLEEP;	break;
+		case 'T': *state = STOPPED;	break;
+		case 't': *state = TRACED;	break;
+		case 'Z': *state = ZOMBIE;	break;
+		case 'X': *state = DEAD;	break;
+		default:  *state = UNKNOW;
 	}
 
-    	return proc_err_t::success;
+    	return SUCCESS;
 }
 
 proc_err_t proc_get_user(const pid_t pid, char *username) {
     
-	if(!username) return proc_err_t::nullptr_parameter_error;
+	if(!username) return NULLPTR_PARAMETER_ERROR;
 	 
 	FILE *f = proc_file_open(pid, "status");
 
-    	if (!f) return proc_err_t::open_file_failed;
+    	if (!f) return OPEN_FILE_FAILED;
 
-	char uid_line[512]; 
+	char line[512]; 
 	uid_t uid = -1;
         
-	while (fgets(uid_line, sizeof(uid_line), f)) {
+	while (fgets(line, sizeof(line), f)) {
             
-		if (strncmp(uid_line, "Uid:", 4) != 0) continue;
+		if (strncmp(line, "Uid:", 4) != 0) continue;
 
-		const int ret = sscanf(uid_line, "%*s %u", &uid);
-               	if(ret != 1) return proc_err_t::malformed_status_line;
+		const int ret = sscanf(line, "%*s %u", &uid);
+               	if(ret != 1) return MALFORMED_STATUS_LINE;
 
                 break;	
         }
 
         fclose(f);  
     	
-	if(uid == -1) return proc_err_t::uid_not_found;
+	if(uid == (uid_t)-1) return UID_NOT_FOUND;
 
 	struct passwd *user_info = getpwuid(uid);  
 
-	if (!user_info) return proc_err_t::user_not_found;
+	if (!user_info) return USER_NOT_FOUND;
 
 	strncpy(username,user_info->pw_name,PROC_USERNAME_SIZE);
 	username[PROC_USERNAME_SIZE - 1] = '\0';
 
-	return proc_err_t::success;
+	return SUCCESS;
 }
 
     
 proc_err_t proc_get_rss(const pid_t pid, long* rss) {
 	
-	if(!rss) return proc_err_t::nullptr_parameter_error;
+	if(!rss) return NULLPTR_PARAMETER_ERROR;
 
 	char line[200];
 
 	FILE *f = proc_file_open(pid, "statm");
 
-	if (!f) return proc_err_t::open_file_failed;
+	if (!f) return OPEN_FILE_FAILED;
 
 	if(fgets(line, sizeof(line), f)) {
 		fclose(f);
-		return proc_err_t::read_failed;
+		return READ_FAILED;
 	}
 
+	fclose(f);
+
 	long resident = 0;
-	sscanf(ligne,"%*lu %ld", &resident);
+	unsigned long _;
+	if(sscanf(line,"%lu %ld", &_, &resident) != 2) return MALFORMED_STATUS_LINE;
+	
 	const long page_size = sysconf(_SC_PAGESIZE);
 	*rss = resident * page_size; 
 	
-	fclose(f);
 	
-	return proc_err_t::success;
+	return SUCCESS;
 }
     
 

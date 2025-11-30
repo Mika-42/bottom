@@ -1,32 +1,32 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#include <limits.h>
 #include <sys/types.h>
 
-#define PROC_NAME_SIZE 16
-#define PROC_USERNAME_SIZE 32
+constexpr size_t PROC_NAME_SIZE = 16;
+constexpr size_t PROC_USERNAME_SIZE = 32;
+constexpr size_t PROC_PATH_SIZE = 4096;
 
 typedef enum proc_err_t : int {
-	success,
-	generic_error,
-	nullptr_parameter_error,
-	open_file_failed,
-	read_failed,
-	malformed_status_line,
-	uid_not_found,
-	user_not_found,
+	SUCCESS,
+	GENERIC_ERROR,
+	NULLPTR_PARAMETER_ERROR,
+	OPEN_FILE_FAILED,
+	READ_FAILED,
+	MALFORMED_STATUS_LINE,
+	UID_NOT_FOUND,
+	USER_NOT_FOUND,
 } proc_err_t;
 
 typedef enum proc_state_t : char {
-	running		= 'R',
-	sleeping	= 'S',
-	disk_sleep	= 'D',
-	stopped		= 'T',
-	traced		= 't',
-	zombie		= 'Z',
-	dead		= 'X',
-	unknow		= '\0',
+	RUNNING		= 'R',
+	SLEEPING	= 'S',
+	DISK_SLEEP	= 'D',
+	STOPPED		= 'T',
+	TRACED		= 't',
+	ZOMBIE		= 'Z',
+	DEAD		= 'X',
+	UNKNOW		= '\0',
 } proc_state_t;
 
 // Structure pour stocker les informations d'un seul processus
