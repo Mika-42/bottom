@@ -4,7 +4,6 @@
 #include <string.h> 
 #include <stdlib.h>
 #include <pwd.h>
-#include <sys/types.h>
 
 
 #include "process.h"
@@ -24,13 +23,11 @@ bool str_is_numeric(const char *str) {
 	return true;
 }
 
-bool proc_is_valid_pid(const char* pid)
-{
+bool proc_is_valid_pid(const char *pid) {
 	return str_is_numeric(pid) && (*pid != '-' || *pid != '0');
 }
 
-FILE* proc_file_open(const pid_t pid, const char* file)
-{
+FILE *proc_file_open(const pid_t pid, const char *file) {
 	if(!file) return nullptr;
 
 	char path[PATH_MAX];
@@ -61,7 +58,7 @@ proc_err_t proc_get_name(const pid_t pid, char *name) {
 	return proc_err_t::success;
 }
 
-proc_err_t proc_get_state(const char *pid, proc_state_t *state) {
+proc_err_t proc_get_state(const pid_t pid, proc_state_t *state) {
 	
 	if (!state) return proc_err_t::nullptr_parameter_error;
 
@@ -106,7 +103,7 @@ proc_err_t proc_get_state(const char *pid, proc_state_t *state) {
     	return proc_err_t::success;
 }
 
-proc_err_t proc_get_user(const pid_t pid, char *username){
+proc_err_t proc_get_user(const pid_t pid, char *username) {
     
 	if(!username) return proc_err_t::nullptr_parameter_error;
 	 
@@ -142,7 +139,7 @@ proc_err_t proc_get_user(const pid_t pid, char *username){
 }
 
     
-proc_err_t proc_get_rss(const pid_t pid, long* rss){
+proc_err_t proc_get_rss(const pid_t pid, long* rss) {
 	
 	if(!rss) return proc_err_t::nullptr_parameter_error;
 
@@ -169,7 +166,7 @@ proc_err_t proc_get_rss(const pid_t pid, long* rss){
     
 
 
-void lire_temps_cpu_proc(const char *pid, unsigned long *utime, unsigned long *stime){
+void lire_temps_cpu_proc(const char *pid, unsigned long *utime, unsigned long *stime) {
 
 
 }

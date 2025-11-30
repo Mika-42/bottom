@@ -3,12 +3,12 @@
 
 #include "process.h"
 
-void kill_process(Processus p);
+void kill_process(processus_t p);
 
-void stop_process(Processus p);
+void stop_process(processus_t p);
 
-void term_process(Processus p);
+void term_process(processus_t p);
 
-void reboot_process(Processus p);
+void reboot_process(processus_t p);
 
 #endif //SIGNAL_PROCESS_H
