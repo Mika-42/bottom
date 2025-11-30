@@ -61,8 +61,9 @@ char lire_etat_processus(const char *pid) {
         int pid_proc;
         
        
-        if (fgets(buffer, sizeof(buffer), f_etats)) { // sert à lire la ligne du fichier stat en  verifiant que c'est possible
-            // sscanf : récupérer juste le pid et l'état du processus sans le nom car on l'a deja et les stocker dans pid_proc et etat
+        if (fgets(buffer, sizeof(buffer), f_etats)) { 
+	// sert à lire la ligne du fichier stat en  verifiant que c'est possible
+        // sscanf : récupérer juste le pid et l'état du processus sans le nom car on l'a deja et les stocker dans pid_proc et etat
             sscanf(buffer, "%d (%*[^)]) %c", &pid_proc, &etat); 
         }
         fclose(f_etats);
