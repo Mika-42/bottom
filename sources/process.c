@@ -1,4 +1,4 @@
-#include <stdio.h>:
+#include <stdio.h>
 #include <dirent.h> //dirent.h c'est une structure permettant de parcourir le repertoire /proc, de l'ouvrir et le lire 
 #include <ctype.h>
 #include <string.h> 
@@ -11,7 +11,7 @@
 
 bool proc_is_pid(const char *filename) {
    	
-	if(filename == nullptr || *filename == '\0') return false;
+	if(!filename || *filename == '\0') return false;
 
 	while (*filename) {
 		if(!isdigit((unsigned char)(*filename))) {
@@ -22,20 +22,27 @@ bool proc_is_pid(const char *filename) {
 	return true;
 }
 
+FILE* proc_file_open(const char *pid, const char* file)
+{
+	if(!pid || !file) return nullptr;
+
+	char path[PATH_MAX];
+
+        snprintf(path, sizeof(path), "/proc/%s/%s", pid, file);
+
+        return fopen(path, "r");
+}
+
 proc_err_t proc_get_name(const char *pid, char *name) {
 	
-	if(pid == nullptr || name == nullptr) 
+	if(!pid || !name) 
 		return proc_err_t::nullptr_parameter_error;
 	
-	char path[PATH_MAX];
-    
-	snprintf(path, sizeof(path), "/proc/%s/comm", pid); 
+	FILE *f = proc_file_open(pid, "comm");
 
-	FILE *f = fopen(path, "r");
+	if (!f) return proc_err_t::open_file_failed;
 
-	if (f == nullptr) return proc_err_t::open_file_failed;
-
-        if (fgets(name, PROC_NAME_SIZE, f) == nullptr) {
+        if (!fgets(name, PROC_NAME_SIZE, f)) {
 		fclose(f);
 		return proc_err_t::reading_failed;
 	}
@@ -76,37 +83,35 @@ char lire_etat_processus(const char *pid) {
 
 proc_err_t proc_get_user(const char *pid, char *username){
     
-	if(pid == nullptr || username == nullptr) 
-		return proc_err_t::nullptr_parameter_error
-	
-	char path_user[PATH_MAX];
-	char uid_line[256]; 
-    
-	snprintf(path_user,sizeof(path_user),"/proc/%s/status", pid);
+	if(!pid || !username) return proc_err_t::nullptr_parameter_error;
+	 
+	FILE *f = proc_file_open(pid, "status");
 
-	FILE *f_user = fopen(path_user,"r");
+    	if (!f) return proc_err_t::open_file_failed;
 
-	uid_t uid_value = -1;
-    	
-	if (f_user == nullptr) return proc_err_t::open_file_failed;
-
-        while (fgets(uid_line, sizeof(uid_line), f_user) != nullptr) {
+	char uid_line[512]; 
+	uid_t uid = -1;
+        
+	while (fgets(uid_line, sizeof(uid_line), f)) {
             
-		if (strncmp(uid_line, "Uid:", 4) == 0) {
-                	sscanf(uid_line, "%*s %u", &uid_value);
-                	break;
-            	}
+		if (strncmp(uid_line, "Uid:", 4) != 0) continue;
+
+		const int ret = sscanf(uid_line, "%*s %u", &uid);
+               	if(ret != 1) return proc_err_t::malformed_status_line;
+
+                break;	
         }
 
-        fclose(f_user);  
+        fclose(f);  
     	
-	struct passwd *user_info = getpwuid(uid_value);  
+	if(uid == -1) return proc_err_t::uid_not_found;
 
-	if (user_info != nullptr) {
-	    strncpy(username,user_info->pw_name,PROC_USERNAME_SIZE);
-	} else {
-	    snprintf(username,PROC_USERNAME_SIZE,"%u", (unsigned)uid_value);
-	}
+	struct passwd *user_info = getpwuid(uid);  
+
+	if (!user_info) return proc_err_t::user_not_found;
+
+	strncpy(username,user_info->pw_name,PROC_USERNAME_SIZE);
+	username[PROC_USERNAME_SIZE - 1] = '\0';
 
 	return proc_err_t::success;
 }

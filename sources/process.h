@@ -12,6 +12,9 @@ typedef enum proc_err_t : int {
 	nullptr_parameter_error,
 	open_file_failed,
 	reading_failed,
+	malformed_status_line,
+	uid_not_found,
+	user_not_found,
 } proc_err_t;
 
 // Structure pour stocker les informations d'un seul processus
