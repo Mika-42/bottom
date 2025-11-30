@@ -9,34 +9,40 @@
 
 #include "process.h"
 
-bool proc_is_pid(const char *filename) {
+bool str_is_numeric(const char *str) {
    	
-	if(!filename || *filename == '\0') return false;
+	if(!str || *str == '\0') return false;
 
-	while (*filename) {
-		if(!isdigit((unsigned char)(*filename))) {
+	if(*str == '-') ++str;
+
+	while (*str) {
+		if(!isdigit((unsigned char)(*str))) {
 			return false;
 		}
-		++filename;
+		++str;
 	}
 	return true;
 }
 
-FILE* proc_file_open(const char *pid, const char* file)
+bool proc_is_valid_pid(const char* pid)
 {
-	if(!pid || !file) return nullptr;
+	return str_is_numeric(pid) && (*pid != '-' || *pid != '0');
+}
+
+FILE* proc_file_open(const pid_t pid, const char* file)
+{
+	if(!file) return nullptr;
 
 	char path[PATH_MAX];
 
-        snprintf(path, sizeof(path), "/proc/%s/%s", pid, file);
+        snprintf(path, sizeof(path), "/proc/%d/%s", pid, file);
 
         return fopen(path, "r");
 }
 
-proc_err_t proc_get_name(const char *pid, char *name) {
+proc_err_t proc_get_name(const pid_t pid, char *name) {
 	
-	if(!pid || !name) 
-		return proc_err_t::nullptr_parameter_error;
+	if(!name) return proc_err_t::nullptr_parameter_error;
 	
 	FILE *f = proc_file_open(pid, "comm");
 
@@ -55,35 +61,54 @@ proc_err_t proc_get_name(const char *pid, char *name) {
 	return proc_err_t::success;
 }
 
-// Fonction pour lire l'état du processus à partir de /proc/(PID)/stat
-char lire_etat_processus(const char *pid) {
-    char etat_proc[260];
-    char etat = '?'; 
+proc_err_t proc_get_state(const char *pid, proc_state_t *state) {
+	
+	if (!state) return proc_err_t::nullptr_parameter_error;
 
-    // snprintf sert a stocker dans etat_proc le chemin du fichier stat pour le PID donné
-    snprintf(etat_proc, sizeof(etat_proc), "/proc/%s/stat", pid); 
-    
-    FILE *f_etats = fopen(etat_proc, "r"); // ouvre /proc/<PID>/stat issue du snprinf
+	FILE *f = proc_file_open(pid, "stat");
 
-    if (f_etats != NULL) { 
+	if (!f) return proc_err_t::open_file_failed; 
         
-        char buffer[1024];
-        int pid_proc;
+	char buffer[512];
         
-       
-        if (fgets(buffer, sizeof(buffer), f_etats)) { 
-	// sert à lire la ligne du fichier stat en  verifiant que c'est possible
-        // sscanf : récupérer juste le pid et l'état du processus sans le nom car on l'a deja et les stocker dans pid_proc et etat
-            sscanf(buffer, "%d (%*[^)]) %c", &pid_proc, &etat); 
-        }
-        fclose(f_etats);
-    }
-    return etat;
+	if (!fgets(buffer, sizeof(buffer), f)) { 
+		fclose(f);
+		return proc_err_t::read_failed;
+	}
+
+	fclose(f);
+
+	char temp = '\0';
+
+	/*
+	 * %*d		--> ignore the first integer (pid)
+	 * (		--> read the '(' character
+	 * %*[^)]	--> ignore all character until ')' has been reached
+	 * )		--> read the ')' character
+	 * %c		--> get the character
+	 */
+	const int ret = sscanf(buffer, "%*d (%*[^)]) %c", &temp);
+
+	if(ret != 1) return proc_err_t::malformed_status_line; 
+        
+	switch(temp)
+	{
+		case 'R': *state = running;	break;
+		case 'S': *state = sleeping;	break;
+		case 'D': *state = disk_sleep;	break;
+		case 'T': *state = stopped;	break;
+		case 't': *state = traced;	break;
+		case 'Z': *state = zombie;	break;
+		case 'X': *state = dead;	break;
+		default:  *state = unknow;
+	}
+
+    	return proc_err_t::success;
 }
 
-proc_err_t proc_get_user(const char *pid, char *username){
+proc_err_t proc_get_user(const pid_t pid, char *username){
     
-	if(!pid || !username) return proc_err_t::nullptr_parameter_error;
+	if(!username) return proc_err_t::nullptr_parameter_error;
 	 
 	FILE *f = proc_file_open(pid, "status");
 
@@ -117,9 +142,9 @@ proc_err_t proc_get_user(const char *pid, char *username){
 }
 
     
-proc_err_t proc_get_rss(const char *pid, long* rss){
+proc_err_t proc_get_rss(const pid_t pid, long* rss){
 	
-	if(!pid || !rss) return proc_err_t::nullptr_parameter_error;
+	if(!rss) return proc_err_t::nullptr_parameter_error;
 
 	char line[200];
 

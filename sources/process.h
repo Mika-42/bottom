@@ -17,11 +17,22 @@ typedef enum proc_err_t : int {
 	user_not_found,
 } proc_err_t;
 
+typedef enum proc_state_t : char {
+	running		= 'R',
+	sleeping	= 'S',
+	disk_sleep	= 'D',
+	stopped		= 'T',
+	traced		= 't',
+	zombie		= 'Z',
+	dead		= 'X',
+	unknow		= '\0',
+} proc_state_t;
+
 // Structure pour stocker les informations d'un seul processus
 typedef struct Processus {
-    char pid[NAME_MAX + 1];   // PID (Chaîne de caractères)
-    char nom[PROC_NAME_SIZE];      // Nom du processus
-    char etat;          // État du processus 
+    pid_t		pid;
+    char		name[PROC_NAME_SIZE];
+    proc_state_t	state;
     
     long ram_rss;       // Mémoire utilisée
     char user[PROC_USERNAME_SIZE];      // Nom de l'utilisateur
