@@ -4,21 +4,38 @@
 #include <string.h> 
 #include <stdlib.h>
 #include <pwd.h>
-#include <sys/types.h>
+#include <unistd.h>
 
-#include "process.h"
 
-bool is_pid(const char *d_name) {
-   	
-	if(d_name == nullptr || *d_name == '\0') return false;
 
-	while (*d_name) {
-		if(!isdigit((unsigned char)*d_name)) {
-			return false;
-		}
-		++d_name;
-	}
-	return true;
+// Structure pour stocker les informations d'un seul processus
+typedef struct Processus {
+    char pid[16];   // PID (Chaîne de caractères)
+    char nom[260];      // Nom du processus
+    char etat;          // État du processus 
+    
+    long ram_rss;       // Mémoire utilisée
+    char user[32];      // Nom de l'utilisateur
+    unsigned long utime;    // Temps CPU utilisateur (14e valeur)
+    unsigned long stime;    // Temps CPU système (15e valeur)
+    float cpu_pc;
+    
+    struct Processus *suivant; // Pointeur vers le processus suivant (le chaînon)
+} Processus;
+
+
+// Fonction pour vérifier si le nom du répertoire est un PID (composé uniquement de chiffres)
+int est_un_pid(const char *d_name) {
+    if (!isdigit(d_name[0])) {
+        return 0; 
+    }
+
+    int i = 0;
+    while (d_name[i] != '\0' && isdigit(d_name[i])) {  // conditon pour savoir si cest un PID
+        i++;
+    }
+
+    return (d_name[i] == '\0');
 }
 
 
@@ -138,7 +155,9 @@ void lire_temps_cpu_proc(const char *pid, unsigned long *utime, unsigned long *s
 }
 
 
-Processus* ajouter_processus(Processus *tete_liste, const char *pid_proc, const char *nom_proc, char etat, const char *user_proc, long ram_rss, unsigned long utime, unsigned long stime, float cpu_percent)) {
+
+Processus* ajouter_processus(Processus *tete_liste, const char *pid_proc, const char *nom_proc, char etat, const char *user_proc, long ram_rss, unsigned long utime, unsigned long stime, float cpu_pc) {
+    
     Processus *nouveau_proc = (Processus*)malloc(sizeof(Processus));
 
     if (nouveau_proc == NULL) {
@@ -167,7 +186,7 @@ Processus* ajouter_processus(Processus *tete_liste, const char *pid_proc, const 
 
 
 
-Processus*liberer_liste(Processus *tete_liste) {
+Processus* liberer_liste(Processus *tete_liste) {
     Processus *courant = tete_liste;
     Processus *temp;
 
