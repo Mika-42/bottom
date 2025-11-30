@@ -24,6 +24,9 @@ bool proc_is_pid(const char *filename) {
 
 proc_err_t proc_get_name(const char *pid, char *name) {
 	
+	if(pid == nullptr || name == nullptr) 
+		return proc_err_t::nullptr_parameter_error;
+	
 	char path[PATH_MAX];
     
 	snprintf(path, sizeof(path), "/proc/%s/comm", pid); 
@@ -71,37 +74,41 @@ char lire_etat_processus(const char *pid) {
     return etat;
 }
 
-void lire_utilisateur(const char *pid, char *tab_user,size_t tab_size){
-    char chemin_user[300];
-    char user[300]; 
+proc_err_t proc_get_user(const char *pid, char *username){
     
+	if(pid == nullptr || username == nullptr) 
+		return proc_err_t::nullptr_parameter_error
+	
+	char path_user[PATH_MAX];
+	char uid_line[256]; 
+    
+	snprintf(path_user,sizeof(path_user),"/proc/%s/status", pid);
 
-    snprintf(chemin_user,sizeof(chemin_user),"/proc/%s/status", pid);
+	FILE *f_user = fopen(path_user,"r");
 
-    FILE *f_user = fopen(chemin_user,"r");
+	uid_t uid_value = -1;
+    	
+	if (f_user == nullptr) return proc_err_t::open_file_failed;
 
-    uid_t uid_valeur = -1;
-    if (f_user != NULL) {
-        while (fgets(user, sizeof(user), f_user) != NULL) {
-            if (strncmp(user, "Uid:", 4) == 0) {
-                sscanf(user, "%*s %u", &uid_valeur);  // recuperer la valeur de uid et la stocker dans uid_valeur
-                break;
-            }
+        while (fgets(uid_line, sizeof(uid_line), f_user) != nullptr) {
+            
+		if (strncmp(uid_line, "Uid:", 4) == 0) {
+                	sscanf(uid_line, "%*s %u", &uid_value);
+                	break;
+            	}
         }
+
         fclose(f_user);  
-    } else {
-        snprintf(tab_user, tab_size, "fichier non accessible");
-        return;
-    }
+    	
+	struct passwd *user_info = getpwuid(uid_value);  
 
+	if (user_info != nullptr) {
+	    strncpy(username,user_info->pw_name,PROC_USERNAME_SIZE);
+	} else {
+	    snprintf(username,PROC_USERNAME_SIZE,"%u", (unsigned)uid_value);
+	}
 
-    struct passwd *user_info = getpwuid(uid_valeur);  
-    if (user_info != NULL){
-        strncpy(tab_user,user_info->pw_name,tab_size);
-    }
-    else{
-        snprintf(tab_user,tab_size,"%u", (unsigned)uid_valeur);
-    }
+	return proc_err_t::success;
 }
 
     

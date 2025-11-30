@@ -4,10 +4,12 @@
 #include <limits.h>
 
 #define PROC_NAME_SIZE 16
+#define PROC_USERNAME_SIZE 32
 
 typedef enum proc_err_t : int {
 	success,
 	generic_error,
+	nullptr_parameter_error,
 	open_file_failed,
 	reading_failed,
 } proc_err_t;
@@ -19,7 +21,7 @@ typedef struct Processus {
     char etat;          // État du processus 
     
     long ram_rss;       // Mémoire utilisée
-    char user[32];      // Nom de l'utilisateur
+    char user[PROC_USERNAME_SIZE];      // Nom de l'utilisateur
     unsigned long utime;    // Temps CPU utilisateur (14e valeur)
     unsigned long stime;    // Temps CPU système (15e valeur)
     float cpu_percent;
