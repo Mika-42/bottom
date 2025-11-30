@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <stdio.h>:
 #include <dirent.h> //dirent.h c'est une structure permettant de parcourir le repertoire /proc, de l'ouvrir et le lire 
 #include <ctype.h>
 #include <string.h> 
@@ -55,7 +55,7 @@ char lire_etat_processus(const char *pid) {
     
     FILE *f_etats = fopen(etat_proc, "r"); // ouvre /proc/<PID>/stat issue du snprinf
 
-    if (f_etats != NULL) { //verifier si le fichier il est bien ouvert 
+    if (f_etats != NULL) { 
         
         char buffer[1024];
         int pid_proc;
