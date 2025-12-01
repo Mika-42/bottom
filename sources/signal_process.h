@@ -1,7 +1,7 @@
 #ifndef SIGNAL_PROCESS_H
 #define SIGNAL_PROCESS_H
 
-#include "process.h"
+#include "processus.h"
 
 int kill_process(processus_t *p);
 
