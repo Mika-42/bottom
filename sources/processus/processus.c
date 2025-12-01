@@ -272,26 +272,3 @@ proc_err_t proc_update_list(const char* path, list_t *head) {
 
 	return SUCCESS;
 }
-
-/// TODO: Remove later
-int main() {
-    
-	list_t head = nullptr;
-	
-	proc_update_list("/proc", &head);
-	
-	printf("| %-8s | %-30s | %-5s\n", "PID", "Nom", "Etat");
-
-	list_t l = head;
-
-	while (l != NULL) {
-        	printf("| %-8u | %-30s | %-5c | %-15s | %-10ld\n", 
-            		l->data.pid, l->data.name, (char)l->data.state, l->data.user, l->data.ram_rss / 1024 
-		);
-		l = l->next;
-	} 
-    	
-	proc_list_free(&head);
-	
-	return 0;
-}
