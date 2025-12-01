@@ -1,19 +1,22 @@
+#define _GNU_SOURCE
 #include "signal_process.h"
 
 #include <signal.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 int send_signal(processus_t *p, int sig){
 	pid_t pid = p->pid;
+	int pidfd = syscall(SYS_pidfd_open, pid, 0);
 
-	if (pid <= 0){
-		return -1;
+	if (pidfd < 0){
+		return EXIT_FAILURE;
 	}
-	if (kill(pid, sig) == -1 ){
-		return -1;
+	if (syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0) < 0){
+		return EXIT_FAILURE;
 	}
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 int kill_process(processus_t *p){
