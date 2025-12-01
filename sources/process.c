@@ -88,8 +88,7 @@ proc_err_t proc_get_state(const pid_t pid, proc_state_t *state) {
 
 	if(ret != 1) return MALFORMED_STATUS_LINE; 
         
-	switch(temp)
-	{
+	switch(temp) {
 		case 'R': *state = RUNNING;	break;
 		case 'S': *state = SLEEPING;	break;
 		case 'D': *state = DISK_SLEEP;	break;
@@ -188,7 +187,11 @@ proc_err_t proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned lon
 
 proc_err_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
+	if(!proc) return NULLPTR_PARAMETER_ERROR;
+
 	proc_err_t ret = SUCCESS;
+	
+	proc->pid = pid;
 
 	ret = proc_get_name(pid, proc->name);
 	if(ret != SUCCESS) return ret;
@@ -213,7 +216,9 @@ list_t proc_list_get_by_pid(list_t head, const pid_t pid) {
 }
 
 proc_err_t proc_list_push_front(list_t *head) {
-    
+    	
+	if(!head) return NULLPTR_PARAMETER_ERROR;
+
 	list_t new_proc = malloc(sizeof(*new_proc));
 
 	if (!new_proc) return MEMORY_ALLOCATION_FAILED;
@@ -225,55 +230,68 @@ proc_err_t proc_list_push_front(list_t *head) {
 }
 
 void proc_list_free(list_t *head) {
-    while (*head != nullptr) {
-        list_t temp = *head;
-        *head = (*head)->next;
-        free(temp);
-    }
-    *head = nullptr;
+	
+	if(!head || !(*head)) return;
+
+	while (*head != nullptr) {
+		list_t temp = *head;
+		*head = (*head)->next;
+		free(temp);
+	}
+	*head = nullptr;
 } 
 
-int main() {
-    DIR *rep_proc = opendir("/proc");
-    struct dirent *ent;  //permet d'utiliser les elements de la strcture dirent afin d'accéder au nom, type, etc..
+proc_err_t proc_update_list(list_t *head) {
+
+	if(!head) return NULLPTR_PARAMETER_ERROR;
+
+	DIR *rep_proc = opendir("/proc");
+	if (!rep_proc) return OPEN_FILE_FAILED;
+
+	struct dirent *ent = nullptr;
     
-    list_t head = nullptr;
-
-    if (!rep_proc) {
-        perror("Erreur d'ouverture de /proc");
-        return 1;
-    }
-
-    printf("%-8s | %-30s | %-5s\n", "PID", "Nom", "Etat");
-
-    while ((ent = readdir(rep_proc)) != NULL) {
-	
-
-        if (proc_is_valid_pid(ent->d_name))
-	{
-		const pid_t pid = atol(ent->d_name);
-		list_t l = proc_list_get_by_pid(head, pid);
-
-		if(l == nullptr)
-		{
-			proc_list_push_front(&head);
-			l = head;
+	while ((ent = readdir(rep_proc))) {
+		
+		if (!proc_is_valid_pid(ent->d_name)) {
+			continue;
 		}
 
+		const pid_t pid = atoi(ent->d_name);
+		
+		list_t l = proc_list_get_by_pid(*head, pid);
+
+		if(!l) {
+			proc_list_push_front(head);
+			l = *head;
+		}
 
 		proc_get_all_infos(pid, &(l->data));
+       	
+    	}
+	
+	closedir(rep_proc);
 
+	return SUCCESS;
+}
 
-        	printf("%-8d | %-20s | %-6c | %-15s | %-10ld\n", 
-            		l->data.pid, l->data.name, l->data.state,
-            l->data.user, 
-            l->data.ram_rss / 1024 
-        );
-        }
-    } 
+int main() {
     
-    proc_list_free(&head);
+	list_t head = nullptr;
+	
+	proc_update_list(&head);
+	
+	printf("| %-8s | %-30s | %-5s\n", "PID", "Nom", "Etat");
 
-    closedir(rep_proc);
-    return 0;
+	list_t l = head;
+
+	while (l != NULL) {
+        	printf("| %-8u | %-30s | %-5c | %-15s | %-10ld\n", 
+            		l->data.pid, l->data.name, (char)l->data.state, l->data.user, l->data.ram_rss / 1024 
+		);
+		l = l->next;
+	} 
+    	
+	proc_list_free(&head);
+	
+	return 0;
 }

@@ -30,7 +30,6 @@ typedef enum proc_state_t : char {
 	UNKNOW		= '\0',
 } proc_state_t;
 
-// Structure pour stocker les informations d'un seul processus
 typedef struct processus_t {  
 	pid_t			pid;
 	char			name[PROC_NAME_SIZE];
@@ -60,5 +59,6 @@ proc_err_t	proc_get_all_infos(const pid_t pid, processus_t *proc);
 list_t		proc_list_get_by_pid(list_t head, const pid_t pid);
 proc_err_t	proc_list_push_front(list_t *head);
 void		proc_list_free(list_t *head);
+proc_err_t	proc_update_list(list_t *head);
 
 #endif //PROCESS_H 
