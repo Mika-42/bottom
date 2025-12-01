@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+
 #include "signal_process.h"
 
 #include <signal.h>
@@ -7,8 +8,7 @@
 #include <unistd.h>
 
 int send_signal(processus_t *p, int sig){
-	pid_t pid = p->pid;
-	int pidfd = syscall(SYS_pidfd_open, pid, 0);
+	int pidfd = syscall(SYS_pidfd_open, p->pid, 0);
 
 	if (pidfd < 0){
 		return EXIT_FAILURE;
@@ -30,3 +30,5 @@ int stop_process(processus_t *p){
 int term_process(processus_t *p){
 	return send_signal(p, SIGTERM);
 }
+
+

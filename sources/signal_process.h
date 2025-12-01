@@ -9,6 +9,6 @@ int stop_process(processus_t *p);
 
 int term_process(processus_t *p);
 
-int reboot_process(processus_t *p);
+int restart_process(processus_t *p);
 
 #endif //SIGNAL_PROCESS_H
