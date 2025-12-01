@@ -166,43 +166,51 @@ proc_err_t proc_get_rss(const pid_t pid, long* rss) {
 	
 	return SUCCESS;
 }
-    
 
+proc_err_t proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned long *stime) {
+	FILE *f = proc_file_open(pid, "stat");
+	
+	if(!f) return OPEN_FILE_FAILED;
 
-void lire_temps_cpu_proc(const char *pid, unsigned long *utime, unsigned long *stime) {
+	char line[2048];
 
+	if (!fgets(line, sizeof(line), f)) {
+    		fclose(f);
+    		return READ_FAILED;
+	}
 
+	fclose(f);
+
+	sscanf(line, "%*d (%*[^)]) %*c %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu %lu", &utime, &stime);
+
+	return SUCCESS;
 }
 
+list_t proc_list_get_by_pid(list_t head, const pid_t pid) {
+	for(;head != nullptr && head->pid != pid; head = head->next);
+	return head;
+}
 
-Processus* ajouter_processus(Processus *tete_liste, const char *pid_proc, const char *nom_proc, char etat, const char *user_proc, long ram_rss, unsigned long utime, unsigned long stime, float cpu_percent)) {
-    Processus *nouveau_proc = malloc(sizeof(Processus));
+proc_err_t proc_list_push_front(list_t *head, const processus_t proc) {
+    
+	list_t founded_proc = proc_list_get_by_pid(*head, proc.pid);
 
-    if (nouveau_proc == NULL) {
-        perror("Erreur d'allocation mémoire");
-        return tete_liste; // Retourner la liste inchangée en cas d'erreur
-    }
-    strncpy(nouveau_proc->pid, pid_proc, sizeof(nouveau_proc->pid)); // copier le PID dans la structure
-    strncpy(nouveau_proc->nom, nom_proc, sizeof(nouveau_proc->nom)); // copier le nom dans la structure
-    nouveau_proc->etat = etat; // copier l'état dans la structure
-    strncpy(nouveau_proc->user, user_proc, sizeof(nouveau_proc->user)); // copier l'état dans la structure
-    nouveau_proc->ram_rss = ram_rss; // copier la ram dans la structure
-    nouveau_proc->utime = utime;     // copier l'utime dans la structure
-    nouveau_proc->stime = stime;     // copier le stime dans la structure
-    nouveau_proc->cpu_pc = cpu_pc; // copier pourcentage du cpu dans la structure
+	if(founded_proc != nullptr)
+	{
+		founded_proc->data = proc;
+		return SUCCESS;
+	}
 
+	list_t new_proc = malloc(sizeof(*new_proc));
 
-    nouveau_proc->suivant = tete_liste; // le nouveau maillon pointe vers l'ancienne tête de liste
-    return nouveau_proc; 
-    }
+	if (!new_proc) return MEMORY_ALLOCATION_FAILED;
 
+	new_proc->data = proc;
+	new_proc->next = *head;
+	*head = new_proc;
 
-
-
-
-
-
-
+	return SUCCESS; 
+}
 
 Processus*liberer_liste(Processus *tete_liste) {
     Processus *courant = tete_liste;
@@ -215,11 +223,6 @@ Processus*liberer_liste(Processus *tete_liste) {
     }
     return NULL; 
 } 
-
-
-
-
-
 
 int main() {
     DIR *rep_proc = opendir("/proc");
