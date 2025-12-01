@@ -55,4 +55,10 @@ proc_err_t	proc_get_state(const pid_t pid, proc_state_t *state);
 proc_err_t	proc_get_user(const pid_t pid, char *username);
 proc_err_t	proc_get_rss(const pid_t pid, long* rss);
 proc_err_t	proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned long *stime);
+proc_err_t	proc_get_all_infos(const pid_t pid, processus_t *proc);
+
+list_t		proc_list_get_by_pid(list_t head, const pid_t pid);
+proc_err_t	proc_list_push_front(list_t *head);
+void		proc_list_free(list_t *head);
+
 #endif //PROCESS_H 

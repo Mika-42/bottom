@@ -181,56 +181,65 @@ proc_err_t proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned lon
 
 	fclose(f);
 
-	sscanf(line, "%*d (%*[^)]) %*c %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu %lu", &utime, &stime);
+	sscanf(line, "%*d (%*[^)]) %*c %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu %lu", utime, stime);
 
 	return SUCCESS;
 }
 
+proc_err_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
+
+	proc_err_t ret = SUCCESS;
+
+	ret = proc_get_name(pid, proc->name);
+	if(ret != SUCCESS) return ret;
+
+	ret = proc_get_state(pid, &(proc->state));
+	if(ret != SUCCESS) return ret;
+	
+	ret = proc_get_user(pid, proc->user);
+	if(ret != SUCCESS) return ret;
+	
+	ret = proc_get_rss(pid, &(proc->ram_rss));
+	if(ret != SUCCESS) return ret;
+	
+	ret = proc_get_cpu_time(pid, &(proc->utime), &(proc->stime));
+	
+	return ret;
+}
+
 list_t proc_list_get_by_pid(list_t head, const pid_t pid) {
-	for(;head != nullptr && head->pid != pid; head = head->next);
+	for(;head != nullptr && head->data.pid != pid; head = head->next);
 	return head;
 }
 
-proc_err_t proc_list_push_front(list_t *head, const processus_t proc) {
+proc_err_t proc_list_push_front(list_t *head) {
     
-	list_t founded_proc = proc_list_get_by_pid(*head, proc.pid);
-
-	if(founded_proc != nullptr)
-	{
-		founded_proc->data = proc;
-		return SUCCESS;
-	}
-
 	list_t new_proc = malloc(sizeof(*new_proc));
 
 	if (!new_proc) return MEMORY_ALLOCATION_FAILED;
 
-	new_proc->data = proc;
 	new_proc->next = *head;
 	*head = new_proc;
 
 	return SUCCESS; 
 }
 
-Processus*liberer_liste(Processus *tete_liste) {
-    Processus *courant = tete_liste;
-    Processus *temp;
-
-    while (courant != NULL) {
-        temp = courant;
-        courant = courant->suivant;
+void proc_list_free(list_t *head) {
+    while (*head != nullptr) {
+        list_t temp = *head;
+        *head = (*head)->next;
         free(temp);
     }
-    return NULL; 
+    *head = nullptr;
 } 
 
 int main() {
     DIR *rep_proc = opendir("/proc");
     struct dirent *ent;  //permet d'utiliser les elements de la strcture dirent afin d'accéder au nom, type, etc..
-    Processus *liste_processus = NULL;
+    
+    list_t head = nullptr;
 
-
-    if (rep_proc == NULL) {
+    if (!rep_proc) {
         perror("Erreur d'ouverture de /proc");
         return 1;
     }
@@ -238,42 +247,32 @@ int main() {
     printf("%-8s | %-30s | %-5s\n", "PID", "Nom", "Etat");
 
     while ((ent = readdir(rep_proc)) != NULL) {
+	
 
-        if (est_un_pid(ent->d_name)) {         // Vérifier que d_name commence par un chiffre afin de faire un premier trie 
+        if (proc_is_valid_pid(ent->d_name))
+	{
+		const pid_t pid = atol(ent->d_name);
+		list_t l = proc_list_get_by_pid(head, pid);
 
-
-            char nom_proc[260]; // stockage du nom
-            char etat = '?'; // au cas où l'état n'est pas trouvé
-            char user_proc[32]; // stocker le nom d'utilisateur
-            long ram_proc = 0;
-
-            lire_nom_processus(ent->d_name, nom_proc, sizeof(nom_proc));
-            etat = lire_etat_processus(ent->d_name);
-            lire_utilisateur(ent->d_name, user_proc, sizeof(user_proc));
-            ram_proc = lire_memoire_rss(ent->d_name);
-
-liste_processus = ajouter_processus(liste_processus, ent->d_name, nom_proc, etat,user_proc, ram_proc,  0, 0, 0.0f // pas encore fait le cpu donc on met 0
-            );
-            lire_utilisateur(ent->d_name, user_proc,sizeof(user_proc));
+		if(l == nullptr)
+		{
+			proc_list_push_front(&head);
+			l = head;
+		}
 
 
+		proc_get_all_infos(pid, &(l->data));
+
+
+        	printf("%-8d | %-20s | %-6c | %-15s | %-10ld\n", 
+            		l->data.pid, l->data.name, l->data.state,
+            l->data.user, 
+            l->data.ram_rss / 1024 
+        );
         }
     } 
-
-    Processus *courant = liste_processus;
-
-    while (courant != NULL) {
-        printf("%-8s | %-20s | %-6c | %-15s | %-10ld\n", 
-            courant->pid, 
-            courant->nom, 
-            courant->etat,
-            courant->user, 
-            courant->ram_rss / 1024 
-        );
-        courant = courant->suivant;
-    }
     
-    liste_processus = liberer_liste(liste_processus);
+    proc_list_free(&head);
 
     closedir(rep_proc);
     return 0;
