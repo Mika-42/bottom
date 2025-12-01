@@ -241,11 +241,11 @@ void proc_list_free(list_t *head) {
 	*head = nullptr;
 } 
 
-proc_err_t proc_update_list(list_t *head) {
+proc_err_t proc_update_list(const char* path, list_t *head) {
 
 	if(!head) return NULLPTR_PARAMETER_ERROR;
 
-	DIR *rep_proc = opendir("/proc");
+	DIR *rep_proc = opendir(path);
 	if (!rep_proc) return OPEN_FILE_FAILED;
 
 	struct dirent *ent = nullptr;
@@ -274,11 +274,12 @@ proc_err_t proc_update_list(list_t *head) {
 	return SUCCESS;
 }
 
+/// TODO: Remove later
 int main() {
     
 	list_t head = nullptr;
 	
-	proc_update_list(&head);
+	proc_update_list("/proc", &head);
 	
 	printf("| %-8s | %-30s | %-5s\n", "PID", "Nom", "Etat");
 
