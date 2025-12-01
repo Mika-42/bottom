@@ -18,7 +18,9 @@ int main(int argc, char *argv[]){
         .password = NULL,
         .all = false
     };
+
     int gerer_options = command_run(argc, argv, &options);
+
     if (gerer_options !=0) {
         fprintf(stderr, "Erreur lors de l'analyse des options. Utilisez -h pour l'aide.\n");
         return EXIT_FAILURE;

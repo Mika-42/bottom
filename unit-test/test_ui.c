@@ -3,11 +3,9 @@
 int main()
 {
 	ui_init();
-
+		
 	for(;;)
 	{
-		//clear();
-		ui_scroll(0,0);
 		ui_show_fn_cmd();
 
 		switch(getch())
