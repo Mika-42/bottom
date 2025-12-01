@@ -1,12 +1,11 @@
+#include "process.h"
+#include <unistd.h>
+#include <pwd.h>
 #include <stdio.h>
-#include <dirent.h> //dirent.h c'est une structure permettant de parcourir le repertoire /proc, de l'ouvrir et le lire 
+#include <dirent.h>
 #include <ctype.h>
 #include <string.h> 
 #include <stdlib.h>
-#include <pwd.h>
-
-#include "process.h"
-#include <unistd.h>
 
 bool str_is_numeric(const char *str) {
    	
