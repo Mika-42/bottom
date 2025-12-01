@@ -1,5 +1,5 @@
-#ifndef PROCESS_H
-#define PROCESS_H
+#ifndef PROCESSUS_H
+#define PROCESSUS_H
 
 #include <sys/types.h>
 
@@ -61,4 +61,4 @@ proc_err_t	proc_list_push_front(list_t *head);
 void		proc_list_free(list_t *head);
 proc_err_t	proc_update_list(const char* path, list_t *head);
 
-#endif //PROCESS_H 
+#endif //PROCESSUS_H 
