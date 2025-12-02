@@ -3,7 +3,7 @@
 
 #include <sys/types.h>
 
-constexpr size_t PROC_NAME_SIZE = 16;
+constexpr size_t PROC_NAME_SIZE = 32;
 constexpr size_t PROC_USERNAME_SIZE = 32;
 constexpr size_t PROC_PATH_SIZE = 4096;
 

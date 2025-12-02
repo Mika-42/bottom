@@ -147,7 +147,7 @@ proc_err_t proc_get_rss(const pid_t pid, long* rss) {
 
 	if (!f) return OPEN_FILE_FAILED;
 
-	if(fgets(line, sizeof(line), f)) {
+	if(!fgets(line, sizeof(line), f)) {
 		fclose(f);
 		return READ_FAILED;
 	}
