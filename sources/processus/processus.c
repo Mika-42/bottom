@@ -37,7 +37,7 @@ FILE *proc_file_open(const pid_t pid, const char *file) {
         return fopen(path, "r");
 }
 
-proc_err_t proc_get_name(processus_t *proc) {
+error_t proc_get_name(processus_t *proc) {
 	
 	if (!proc) return NULLPTR_PARAMETER_ERROR;
 
@@ -58,7 +58,7 @@ proc_err_t proc_get_name(processus_t *proc) {
 	return SUCCESS;
 }
 
-proc_err_t proc_get_state(processus_t *proc) {
+error_t proc_get_state(processus_t *proc) {
 	
 	if (!proc) return NULLPTR_PARAMETER_ERROR;
 
@@ -107,7 +107,7 @@ proc_err_t proc_get_state(processus_t *proc) {
     	return SUCCESS;
 }
 
-proc_err_t proc_get_user(processus_t *proc) {
+error_t proc_get_user(processus_t *proc) {
     
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
 	 
@@ -143,7 +143,7 @@ proc_err_t proc_get_user(processus_t *proc) {
 }
 
     
-proc_err_t proc_get_rss(processus_t *proc) {
+error_t proc_get_rss(processus_t *proc) {
 	
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
 
@@ -170,7 +170,7 @@ proc_err_t proc_get_rss(processus_t *proc) {
 	return SUCCESS;
 }
 
-proc_err_t proc_get_cpu_time(processus_t *proc) {
+error_t proc_get_cpu_time(processus_t *proc) {
 
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
 
@@ -192,13 +192,13 @@ proc_err_t proc_get_cpu_time(processus_t *proc) {
 	return SUCCESS;
 }
 
-proc_err_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
+error_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
 	
 	proc->pid = pid;
 
-	typedef proc_err_t (*proc_getter_t)(processus_t *proc);
+	typedef error_t (*proc_getter_t)(processus_t *proc);
 	
 	proc_getter_t getters[] = { 
 	        proc_get_name, 
@@ -210,7 +210,7 @@ proc_err_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 	};
 	
 	for (int i = 0; getters[i] != NULL; ++i) {
-		proc_err_t err = getters[i](proc);
+		error_t err = getters[i](proc);
 		if (err != SUCCESS) return err;
 	}
 	
@@ -222,7 +222,7 @@ list_t proc_list_get_by_pid(list_t head, const pid_t pid) {
 	return head;
 }
 
-proc_err_t proc_list_push_front(list_t *head) {
+error_t proc_list_push_front(list_t *head) {
     	
 	if(!head) return NULLPTR_PARAMETER_ERROR;
 
@@ -248,7 +248,7 @@ void proc_list_free(list_t *head) {
 	*head = nullptr;
 } 
 
-proc_err_t proc_update_list(const char* path, list_t *head) {
+error_t proc_update_list(const char* path, list_t *head) {
 
 	if(!head) return NULLPTR_PARAMETER_ERROR;
 

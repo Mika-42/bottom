@@ -42,16 +42,16 @@ typedef element_t* list_t;
 
 bool		str_is_numeric(const char *str);
 bool		proc_is_valid_pid(const char *pid);
-proc_err_t	proc_get_name(processus_t *proc);
-proc_err_t	proc_get_state(processus_t *proc);
-proc_err_t	proc_get_user(processus_t *proc);
-proc_err_t	proc_get_rss(processus_t *proc);
-proc_err_t	proc_get_cpu_time(processus_t *proc);
-proc_err_t	proc_get_all_infos(const pid_t pid, processus_t *proc);
-
+error_t		proc_get_name(processus_t *proc);
+error_t		proc_get_state(processus_t *proc);
+error_t		proc_get_user(processus_t *proc);
+error_t		proc_get_rss(processus_t *proc);
+error_t		proc_get_cpu_time(processus_t *proc);
+error_t		proc_get_all_infos(const pid_t pid, processus_t *proc);
+      
 list_t		proc_list_get_by_pid(list_t head, const pid_t pid);
-proc_err_t	proc_list_push_front(list_t *head);
+error_t		proc_list_push_front(list_t *head);
 void		proc_list_free(list_t *head);
-proc_err_t	proc_update_list(const char* path, list_t *head);
-
-#endif //PROCESSUS_H 
+error_t		proc_update_list(const char* path, list_t *head);
+      
+#endif //PROCESSUS_H     
