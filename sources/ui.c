@@ -49,10 +49,13 @@ const char* state_to_str(proc_state_t s)
 	switch(s) {
 		case RUNNING:		return "RUNNING";
 		case SLEEPING:		return "SLEEPING";
-		case DISK_SLEEP:	return "DISK_SLEEP";
+		case DISK_SLEEP:	return "DISK_SLEEP";	
+		case ZOMBIE:		return "ZOMBIE";
 		case STOPPED:		return "STOPPED";
 		case TRACED:		return "TRACED";
-		case ZOMBIE:		return "ZOMBIE";
+		case WAKING:		return "WAKING";
+		case WAKEKILL:		return "WAKEKILL";
+		case PARKED:		return "PARKED";
 		case DEAD:		return "DEAD";	
 		default:		return "UNKNOW";
 	}

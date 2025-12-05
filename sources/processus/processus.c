@@ -19,6 +19,7 @@ bool str_is_numeric(const char *str) {
 		}
 		++str;
 	}
+
 	return true;
 }
 
@@ -36,32 +37,32 @@ FILE *proc_file_open(const pid_t pid, const char *file) {
         return fopen(path, "r");
 }
 
-proc_err_t proc_get_name(const pid_t pid, char *name) {
+proc_err_t proc_get_name(processus_t *proc) {
 	
-	if(!name) return NULLPTR_PARAMETER_ERROR;
-	
-	FILE *f = proc_file_open(pid, "comm");
+	if (!proc) return NULLPTR_PARAMETER_ERROR;
+
+	FILE *f = proc_file_open(proc->pid, "comm");
 
 	if (!f) return OPEN_FILE_FAILED;
 
-        if (!fgets(name, PROC_NAME_SIZE, f)) {
+        if (!fgets(proc->name, PROC_NAME_SIZE, f)) {
 		fclose(f);
 		return READ_FAILED;
 	}
 	
-	const int end_of_str = strcspn(name, "\n");
-	name[end_of_str] = '\0';
+	const int end_of_str = strcspn(proc->name, "\n");
+	proc->name[end_of_str] = '\0';
 
         fclose(f);
 
 	return SUCCESS;
 }
 
-proc_err_t proc_get_state(const pid_t pid, proc_state_t *state) {
+proc_err_t proc_get_state(processus_t *proc) {
 	
-	if (!state) return NULLPTR_PARAMETER_ERROR;
+	if (!proc) return NULLPTR_PARAMETER_ERROR;
 
-	FILE *f = proc_file_open(pid, "stat");
+	FILE *f = proc_file_open(proc->pid, "stat");
 
 	if (!f) return OPEN_FILE_FAILED; 
         
@@ -83,29 +84,34 @@ proc_err_t proc_get_state(const pid_t pid, proc_state_t *state) {
 	 * )		--> read the ')' character
 	 * %c		--> get the character
 	 */
+
 	const int ret = sscanf(buffer, "%*d (%*[^)]) %c", &temp);
 
 	if(ret != 1) return MALFORMED_STATUS_LINE; 
         
 	switch(temp) {
-		case 'R': *state = RUNNING;	break;
-		case 'S': *state = SLEEPING;	break;
-		case 'D': *state = DISK_SLEEP;	break;
-		case 'T': *state = STOPPED;	break;
-		case 't': *state = TRACED;	break;
-		case 'Z': *state = ZOMBIE;	break;
-		case 'X': *state = DEAD;	break;
-		default:  *state = UNKNOW;
+		case 'R': proc->state = RUNNING;	break;
+		case 'S': proc->state = SLEEPING;	break;
+		case 'D': proc->state = DISK_SLEEP;	break;
+		case 'Z': proc->state = ZOMBIE;		break;
+		case 'T': proc->state = STOPPED;	break;
+		case 't': proc->state = TRACED;		break;
+		case 'W': proc->state = WAKING;		break;	
+		case 'K': proc->state = WAKEKILL;	break;
+		case 'P': proc->state = PARKED;		break;  
+		case 'X': proc->state = DEAD;		break;
+		case 'x': proc->state = DEAD;		break;
+		default:  proc->state = UNKNOW;
 	}
 
     	return SUCCESS;
 }
 
-proc_err_t proc_get_user(const pid_t pid, char *username) {
+proc_err_t proc_get_user(processus_t *proc) {
     
-	if(!username) return NULLPTR_PARAMETER_ERROR;
+	if(!proc) return NULLPTR_PARAMETER_ERROR;
 	 
-	FILE *f = proc_file_open(pid, "status");
+	FILE *f = proc_file_open(proc->pid, "status");
 
     	if (!f) return OPEN_FILE_FAILED;
 
@@ -130,20 +136,20 @@ proc_err_t proc_get_user(const pid_t pid, char *username) {
 
 	if (!user_info) return USER_NOT_FOUND;
 
-	strncpy(username,user_info->pw_name,PROC_USERNAME_SIZE);
-	username[PROC_USERNAME_SIZE - 1] = '\0';
+	strncpy(proc->user,user_info->pw_name,PROC_USERNAME_SIZE);
+	proc->user[PROC_USERNAME_SIZE - 1] = '\0';
 
 	return SUCCESS;
 }
 
     
-proc_err_t proc_get_rss(const pid_t pid, long* rss) {
+proc_err_t proc_get_rss(processus_t *proc) {
 	
-	if(!rss) return NULLPTR_PARAMETER_ERROR;
+	if(!proc) return NULLPTR_PARAMETER_ERROR;
 
 	char line[200];
 
-	FILE *f = proc_file_open(pid, "statm");
+	FILE *f = proc_file_open(proc->pid, "statm");
 
 	if (!f) return OPEN_FILE_FAILED;
 
@@ -159,14 +165,16 @@ proc_err_t proc_get_rss(const pid_t pid, long* rss) {
 	if(sscanf(line,"%lu %ld", &_, &resident) != 2) return MALFORMED_STATUS_LINE;
 	
 	const long page_size = sysconf(_SC_PAGESIZE);
-	*rss = resident * page_size; 
-	
+	proc->ram_rss = resident * page_size; 
 	
 	return SUCCESS;
 }
 
-proc_err_t proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned long *stime) {
-	FILE *f = proc_file_open(pid, "stat");
+proc_err_t proc_get_cpu_time(processus_t *proc) {
+
+	if(!proc) return NULLPTR_PARAMETER_ERROR;
+
+	FILE *f = proc_file_open(proc->pid, "stat");
 	
 	if(!f) return OPEN_FILE_FAILED;
 
@@ -179,7 +187,7 @@ proc_err_t proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned lon
 
 	fclose(f);
 
-	sscanf(line, "%*d (%*[^)]) %*c %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu %lu", utime, stime);
+	sscanf(line, "%*d (%*[^)]) %*c %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu %lu", &proc->utime, &proc->stime);
 
 	return SUCCESS;
 }
@@ -187,26 +195,26 @@ proc_err_t proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned lon
 proc_err_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
-
-	proc_err_t ret = SUCCESS;
 	
 	proc->pid = pid;
 
-	ret = proc_get_name(pid, proc->name);
-	if(ret != SUCCESS) return ret;
-
-	ret = proc_get_state(pid, &(proc->state));
-	if(ret != SUCCESS) return ret;
+	typedef proc_err_t (*proc_getter_t)(processus_t *proc);
 	
-	ret = proc_get_user(pid, proc->user);
-	if(ret != SUCCESS) return ret;
+	proc_getter_t getters[] = { 
+	        proc_get_name, 
+		proc_get_state, 
+		proc_get_user, 
+		proc_get_rss, 
+		proc_get_cpu_time,
+		nullptr
+	};
 	
-	ret = proc_get_rss(pid, &(proc->ram_rss));
-	if(ret != SUCCESS) return ret;
+	for (int i = 0; getters[i] != NULL; ++i) {
+		proc_err_t err = getters[i](proc);
+		if (err != SUCCESS) return err;
+	}
 	
-	ret = proc_get_cpu_time(pid, &(proc->utime), &(proc->stime));
-	
-	return ret;
+	return SUCCESS;
 }
 
 list_t proc_list_get_by_pid(list_t head, const pid_t pid) {

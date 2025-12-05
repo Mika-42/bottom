@@ -19,13 +19,17 @@ typedef enum proc_err_t : int {
 	MEMORY_ALLOCATION_FAILED,
 } proc_err_t;
 
+// https://stackoverflow.com/questions/29991182/programmatically-read-all-the-processes-status-from-proc
 typedef enum proc_state_t : char {
 	RUNNING		= 'R',
 	SLEEPING	= 'S',
-	DISK_SLEEP	= 'D',
+	DISK_SLEEP	= 'D',	
+	ZOMBIE		= 'Z',
 	STOPPED		= 'T',
 	TRACED		= 't',
-	ZOMBIE		= 'Z',
+	WAKING		= 'W',
+	WAKEKILL	= 'K',
+	PARKED		= 'P',
 	DEAD		= 'X',
 	UNKNOW		= '\0',
 } proc_state_t;
@@ -49,11 +53,11 @@ typedef element_t* list_t;
 
 bool		str_is_numeric(const char *str);
 bool		proc_is_valid_pid(const char *pid);
-proc_err_t	proc_get_name(const pid_t pid, char *name);
-proc_err_t	proc_get_state(const pid_t pid, proc_state_t *state);
-proc_err_t	proc_get_user(const pid_t pid, char *username);
-proc_err_t	proc_get_rss(const pid_t pid, long* rss);
-proc_err_t	proc_get_cpu_time(const pid_t pid, unsigned long *utime, unsigned long *stime);
+proc_err_t	proc_get_name(processus_t *proc);
+proc_err_t	proc_get_state(processus_t *proc);
+proc_err_t	proc_get_user(processus_t *proc);
+proc_err_t	proc_get_rss(processus_t *proc);
+proc_err_t	proc_get_cpu_time(processus_t *proc);
 proc_err_t	proc_get_all_infos(const pid_t pid, processus_t *proc);
 
 list_t		proc_list_get_by_pid(list_t head, const pid_t pid);
