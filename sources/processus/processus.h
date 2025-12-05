@@ -2,22 +2,11 @@
 #define PROCESSUS_H
 
 #include <sys/types.h>
+#include "error.h"
 
 constexpr size_t PROC_NAME_SIZE = 32;
 constexpr size_t PROC_USERNAME_SIZE = 32;
 constexpr size_t PROC_PATH_SIZE = 4096;
-
-typedef enum proc_err_t : int {
-	SUCCESS,
-	GENERIC_ERROR,
-	NULLPTR_PARAMETER_ERROR,
-	OPEN_FILE_FAILED,
-	READ_FAILED,
-	MALFORMED_STATUS_LINE,
-	UID_NOT_FOUND,
-	USER_NOT_FOUND,
-	MEMORY_ALLOCATION_FAILED,
-} proc_err_t;
 
 // https://stackoverflow.com/questions/29991182/programmatically-read-all-the-processes-status-from-proc
 typedef enum proc_state_t : char {
