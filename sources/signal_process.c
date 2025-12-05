@@ -28,6 +28,7 @@ bool pid_exists(pid_t pid) {
 bool pid_does_not_exists(pid_t pid) {
 	return !pid_exists(pid);
 }
+
 int send_signal(processus_t *p, int sig){
 	int pidfd = syscall(SYS_pidfd_open, p->pid, 0);
 
