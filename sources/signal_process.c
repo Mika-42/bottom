@@ -10,9 +10,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
-#define MAX_SIZE_PATH 1024
-#define MAX_ARG 256
+constexpr size_t MAX_SIZE_PATH = 1024;
+constexpr size_t MAX_ARG = 256;
 
 bool pid_exists(pid_t pid) {
 	int pidfd = syscall(SYS_pidfd_open, pid, 0);
@@ -31,7 +32,7 @@ int send_signal(processus_t *p, int sig){
 	
 	int ret = syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0);
 	
-	close(pidfs);
+	close(pidfd);
 
 	return (ret < 0) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
