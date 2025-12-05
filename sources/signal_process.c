@@ -44,6 +44,8 @@ int get_exe(processus_t *p, char *exe_path, int size){
 	ssize_t len = readlink(proc_link, exe_path, size -1);
 	if (len < 0) return EXIT_FAILURE;
 	exe_path[len] = '\0';
+
+	//printf("path exe : %s", exe_path);
 	return EXIT_SUCCESS;
 }
 int get_arg(processus_t *p, char *argv[], int max_arg){
@@ -66,6 +68,9 @@ int get_arg(processus_t *p, char *argv[], int max_arg){
 		b += strlen(b) +1;
 	}
 	argv[argc] = NULL;
+	//for (int i = 0; i < argc ; ++i){
+	//printf("arg %d : %s", i, argv[i]);
+	//}
 	return EXIT_SUCCESS;
 }
 
@@ -82,8 +87,12 @@ int restart_process(processus_t *p){
 
 	pid_t new_pid = fork();
 	if (new_pid < 0) return EXIT_FAILURE;
-
+	
+	if (new_pid == 0){
 	execv(exe_path, argv);
-
+	exit(EXIT_FAILURE);
+	}
+	
+	p->pid = new_pid;
 	return EXIT_SUCCESS;
 }
