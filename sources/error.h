@@ -1,7 +1,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-typedef enum error_t : int {
+typedef enum error_code_t : int {
         SUCCESS,
         GENERIC_ERROR,
         NULLPTR_PARAMETER_ERROR,
@@ -11,6 +11,6 @@ typedef enum error_t : int {
         UID_NOT_FOUND,
         USER_NOT_FOUND,
         MEMORY_ALLOCATION_FAILED,
-} error_t;
+} error_code_t;
 
 #endif // ERROR_H
