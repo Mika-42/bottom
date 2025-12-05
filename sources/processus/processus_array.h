@@ -12,6 +12,8 @@ typedef int (*proc_compare_t)(const processus_t *, const processus_t *);
 
 processus_t *proc_array_get_last(processus_array_t *array);
 processus_t *proc_array_emplace_back(processus_array_t *array);
+void remove_if(processus_array_t *array, bool(*predicate)(pid_t));
+
 void proc_array_sort(processus_array_t *array, proc_compare_t cmp);
 
 int pid_asc(const processus_t *lhs, const processus_t *rhs);

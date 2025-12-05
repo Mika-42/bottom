@@ -4,7 +4,7 @@
 #include "processus.h"
 
 bool pid_exists(pid_t pid);
-bool pid_dont_exists(pid_t pid);
+bool pid_does_not_exists(pid_t pid);
 
 int kill_process(processus_t *p);
 
