@@ -25,15 +25,16 @@ processus_t *proc_array_emplace_back(processus_array_t *array) {
 
 void remove_if(processus_array_t *array, bool(*predicate)(processus_t*)) {
 	
-	size_t write_index = 0;
+	//iterators
+	processus_t *write = array->data;
+	processus_t *read = array->data;
+	processus_t *end = array->data + array->size;
 
-	for(size_t i = 0; i < array->size; ++i) {
-		processus_t *current = &(array->data[i]);
-		
-		///> Ici on écrase les valeurs à retirer avec les valeurs que l'on souhaite garder
-		if(!predicate(current)) array->data[write_index++] = *current;
+	for(; read != end; ++read) {
+		if(!predicate(read)) *write++ = *read;
 	}
-	array->size = write_index;
+
+	array->size = (size_t)(write - array->data);
 }
 
 void proc_array_sort(processus_array_t *array, proc_compare_t cmp) {
