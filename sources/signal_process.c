@@ -14,16 +14,22 @@
 #define MAX_SIZE_PATH 1024
 #define MAX_ARG 256
 
+bool pid_exists(pid_t pid)
+{
+	if(pid <= 0) return false;
+	if(kill
+}
+
 int send_signal(processus_t *p, int sig){
 	int pidfd = syscall(SYS_pidfd_open, p->pid, 0);
 
-	if (pidfd < 0){
-		return EXIT_FAILURE;
-	}
-	if (syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0) < 0){
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
+	if (pidfd < 0) return EXIT_FAILURE;
+	
+	int ret = syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0);
+	
+	close(pidfs);
+
+	return (ret < 0) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 int kill_process(processus_t *p){

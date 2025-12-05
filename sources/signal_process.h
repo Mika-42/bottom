@@ -3,6 +3,8 @@
 
 #include "processus.h"
 
+bool pid_exists(pid_t pid);
+
 int kill_process(processus_t *p);
 
 int stop_process(processus_t *p);
