@@ -11,19 +11,23 @@ processus_t *proc_array_emplace_back(processus_array_t *array) {
 
 	if(!array) return nullptr;
 
-	const size_t new_size = array->size + 1;
+	if(array->size >= array->capacity) {
+		const size_t new_capacity = array->capacity ? array->capacity * 2 : 1;
+		 
+		processus_t *temp = realloc(array->data, new_capacity * sizeof(*temp));
+		
+		if(!temp) return nullptr;
+		
+		array->data = temp;
+		array->capacity = new_capacity;
+	}
 
-	processus_t *temp = realloc(array->data, new_size * sizeof(*temp));
+	array->data[array->size++] = (processus_t){0};
 
-	if(!temp) return nullptr;
-	
-	array->data = temp;
-	array->size = new_size;
-	
 	return proc_array_get_last(array);	
 }
 
-void remove_if(processus_array_t *array, bool(*predicate)(processus_t*)) {
+void proc_array_remove_if(processus_array_t *array, bool(*predicate)(processus_t*)) {
 	
 	//iterators
 	processus_t *write = array->data;
