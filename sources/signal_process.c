@@ -14,10 +14,14 @@
 #define MAX_SIZE_PATH 1024
 #define MAX_ARG 256
 
-bool pid_exists(pid_t pid)
-{
-	if(pid <= 0) return false;
-	if(kill
+bool pid_exists(pid_t pid) {
+	int pidfd = syscall(SYS_pidfd_open, pid, 0);
+
+	if (pidfd < 0) return errno != ESRCH;
+	
+	close(pidfd); 
+	
+	return true;
 }
 
 int send_signal(processus_t *p, int sig){
