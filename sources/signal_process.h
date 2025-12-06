@@ -10,6 +10,8 @@ int kill_process(processus_t *p);
 
 int stop_process(processus_t *p);
 
+int cont_process(processus_t *p);
+
 int term_process(processus_t *p);
 
 int restart_process(processus_t *p);
