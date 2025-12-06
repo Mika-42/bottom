@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <pwd.h>
 #include <stdio.h>
-#include <dirent.h>
 #include <ctype.h>
 #include <string.h> 
 #include <stdlib.h>
@@ -101,6 +100,7 @@ error_code_t proc_get_state(processus_t *proc) {
 		case 'P': proc->state = PARKED;		break;  
 		case 'X': proc->state = DEAD;		break;
 		case 'x': proc->state = DEAD;		break;
+		case 'I': proc->state = IDLE;		break;
 		default:  proc->state = UNKNOW;
 	}
 
@@ -209,14 +209,14 @@ error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 		nullptr
 	};
 	
-	for (int i = 0; getters[i] != NULL; ++i) {
+	for (int i = 0; getters[i] != nullptr; ++i) {
 		error_code_t err = getters[i](proc);
 		if (err != SUCCESS) return err;
 	}
 	
 	return SUCCESS;
 }
-
+/*
 list_t proc_list_get_by_pid(list_t head, const pid_t pid) {
 	for(;head != nullptr && head->data.pid != pid; head = head->next);
 	return head;
@@ -279,4 +279,4 @@ error_code_t proc_update_list(const char* path, list_t *head) {
 	closedir(rep_proc);
 
 	return SUCCESS;
-}
+}*/

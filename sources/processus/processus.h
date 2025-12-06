@@ -20,6 +20,7 @@ typedef enum proc_state_t : char {
 	WAKEKILL	= 'K',
 	PARKED		= 'P',
 	DEAD		= 'X',
+	IDLE		= 'I',
 	UNKNOW		= '\0',
 } proc_state_t;
 
@@ -33,13 +34,6 @@ typedef struct processus_t {
     	unsigned long		stime;    // Temps CPU système
 } processus_t;
 
-typedef struct element_t {
-	processus_t data;
-	struct element_t *next;
-} element_t;
-
-typedef element_t* list_t;
-
 bool		str_is_numeric(const char *str);
 bool		proc_is_valid_pid(const char *pid);
 error_code_t	proc_get_name(processus_t *proc);
@@ -49,9 +43,9 @@ error_code_t	proc_get_rss(processus_t *proc);
 error_code_t	proc_get_cpu_time(processus_t *proc);
 error_code_t	proc_get_all_infos(const pid_t pid, processus_t *proc);
       
-list_t		proc_list_get_by_pid(list_t head, const pid_t pid);
-error_code_t	proc_list_push_front(list_t *head);
-void		proc_list_free(list_t *head);
-error_code_t	proc_update_list(const char* path, list_t *head);
+//list_t		proc_list_get_by_pid(list_t head, const pid_t pid);
+//error_code_t	proc_list_push_front(list_t *head);
+//void		proc_list_free(list_t *head);
+//error_code_t	proc_update_list(const char* path, list_t *head);
       
 #endif //PROCESSUS_H     

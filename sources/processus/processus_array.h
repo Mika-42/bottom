@@ -13,8 +13,13 @@ typedef int (*proc_compare_t)(const processus_t *, const processus_t *);
 
 processus_t *proc_array_get_last(processus_array_t *array);
 processus_t *proc_array_emplace_back(processus_array_t *array);
-void proc_array_remove_if(processus_array_t *array, bool(*predicate)(processus_t*));
 
+void proc_array_free(processus_array_t *array);
+
+error_code_t proc_array_update(const char* path, processus_array_t* array);
+
+processus_t *proc_array_find_by_pid(processus_array_t *restrict array, const pid_t pid);
+void proc_array_remove_if(processus_array_t *array, bool(*predicate)(processus_t*));
 void proc_array_sort(processus_array_t *array, proc_compare_t cmp);
 
 int pid_asc(const processus_t *lhs, const processus_t *rhs);

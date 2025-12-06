@@ -1,10 +1,11 @@
 #include "ui.h"
 
+#include <stdlib.h>
 #include <locale.h>
 
 static WINDOW *ui_pad = nullptr;
 
-static int ui_pad_lines = 200;
+static int ui_pad_lines = 8000;
 static int ui_pad_columns = 134;
 
 static int ui_scroll_x = 0;
@@ -57,29 +58,32 @@ const char* state_to_str(proc_state_t s)
 		case WAKEKILL:		return "WAKEKILL";
 		case PARKED:		return "PARKED";
 		case DEAD:		return "DEAD";	
+		case IDLE:		return "IDLE";
 		default:		return "UNKNOW";
 	}
 }
 
-void ui_show_proc(list_t l)
+void ui_show_proc(const processus_array_t *array)
 {
 	/*TEMP*/ werase(ui_pad);
-
+		
 	size_t i = 0;
         mvwprintw(ui_pad, i++, 0, "┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━┓");
         mvwprintw(ui_pad, i++, 0, "┃ PID        ┃ User                             ┃ Name                             ┃ State      ┃ RAM/RSS    ┃ CPU time   ┃ Time     ┃");
         mvwprintw(ui_pad, i++, 0, "┣━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━┫");
-	for(; l != nullptr; l = l->next)
+	
+	if(array) {
+	for(size_t j = 0; j < array->size; ++j)
 	{
         	mvwprintw(ui_pad, i++, 0, "┃ %-10d ┃ %-32s ┃ %-32s ┃ %-10s ┃ %-10ld ┃            ┃          ┃", 
-				l->data.pid, 
-				l->data.user, 
-				l->data.name,
-				state_to_str(l->data.state),
-				l->data.ram_rss
+				array->data[j].pid, 
+				array->data[j].user, 
+				array->data[j].name,
+				state_to_str(array->data[j].state),
+				array->data[j].ram_rss
 				);
 	}
-
+	}
 	mvwprintw(ui_pad, i++, 0, "┗━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━┛");
         
 	
@@ -92,7 +96,7 @@ void ui_show_proc(list_t l)
         doupdate();
 }
 
-void ui_scroll(const int dx, const int dy)
+void ui_scroll(const int dx, const int dy, const processus_array_t *array)
 {
 	int terminal_width = 0;
 	int terminal_height = 0;
@@ -102,9 +106,15 @@ void ui_scroll(const int dx, const int dy)
 	ui_scroll_x += dx;
 	ui_scroll_y += dy;
 
+
 	if(ui_scroll_y < 0) ui_scroll_y = 0;
-	
-	if(ui_scroll_y > ui_pad_lines - terminal_height) 
+
+
+	if(ui_scroll_y >= (int)array->size - terminal_height) {
+		ui_scroll_y = abs((int)array->size - (int)terminal_height) + 4;
+	}
+
+	else if(ui_scroll_y > ui_pad_lines - terminal_height) 
 	{
 		ui_scroll_y = ui_pad_lines - terminal_height;
 	}
@@ -116,5 +126,5 @@ void ui_scroll(const int dx, const int dy)
 	{
 		ui_scroll_x = ui_pad_columns - terminal_width;
 	}
-	
+		
 }
