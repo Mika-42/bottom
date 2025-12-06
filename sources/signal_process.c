@@ -29,7 +29,7 @@ bool pid_does_not_exists(pid_t pid) {
 	return !pid_exists(pid);
 }
 
-int send_signal(processus_t *p, int sig){
+int send_signal(processus_t *p, int sig) {
 	int pidfd = syscall(SYS_pidfd_open, p->pid, 0);
 
 	if (pidfd < 0) return EXIT_FAILURE;
@@ -41,19 +41,26 @@ int send_signal(processus_t *p, int sig){
 	return (ret < 0) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
-int kill_process(processus_t *p){
+int kill_process(processus_t *p) {
 	return send_signal(p, SIGKILL);
 }
 
-int stop_process(processus_t *p){
+int stop_process(processus_t *p) {
 	return send_signal(p, SIGSTOP);
 }
 
-int term_process(processus_t *p){
+int cont_process(processus_t *p) {
+	return send_signal(p, SIGCONT);
+}
+
+int term_process(processus_t *p) {
 	return send_signal(p, SIGTERM);
 }
 
-int get_exe(processus_t *p, char *exe_path, int size){
+int get_exe(processus_t *p, char *exe_path, int size);
+int get_arg(processus_t *p, char *argv[], int max_arg);
+
+int get_exe(processus_t *p, char *exe_path, int size) {
 	char proc_link[MAX_SIZE_PATH];
 	snprintf(proc_link, sizeof(proc_link), "/proc/%d/exe", p->pid);
 	ssize_t len = readlink(proc_link, exe_path, size -1);
@@ -63,7 +70,7 @@ int get_exe(processus_t *p, char *exe_path, int size){
 	//printf("path exe : %s", exe_path);
 	return EXIT_SUCCESS;
 }
-int get_arg(processus_t *p, char *argv[], int max_arg){
+int get_arg(processus_t *p, char *argv[], int max_arg) {
 	char path[MAX_SIZE_PATH];
 
 	snprintf(path, sizeof(path), "/proc/%d/cmdline", p->pid);
@@ -89,7 +96,7 @@ int get_arg(processus_t *p, char *argv[], int max_arg){
 	return EXIT_SUCCESS;
 }
 
-int restart_process(processus_t *p){
+int restart_process(processus_t *p) {
 	char exe_path[MAX_SIZE_PATH];
 	char *argv[MAX_ARG];
 
