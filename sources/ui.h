@@ -1,4 +1,4 @@
-#ifndef UI_H
+, const processus_array_t *arra*****y#ifndef UI_H
 #define UI_H
 
 #include "processus_array.h"

@@ -1,5 +1,8 @@
 ### Todo list
 
+**global**
++ check to remove unused include
+
 **processus**
 + check code format in .h/.c
 + create unit test for processus
@@ -7,3 +10,6 @@
 + add doxygen comment
 + check get state 
 
+**ui**
++ select a proc
++ show CPU Time etc...

@@ -42,10 +42,5 @@ error_code_t	proc_get_user(processus_t *proc);
 error_code_t	proc_get_rss(processus_t *proc);
 error_code_t	proc_get_cpu_time(processus_t *proc);
 error_code_t	proc_get_all_infos(const pid_t pid, processus_t *proc);
-      
-//list_t		proc_list_get_by_pid(list_t head, const pid_t pid);
-//error_code_t	proc_list_push_front(list_t *head);
-//void		proc_list_free(list_t *head);
-//error_code_t	proc_update_list(const char* path, list_t *head);
-      
+       
 #endif //PROCESSUS_H     
