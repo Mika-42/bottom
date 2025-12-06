@@ -1,0 +1,15 @@
+#include "processus.h"
+
+int process_to_string(const processus_t *proc, char *buffer, size_t max_size) {
+
+  int recup = snprintf(buffer, max_size, 
+        "%d|%s|%d|%s|%ld|%lu|%lu\n", 
+        proc->pid,          
+        proc->name,         
+        proc->state,        
+        proc->user,         
+        proc->ram_rss,      
+        proc->utime,        
+        proc->stime         
+    );
+}
