@@ -30,8 +30,8 @@ typedef struct processus_t {
 	proc_state_t		state;
 	long			ram_rss;
 	char			user[PROC_USERNAME_SIZE];
-    	unsigned long		utime;    // Temps CPU utilisateur
-    	unsigned long		stime;    // Temps CPU système
+	unsigned long		utime;    // Temps CPU utilisateur
+	unsigned long		stime;    // Temps CPU système
 } processus_t;
 
 bool		str_is_numeric(const char *str);
@@ -42,5 +42,5 @@ error_code_t	proc_get_user(processus_t *proc);
 error_code_t	proc_get_rss(processus_t *proc);
 error_code_t	proc_get_cpu_time(processus_t *proc);
 error_code_t	proc_get_all_infos(const pid_t pid, processus_t *proc);
-       
+
 #endif //PROCESSUS_H     

@@ -10,27 +10,25 @@ typedef struct processus_array_t {
 } processus_array_t;
 
 typedef int (*proc_compare_t)(const processus_t *, const processus_t *);
+typedef bool(*proc_predicate_t)(processus_t*);
 
-processus_t *proc_array_get_last(processus_array_t *array);
-processus_t *proc_array_emplace_back(processus_array_t *array);
+processus_t	*proc_array_get_last(processus_array_t *array);
+processus_t	*proc_array_emplace_back(processus_array_t *array);
+void		proc_array_free(processus_array_t *array);
+error_code_t	proc_array_update(const char* path, processus_array_t* array);
+processus_t	*proc_array_find_by_pid(processus_array_t *array, const pid_t pid);
+void		proc_array_remove_if(processus_array_t *array, proc_predicate_t pred);
 
-void proc_array_free(processus_array_t *array);
-
-error_code_t proc_array_update(const char* path, processus_array_t* array);
-
-processus_t *proc_array_find_by_pid(processus_array_t *restrict array, const pid_t pid);
-void proc_array_remove_if(processus_array_t *array, bool(*predicate)(processus_t*));
-void proc_array_sort(processus_array_t *array, proc_compare_t cmp);
-
-int pid_asc(const processus_t *lhs, const processus_t *rhs);
-int pid_dsc(const processus_t *lhs, const processus_t *rhs);
-int state_asc(const processus_t *lhs, const processus_t *rhs);
-int state_dsc(const processus_t *lhs, const processus_t *rhs);
-int rss_asc(const processus_t *lhs, const processus_t *rhs);
-int rss_dsc(const processus_t *lhs, const processus_t *rhs);
-int name_asc(const processus_t *lhs, const processus_t *rhs);
-int name_dsc(const processus_t *lhs, const processus_t *rhs);
-int user_asc(const processus_t *lhs, const processus_t *rhs);
-int user_dsc(const processus_t *lhs, const processus_t *rhs);
+void		proc_array_sort(processus_array_t *array, proc_compare_t cmp);
+int		pid_asc(const processus_t *lhs, const processus_t *rhs);
+int		pid_dsc(const processus_t *lhs, const processus_t *rhs);
+int		state_asc(const processus_t *lhs, const processus_t *rhs);
+int		state_dsc(const processus_t *lhs, const processus_t *rhs);
+int		rss_asc(const processus_t *lhs, const processus_t *rhs);
+int		rss_dsc(const processus_t *lhs, const processus_t *rhs);
+int		name_asc(const processus_t *lhs, const processus_t *rhs);
+int		name_dsc(const processus_t *lhs, const processus_t *rhs);
+int		user_asc(const processus_t *lhs, const processus_t *rhs);
+int		user_dsc(const processus_t *lhs, const processus_t *rhs);
 
 #endif //PROCESSUS_ARRAY_H

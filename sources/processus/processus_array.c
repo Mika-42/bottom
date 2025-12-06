@@ -102,7 +102,7 @@ processus_t *proc_array_find_by_pid(processus_array_t *array, const pid_t pid) {
 	return nullptr;
 }
 
-void proc_array_remove_if(processus_array_t *array, bool(*predicate)(processus_t*)) {
+void proc_array_remove_if(processus_array_t *array, proc_predicate_t pred) {
 
 	//iterators
 	processus_t *write = array->data;
@@ -110,7 +110,7 @@ void proc_array_remove_if(processus_array_t *array, bool(*predicate)(processus_t
 	processus_t *end = array->data + array->size;
 
 	for(; read != end; ++read) {
-		if(!predicate(read)) *write++ = *read;
+		if(!pred(read)) *write++ = *read;
 	}
 
 	array->size = (size_t)(write - array->data);

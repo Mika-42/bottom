@@ -13,9 +13,8 @@ bool str_is_numeric(const char *str) {
 	if(*str == '-') ++str;
 
 	while (*str) {
-		if(!isdigit((unsigned char)(*str))) {
-			return false;
-		}
+		if(!isdigit((unsigned char)(*str))) return false;
+		
 		++str;
 	}
 
@@ -27,6 +26,7 @@ bool proc_is_valid_pid(const char *pid) {
 }
 
 FILE *proc_file_open(const pid_t pid, const char *file) {
+	
 	if(!file) return nullptr;
 
 	char path[PROC_PATH_SIZE];
