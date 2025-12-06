@@ -35,8 +35,8 @@ void ui_init()
 {
 	setlocale(LC_ALL,"");
 	initscr();
-	start_color();
-        use_default_colors();
+//	start_color();
+//        use_default_colors();
         noecho();
         cbreak();
         keypad(stdscr, TRUE);
@@ -91,18 +91,20 @@ const char* state_to_str(proc_state_t s)
 	}
 }
 
-void ui_show_proc(const processus_array_t *array)
+void ui_show_proc(const processus_array_t *array, const size_t selected)
 {
 	/*TEMP*/ werase(ui_pad);
 		
 	if(array) {
 		for(size_t i = 0; i < array->size; ++i)
 		{
+			if(i == selected) wattron(ui_pad, A_REVERSE);
        	 		mvwprintw(ui_pad, i, 0, separator, 
 					array->data[i].pid, array->data[i].user, 
 					array->data[i].name, state_to_str(array->data[i].state),
 					array->data[i].ram_rss
 					);
+			if(i == selected) wattroff(ui_pad, A_REVERSE);
 		}
 	}
 }
