@@ -35,8 +35,6 @@ void ui_init()
 {
 	setlocale(LC_ALL,"");
 	initscr();
-//	start_color();
-//        use_default_colors();
         noecho();
         cbreak();
         keypad(stdscr, TRUE);
@@ -128,7 +126,11 @@ void update(const size_t size) {
 	doupdate();
 }
 
-void ui_scroll(const int dx, const int dy)
+void constrain_strict(int *value, const int min, const int max) {
+	 *value = (*value < min) ? min : (*value > max) ? max : *value;
+}
+
+void ui_scroll(const int dx, const int, const size_t selected)
 {
 	int terminal_width = 0;
 	int terminal_height = 0;
@@ -136,21 +138,16 @@ void ui_scroll(const int dx, const int dy)
 	getmaxyx(stdscr, terminal_height, terminal_width);
 		
 	ui_scroll_x += dx;
-	ui_scroll_y += dy;
-
-	if(ui_scroll_y < 0) ui_scroll_y = 0;
-
-	else if(ui_scroll_y > ui_pad_lines - terminal_height) 
-	{
-		ui_scroll_y = ui_pad_lines - terminal_height;
-	}
-
-
-	if(ui_scroll_x < 0) ui_scroll_x = 0;
-  
-	if(ui_scroll_x > ui_pad_columns - terminal_width) 
-	{
-		ui_scroll_x = ui_pad_columns - terminal_width;
-	}
+	constrain_strict(&ui_scroll_x, 0, ui_pad_columns - terminal_width);
 		
+	//ui_scroll_y += dy;
+	const int view_height = terminal_height - ui_header_lines - ui_footer_lines;
+	const int hi = ui_scroll_y;
+	const int lo = hi + view_height - 1;
+	
+	if((int)selected < hi) ui_scroll_y = selected;
+	else if((int)selected > lo) ui_scroll_y = selected - view_height + 1;
+
+	constrain_strict(&ui_scroll_y, 0,  ui_pad_lines - view_height);
+
 }

@@ -12,7 +12,7 @@ void ui_show_tab_header();
 
 
 void update(const size_t size);
-void ui_scroll(const int dx, const int dy);
+void ui_scroll(const int dx, const int dy, const size_t selected);
 
 
 #endif //UI_H

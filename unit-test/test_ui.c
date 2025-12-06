@@ -32,17 +32,16 @@ int main()
 		switch(getch())
 		{
 			case '\n': endwin(); return 0;
-			case KEY_LEFT: ui_scroll(-scroll_factor, 0); break;
-			case KEY_RIGHT: ui_scroll(scroll_factor, 0); break;
+			case KEY_LEFT: ui_scroll(-scroll_factor, 0, selected); break;
+			case KEY_RIGHT: ui_scroll(scroll_factor, 0, selected); break;
 			case KEY_UP: 
-					if(selected > 0) --selected; 
-			
-				// ui_scroll(0, -scroll_factor); 
+					if(selected > 0) --selected; 	
+					ui_scroll(0, -scroll_factor, selected); 
 					break;
 			case KEY_DOWN: 
 			
 					selected = min(l.size, ++selected); 
-					if(selected >= 36 /*terminal height*/) 	ui_scroll(0, scroll_factor); 
+					ui_scroll(0, scroll_factor, selected); 
 					break;
 		}
 
