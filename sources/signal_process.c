@@ -125,9 +125,9 @@ int get_env(processus_t *p, char *envp[], int max_env) {
 int restart_process(processus_t *p) {
 
 	if (pid_does_not_exists(p->pid)) {
-        	printf( "Erreur : Le processus avec PID %d n'existe pas.\n", p->pid);
-       		return EXIT_FAILURE;
-        }
+		printf( "Erreur : Le processus avec PID %d n'existe pas.\n", p->pid);
+		return EXIT_FAILURE;
+	}
        	
 	char exe_path[MAX_SIZE_PATH];
 	char *argv[MAX_ARG];
@@ -154,16 +154,16 @@ int restart_process(processus_t *p) {
 	
 	int timeout_ms = 5000;
 	int waited = 0;
-    	while (pid_exists(p->pid) && waited < timeout_ms) {
-        	usleep(10000);
+	while (pid_exists(p->pid) && waited < timeout_ms) {
+		usleep(10000);
 		waited += 10;
-    	}
+	}
 	if (pid_exists(p->pid)) {
-           	printf("Erreur : Le processus %d ne s'est pas terminé dans le délai.\n", p->pid);
-           	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
+		printf("Erreur : Le processus %d ne s'est pas terminé dans le délai.\n", p->pid);
+		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
 		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
-       		return EXIT_FAILURE;
-       	}
+		return EXIT_FAILURE;
+	}
 
 	pid_t new_pid = fork();
 	if (new_pid < 0) {
@@ -172,10 +172,9 @@ int restart_process(processus_t *p) {
 		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
-	if (new_pid == 0) {
-		
+	if (new_pid == 0) {		
 		execve(exe_path, argv, envp);
-    		printf("Child: errno=%d\n", errno);
+		printf("Child: errno=%d\n", errno);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -184,9 +183,8 @@ int restart_process(processus_t *p) {
 	for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 	usleep(100000);
 	if (pid_does_not_exists(p->pid)) {
-               	printf("Erreur : Le nouveau processus %d s'est terminé immédiatement.\n", new_pid);
-               	return EXIT_FAILURE;
-           	
-       	}
+		printf("Erreur : Le nouveau processus %d s'est terminé immédiatement.\n", new_pid);
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }
