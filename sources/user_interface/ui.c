@@ -4,6 +4,8 @@
 #include <locale.h>
 #include <limits.h>
 
+constexpr size_t header_element_count = 7;
+
 static WINDOW *ui_pad = nullptr;
 static WINDOW *ui_footer = nullptr;
 static WINDOW *ui_header = nullptr;
@@ -11,8 +13,8 @@ static WINDOW *ui_header = nullptr;
 static int ui_pad_lines = 5000;
 static int ui_pad_columns = 134;
 
-static int ui_footer_lines = 3;
-static int ui_header_lines = 3;
+constexpr int ui_footer_lines = 3;
+constexpr int ui_header_lines = 3;
 
 static int ui_scroll_x = 0;
 static int ui_scroll_y = 0;
@@ -25,7 +27,7 @@ const char *proc_array_function_command[] = {
 
 const char *proc_array_tab_header[] = {
         "┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━┓",
-        "┃ PID        ┃ User                             ┃ Name                             ┃ State      ┃ RAM/RSS    ┃ CPU usage  ┃ Time     ┃",
+        "┃ PID      %s ┃ User                           %s ┃ Name                           %s ┃ State    %s ┃ RAM/RSS  %s ┃ CPU      %s ┃ Time   %s ┃",
         "┣━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━┫",
 };
 
@@ -59,13 +61,16 @@ void ui_show_fn_cmd()
 	wrefresh(ui_footer);
 }
 
-void ui_show_tab_header()
+void ui_show_tab_header(const size_t header_selected, const bool asc)
 {
 	werase(ui_header);
 	box(ui_header, 0, 0);
 
-        mvwprintw(ui_header, 0, 0, proc_array_tab_header[0]);
-        mvwprintw(ui_header, 1, 0, proc_array_tab_header[1]);
+	char* arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
+	if(header_selected < header_element_count) arrow[header_selected] = asc ? "▲" : "▼";
+        
+	mvwprintw(ui_header, 0, 0, proc_array_tab_header[0]);
+        mvwprintw(ui_header, 1, 0, proc_array_tab_header[1], arrow[0],arrow[1],arrow[2],arrow[3],arrow[4],arrow[5],arrow[6]);
         mvwprintw(ui_header, 2, 0, proc_array_tab_header[2]);
 
 	wrefresh(ui_header);
