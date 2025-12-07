@@ -15,6 +15,5 @@
 + implement F[1-8]
 + show CPU usage in percent
 + show execution timeé
-+ sort CPU & time
++ sort CPU
 + fix CPU usage 
-+ fix RAM

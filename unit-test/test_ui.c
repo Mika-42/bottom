@@ -21,12 +21,13 @@ void sort_dispatcher(processus_array_t* array, const size_t header_selected, con
 
 	switch(header_selected)
 	{
-		case 0:  cmp = asc ? pid_asc : pid_dsc; break;
-		case 1:  cmp = asc ? user_asc : user_dsc; break;
-		case 2:  cmp = asc ? name_asc : name_dsc; break;
-		case 3:  cmp = asc ? state_asc : state_dsc; break;
-		case 4:  cmp = asc ? ram_asc : ram_dsc; break;
-		//todo 5 - 6	
+		case 0: cmp = asc ? pid_asc : pid_dsc; break;
+		case 1: cmp = asc ? user_asc : user_dsc; break;
+		case 2: cmp = asc ? name_asc : name_dsc; break;
+		case 3: cmp = asc ? state_asc : state_dsc; break;
+		case 4: cmp = asc ? ram_asc : ram_dsc; break;
+		//todo 5 
+		case 6:	cmp = asc ? time_asc : time_dsc; break;
 	}
 
 	proc_array_sort(array, cmp);

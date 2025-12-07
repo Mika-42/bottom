@@ -31,5 +31,7 @@ int		name_asc(const processus_t *lhs, const processus_t *rhs);
 int		name_dsc(const processus_t *lhs, const processus_t *rhs);
 int		user_asc(const processus_t *lhs, const processus_t *rhs);
 int		user_dsc(const processus_t *lhs, const processus_t *rhs);
+int		time_asc(const processus_t *lhs, const processus_t *rhs);
+int		time_dsc(const processus_t *lhs, const processus_t *rhs);
 
 #endif //PROCESSUS_ARRAY_H

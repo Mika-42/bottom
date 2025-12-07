@@ -133,19 +133,19 @@ int pid_dsc(const processus_t *lhs, const processus_t *rhs) {
 }
 
 int state_asc(const processus_t *lhs, const processus_t *rhs) {
-	return lhs->state - rhs->state;
+	return (lhs->state > rhs->state) - (lhs->state < rhs->state);
 }
 
 int state_dsc(const processus_t *lhs, const processus_t *rhs) {
-	return rhs->state - lhs->state;
+	return (lhs->state < rhs->state) - (lhs->state > rhs->state);
 }
 
 int ram_asc(const processus_t *lhs, const processus_t *rhs) {
-	return lhs->ram - rhs->ram;
+	return (lhs->ram > rhs->ram) - (lhs->ram < rhs->ram);
 }
 
 int ram_dsc(const processus_t *lhs, const processus_t *rhs) {
-	return rhs->ram - lhs->ram;
+	return (lhs->ram < rhs->ram) - (lhs->ram > rhs->ram);
 }
 
 int name_asc(const processus_t *lhs, const processus_t *rhs) {
@@ -160,4 +160,11 @@ int user_asc(const processus_t *lhs, const processus_t *rhs) {
 }
 int user_dsc(const processus_t *lhs, const processus_t *rhs) {
 	return strcmp(rhs->user, lhs->user);
+}
+
+int time_asc(const processus_t *lhs, const processus_t *rhs) {
+	return (lhs->start_time < rhs->start_time) - (lhs->start_time > rhs->start_time);
+}
+int time_dsc(const processus_t *lhs, const processus_t *rhs) {
+	return (lhs->start_time > rhs->start_time) - (lhs->start_time < rhs->start_time);
 }
