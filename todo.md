@@ -11,5 +11,7 @@
 + check get state 
 
 **ui**
-+ select a proc
-+ show CPU Time and CPU percent etc...
++ implement F[1-8]
++ improve RAM/RSS format
++ show CPU usage in percent
++ show execution timeé

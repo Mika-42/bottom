@@ -31,7 +31,7 @@ const char *proc_array_tab_header[] = {
         "┣━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━┫",
 };
 
-const char* separator = "┃ %-10d ┃ %-32s ┃ %-32s ┃ %-10s ┃ %-10ld ┃            ┃          ┃";
+const char* separator = "┃ %-10d ┃ %-32s ┃ %-32s ┃ %-10s ┃ %-10s ┃            ┃          ┃";
 
 void ui_init()
 {
@@ -94,6 +94,20 @@ const char* state_to_str(proc_state_t s)
 	}
 }
 
+void format_mem(long rss_bytes, char *out, size_t out_size)
+{
+    const char *units[] = {"B", "KiB", "MiB", "GiB", "TiB"};
+    double value = (double)rss_bytes;
+    int i = 0;
+
+    while (value >= 1024.0 && i < 4) {
+        value /= 1024.0;
+        i++;
+    }
+
+    snprintf(out, out_size, "%.1f %s", value, units[i]);
+}
+
 void ui_show_proc(const processus_array_t *array, const size_t selected)
 {
 	/*TEMP*/ werase(ui_pad);
@@ -101,11 +115,14 @@ void ui_show_proc(const processus_array_t *array, const size_t selected)
 	if(array) {
 		for(size_t i = 0; i < array->size; ++i)
 		{
+			char rss_formated[16];
+			format_mem(array->data[i].ram_rss, rss_formated, sizeof(rss_formated));
+
 			if(i == selected) wattron(ui_pad, A_REVERSE);
        	 		mvwprintw(ui_pad, i, 0, separator, 
 					array->data[i].pid, array->data[i].user, 
 					array->data[i].name, state_to_str(array->data[i].state),
-					array->data[i].ram_rss
+					rss_formated
 					);
 			if(i == selected) wattroff(ui_pad, A_REVERSE);
 		}
