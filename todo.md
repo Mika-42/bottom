@@ -12,8 +12,10 @@
 + check all sscanf
 
 **ui**
-+ implement F[1-8]
++ implement F1
++ implement later F2 - F3
++ add typiying text for search bar
++ add filter alogrithm to get proc that match with name
 + show CPU usage in percent
-+ show execution timeé
 + sort CPU
 + fix CPU usage 

@@ -62,7 +62,7 @@ int main()
 		ui_show_proc(&l, selected);
 
 		const int ch = getch();	
-	
+
 		if(ch == KEY_F(9)) {
 			endwin();
 			return 0;
@@ -76,24 +76,27 @@ int main()
 		} else {
 			ui_show_fn_cmd();
 			switch(ch) {
-				case KEY_F(4): search_mode = true; break;	
-				case '\t':
-					       header_selected = (header_selected + 1) % header_element_count; break;
-				case '\n': asc = !asc; break;
-
-				case KEY_LEFT: ui_scroll(-scroll_factor, 0, selected); break;
-				case KEY_RIGHT: ui_scroll(scroll_factor, 0, selected); break;
-				case KEY_UP: 
-						if(selected > 0) --selected; 	
-						ui_scroll(0, -scroll_factor, selected); 
-						break;
-				case KEY_DOWN: 
-
-						selected = min(l.size, ++selected); 
-						ui_scroll(0, scroll_factor, selected); 
-						break;
+				case KEY_F(4): search_mode = true; break;
 			}
 		}
+		switch(ch) {
+			case '\t':
+				header_selected = (header_selected + 1) % header_element_count; break;
+			case '\n': asc = !asc; break;
+
+			case KEY_LEFT: ui_scroll(-scroll_factor, 0, selected); break;
+			case KEY_RIGHT: ui_scroll(scroll_factor, 0, selected); break;
+			case KEY_UP: 
+					if(selected > 0) --selected; 	
+					ui_scroll(0, -scroll_factor, selected); 
+					break;
+			case KEY_DOWN: 
+
+					selected = min(l.size, ++selected); 
+					ui_scroll(0, scroll_factor, selected); 
+					break;
+		}
+
 		update(l.size);	
 	}
 
