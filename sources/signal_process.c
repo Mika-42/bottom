@@ -57,9 +57,11 @@ int term_process(processus_t *p) {
 	return send_signal(p, SIGTERM);
 }
 
+//Déclaration des fonctions utile pour la fonction restart_process()
 int get_exe(processus_t *p, char *exe_path, int size);
 int get_arg(processus_t *p, char *argv[], int max_arg);
 int get_env(processus_t *p, char *envp[], int max_env);
+int kill_children(processus_t *p);
 
 int get_exe(processus_t *p, char *exe_path, int size) {
 	char proc_link[MAX_SIZE_PATH];
@@ -72,7 +74,6 @@ int get_exe(processus_t *p, char *exe_path, int size) {
 }
 int get_arg(processus_t *p, char *argv[], int max_arg) {
 	char path[MAX_SIZE_PATH];
-
 	snprintf(path, sizeof(path), "/proc/%d/cmdline", p->pid);
 	int fd = open(path, O_RDONLY);
 	if (fd < 0) return EXIT_FAILURE;
@@ -99,111 +100,104 @@ int get_arg(processus_t *p, char *argv[], int max_arg) {
 }
 
 int get_env(processus_t *p, char *envp[], int max_env) {
-    	char path[MAX_SIZE_PATH];
-   	
+	char path[MAX_SIZE_PATH];
 	snprintf(path, sizeof(path), "/proc/%d/environ", p->pid);
-    	int fd = open(path, O_RDONLY);
-    	if (fd < 0) return EXIT_FAILURE;
+	int fd = open(path, O_RDONLY);
+	if (fd < 0) return EXIT_FAILURE;
 
-    	char buffer[8192];
-    	ssize_t n = read(fd, buffer, sizeof(buffer) - 1);
-    	close(fd);
-    	if (n <= 0) return EXIT_FAILURE;
+	char buffer[8192];
+	ssize_t n = read(fd, buffer, sizeof(buffer) - 1);
+	close(fd);
+	if (n <= 0) return EXIT_FAILURE;
 	buffer[n] = '\0';
 
-    	int count = 0;
-    	char *b = buffer;
-    	while (b < buffer + n && count < max_env - 1) {
-        	envp[count] = strdup(b);
-        	b += strlen(b) + 1;
-    	}
-    	envp[count] = NULL;
-    	return EXIT_SUCCESS;
+	int count = 0;
+	char *b = buffer;
+	while (b < buffer + n && count < max_env - 1) {
+		envp[count++] = strdup(b);
+		b += strlen(b) + 1;
+	}
+	envp[count] = NULL;
+	return EXIT_SUCCESS;
+}
+
+int kill_children(processus_t *p) {
+	char path[MAX_SIZE_PATH];
+	snprintf(path, sizeof(path), "/proc/%d/task/%d/children", p->pid, p->pid);
+	FILE *f = fopen(path, "r");
+	if (!f) return EXIT_FAILURE;
+
+	pid_t child;
+	while(fscanf(f, "%d", &child) == 1) {
+		int pidfd = syscall(SYS_pidfd_open, child, 0);
+		if (pidfd < 0) continue;
+		syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
+		close(pidfd);
+	}
+	fclose(f);
+
+	return EXIT_SUCCESS;
 }
 
 
 int restart_process(processus_t *p) {
-
-	if (kill(p->pid, 0) == -1) {
-        	if (errno == ESRCH) {
-               		printf( "Erreur : Le processus avec PID %d n'existe pas.\n", p->pid);
-               		return EXIT_FAILURE;
-           	} else {
-               		printf("Erreur lors de la vérification du processus");
-               		return EXIT_FAILURE;
-           	}
-       	}
+	if (pid_does_not_exists(p->pid)) {
+		return EXIT_FAILURE;
+	}
+       	
 	char exe_path[MAX_SIZE_PATH];
 	char *argv[MAX_ARG];
-	//char *envp[MAX_ARG];
+	char *envp[MAX_ARG];
 
 	if (get_exe(p, exe_path, sizeof(exe_path)) != EXIT_SUCCESS) {
-		printf( "Erreur : Impossible de récupérer le chemin de l'exécutable pour PID %d.\n", p->pid);
 		return EXIT_FAILURE;
 	}
 	if (get_arg(p, argv, MAX_ARG) != EXIT_SUCCESS) {
-		printf( "Erreur : Impossible de récupérer les arguments pour PID %d.\n", p->pid);
+		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
-	//if (get_env(p, envp, MAX_ARG) != EXIT_SUCCESS) {
-	//	printf("Erreur : Impossible de récupérer l'environnement pour PID %d.\n", p->pid);
-	//	return EXIT_FAILURE;
-	//}
-	printf("exe path : %s\n", exe_path);
-	for (int i = 0; argv[i] != NULL; ++i) printf("arg n°%d: %s\n", i, argv[i]);
-	//for (int i = 0; envp[i] != NULL; ++i) printf("env n°%d: %s\n", i, envp[i]);
-	if (term_process(p) != EXIT_SUCCESS) {
+	if (get_env(p, envp, MAX_ARG) != EXIT_SUCCESS) {
 		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		return EXIT_FAILURE;
+	}
+
+	if (kill_children(p) != EXIT_SUCCESS || term_process(p) != EXIT_SUCCESS) {
+		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 	
 	int timeout_ms = 5000;
 	int waited = 0;
-    	while (kill(p->pid, 0) == 0 && waited < timeout_ms) {
-        	usleep(10000);
+	while (pid_exists(p->pid) && waited < timeout_ms) {
+		usleep(10000);
 		waited += 10;
-    	}
-	if (kill(p->pid, 0) == 0) {
-           	printf("Erreur : Le processus %d ne s'est pas terminé dans le délai.\n", p->pid);
-           	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
-       		return EXIT_FAILURE;
-       	}
-
-    	if (errno != ESRCH) {
-        	perror("Erreur lors de l'attente de la fin du processus");
-        	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
-        	return EXIT_FAILURE;
-    	}
+	}
+	if (pid_exists(p->pid)) {
+		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		return EXIT_FAILURE;
+	}
 
 	pid_t new_pid = fork();
 	if (new_pid < 0) {
-		printf("Fork failed");
 		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
-	if (new_pid == 0) {
-		//remplacer par excve(exepath, argv, envp) pour l'environnement
-		execv(exe_path, argv);
-    		printf("Child: errno=%d\n", errno);
+	if (new_pid == 0) {		
+		execve(exe_path, argv, envp);
 		exit(EXIT_FAILURE);
 	}
 	
 	p->pid = new_pid;
 	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-	//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+	for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 	usleep(100000);
-	if (kill(new_pid, 0) == -1) {
-           	if (errno == ESRCH) {
-               		printf("Erreur : Le nouveau processus %d s'est terminé immédiatement.\n", new_pid);
-               		return EXIT_FAILURE;
-           	} else {
-               		printf("Erreur lors de la vérification du nouveau processus");
-               		return EXIT_FAILURE;
-           	}
-       	}
+	if (pid_does_not_exists(p->pid)) {
+		return EXIT_FAILURE;
+	}
 	return EXIT_SUCCESS;
 }
