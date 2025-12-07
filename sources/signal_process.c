@@ -114,7 +114,7 @@ int get_env(processus_t *p, char *envp[], int max_env) {
     	int count = 0;
     	char *b = buffer;
     	while (b < buffer + n && count < max_env - 1) {
-        	envp[count] = strdup(b);
+        	envp[count++] = strdup(b);
         	b += strlen(b) + 1;
     	}
     	envp[count] = NULL;
@@ -135,7 +135,7 @@ int restart_process(processus_t *p) {
        	}
 	char exe_path[MAX_SIZE_PATH];
 	char *argv[MAX_ARG];
-	//char *envp[MAX_ARG];
+	char *envp[MAX_ARG];
 
 	if (get_exe(p, exe_path, sizeof(exe_path)) != EXIT_SUCCESS) {
 		printf( "Erreur : Impossible de récupérer le chemin de l'exécutable pour PID %d.\n", p->pid);
@@ -145,16 +145,14 @@ int restart_process(processus_t *p) {
 		printf( "Erreur : Impossible de récupérer les arguments pour PID %d.\n", p->pid);
 		return EXIT_FAILURE;
 	}
-	//if (get_env(p, envp, MAX_ARG) != EXIT_SUCCESS) {
-	//	printf("Erreur : Impossible de récupérer l'environnement pour PID %d.\n", p->pid);
-	//	return EXIT_FAILURE;
-	//}
-	printf("exe path : %s\n", exe_path);
-	for (int i = 0; argv[i] != NULL; ++i) printf("arg n°%d: %s\n", i, argv[i]);
-	//for (int i = 0; envp[i] != NULL; ++i) printf("env n°%d: %s\n", i, envp[i]);
+	if (get_env(p, envp, MAX_ARG) != EXIT_SUCCESS) {
+		printf("Erreur : Impossible de récupérer l'environnement pour PID %d.\n", p->pid);
+		return EXIT_FAILURE;
+	}
+
 	if (term_process(p) != EXIT_SUCCESS) {
 		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 	
@@ -167,14 +165,14 @@ int restart_process(processus_t *p) {
 	if (kill(p->pid, 0) == 0) {
            	printf("Erreur : Le processus %d ne s'est pas terminé dans le délai.\n", p->pid);
            	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
        		return EXIT_FAILURE;
        	}
 
     	if (errno != ESRCH) {
         	perror("Erreur lors de l'attente de la fin du processus");
         	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
         	return EXIT_FAILURE;
     	}
 
@@ -182,19 +180,19 @@ int restart_process(processus_t *p) {
 	if (new_pid < 0) {
 		printf("Fork failed");
 		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 	if (new_pid == 0) {
-		//remplacer par excve(exepath, argv, envp) pour l'environnement
-		execv(exe_path, argv);
+		
+		execve(exe_path, argv, envp);
     		printf("Child: errno=%d\n", errno);
 		exit(EXIT_FAILURE);
 	}
 	
 	p->pid = new_pid;
 	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-	//for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+	for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 	usleep(100000);
 	if (kill(new_pid, 0) == -1) {
            	if (errno == ESRCH) {
