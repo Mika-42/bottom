@@ -26,6 +26,12 @@ const char *proc_array_function_command[] = {
 	"┗━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
+const char *proc_array_search_bar[] = {
+	"┣━━━━━━━━━━━━┻┳━━━━━━━━━━━━┳━━━━━━━━━━━┳┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
+	"┃ [F1] cancel ┃ [F2] Prev  ┃ [F3] Next ┃ Search:                                                                         ┃ [F9] Exit ┃",
+	"┗━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
+};
+
 const char *proc_array_tab_header[] = {
         "┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓",
         "┃ PID      %s ┃ User                   %s ┃ Name                           %s ┃ State    %s ┃ RAM      %s ┃ CPU   %s ┃ Time (hh:mm:ss)   %s ┃",
@@ -58,6 +64,18 @@ void ui_show_fn_cmd()
 	mvwprintw(ui_footer, 0, 0, proc_array_function_command[0]);
 	mvwprintw(ui_footer, 1, 0, proc_array_function_command[1]);
 	mvwprintw(ui_footer, 2, 0, proc_array_function_command[2]);
+
+	wrefresh(ui_footer);
+}
+
+void ui_show_search_bar()
+{	
+	werase(ui_footer);
+	box(ui_footer, 0, 0);
+	
+	mvwprintw(ui_footer, 0, 0, proc_array_search_bar[0]);
+	mvwprintw(ui_footer, 1, 0, proc_array_search_bar[1]);
+	mvwprintw(ui_footer, 2, 0, proc_array_search_bar[2]);
 
 	wrefresh(ui_footer);
 }
@@ -110,10 +128,6 @@ const char* format_mem(const unsigned long long rss_bytes, double *value)
 	return units[i];
 }
 
-double cpu_percent(const processus_array_t *, const processus_array_t *, const size_t)
-{
-	return 0.0;
-}
 void ticks_to_ddhhmmssms(unsigned long ticks, char *buf, size_t bufsize) {
     long ticks_per_sec = sysconf(_SC_CLK_TCK);
     unsigned long total_s = ticks / ticks_per_sec;
@@ -126,26 +140,26 @@ void ticks_to_ddhhmmssms(unsigned long ticks, char *buf, size_t bufsize) {
     snprintf(buf, bufsize, "%02lu:%02lu:%02lu", h, m, s);
 }
 
-void ui_show_proc(const processus_array_t *array_previous, const processus_array_t *array_current, const size_t selected) {
+void ui_show_proc(const processus_array_t *array,  const size_t selected) {
 	/*TEMP*/ werase(ui_pad);
 
-	if(array_previous && array_current) {
-		for(size_t i = 0; i < array_current->size; ++i)
+	if(array && array) {
+		for(size_t i = 0; i < array->size; ++i)
 		{
 			double ram;
-			const char* unit = format_mem(array_current->data[i].ram, &ram);
+			const char* unit = format_mem(array->data[i].ram, &ram);
 			char buf[32];
 			
-			ticks_to_ddhhmmssms(array_current->data[i].start_time, buf, 32);
+			ticks_to_ddhhmmssms(array->data[i].start_time, buf, 32);
 
 			if(i == selected) wattron(ui_pad, A_REVERSE);
 			mvwprintw(ui_pad, i, 0, separator, 
-					array_current->data[i].pid, 
-					array_current->data[i].user, 
-					array_current->data[i].name, 
-					state_to_str(array_current->data[i].state),
+					array->data[i].pid, 
+					array->data[i].user, 
+					array->data[i].name, 
+					state_to_str(array->data[i].state),
 					ram, unit, 
-					100.00 //cpu_percent(array_previous, array_current, )
+					100.00 //cpu_percent(array, array, )
 					, buf
 				 );
 			if(i == selected) wattroff(ui_pad, A_REVERSE);

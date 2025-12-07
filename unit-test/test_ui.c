@@ -37,54 +37,63 @@ void sort_dispatcher(processus_array_t* array, const size_t header_selected, con
 int main()
 {
 	ui_init();
-	
+
 	processus_array_t l = {0};
-	processus_array_t l1 = {0};
-		
+
 	//---- USER DEFINE
 	int scroll_factor = 1;
 	//----
 	size_t selected = 0;
 	size_t header_selected = 0;
 	bool asc = true;
+	bool search_mode = false;
 
 	for(;;)
 	{
-		
+
 		//thread 2
 		proc_array_update(&l);
-//		sleep(1);
-		proc_array_update(&l1);
+		//		sleep(1);
 
 		sort_dispatcher(&l, header_selected, asc);
-		sort_dispatcher(&l1, header_selected, asc);
-		//
+		//---
 
-		ui_show_fn_cmd();
 		ui_show_tab_header(header_selected, asc);
-		ui_show_proc(&l, &l1, selected);
-		
-		switch(getch())
-		{
-			case KEY_F(9): endwin(); return 0;
-	
-			case '\t':
-				header_selected = (header_selected + 1) % header_element_count; break;
-			case '\n': asc = !asc; break;
+		ui_show_proc(&l, selected);
 
-			case KEY_LEFT: ui_scroll(-scroll_factor, 0, selected); break;
-			case KEY_RIGHT: ui_scroll(scroll_factor, 0, selected); break;
-			case KEY_UP: 
-					if(selected > 0) --selected; 	
-					ui_scroll(0, -scroll_factor, selected); 
-					break;
-			case KEY_DOWN: 
-			
-					selected = min(l.size, ++selected); 
-					ui_scroll(0, scroll_factor, selected); 
-					break;
+		const int ch = getch();	
+	
+		if(ch == KEY_F(9)) {
+			endwin();
+			return 0;
 		}
 
+		if(search_mode) {
+			ui_show_search_bar();
+			switch(ch) {
+				case KEY_F(1): search_mode = false; break;	
+			}
+		} else {
+			ui_show_fn_cmd();
+			switch(ch) {
+				case KEY_F(4): search_mode = true; break;	
+				case '\t':
+					       header_selected = (header_selected + 1) % header_element_count; break;
+				case '\n': asc = !asc; break;
+
+				case KEY_LEFT: ui_scroll(-scroll_factor, 0, selected); break;
+				case KEY_RIGHT: ui_scroll(scroll_factor, 0, selected); break;
+				case KEY_UP: 
+						if(selected > 0) --selected; 	
+						ui_scroll(0, -scroll_factor, selected); 
+						break;
+				case KEY_DOWN: 
+
+						selected = min(l.size, ++selected); 
+						ui_scroll(0, scroll_factor, selected); 
+						break;
+			}
+		}
 		update(l.size);	
 	}
 
