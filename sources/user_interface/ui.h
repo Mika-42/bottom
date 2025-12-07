@@ -7,7 +7,7 @@
 void ui_init();
 
 void ui_show_fn_cmd();
-void ui_show_proc(const processus_array_t *array, const size_t selected);
+void ui_show_proc(const processus_array_t *array_previous, const processus_array_t *array_next, const size_t selected);
 void ui_show_tab_header(const size_t header_selected, const bool asc);
 
 

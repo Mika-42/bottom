@@ -44,11 +44,11 @@ bool wrapper(processus_t* proc) {
 	return pid_does_not_exists(proc->pid); 
 }	
 
-error_code_t proc_array_update(const char* path, processus_array_t* array) {
+error_code_t proc_array_update(processus_array_t* array) {
 
 	if(!array) return NULLPTR_PARAMETER_ERROR;
 
-	DIR *rep_proc = opendir(path);
+	DIR *rep_proc = opendir("/proc");
 	if (!rep_proc) return OPEN_FILE_FAILED;
 
 	struct dirent *ent = nullptr;
@@ -86,7 +86,7 @@ error_code_t proc_array_update(const char* path, processus_array_t* array) {
 
 	closedir(rep_proc);
 
-	return SUCCESS;
+	return proc_get_cpu_total(&array->cpu_tick);
 }
 
 
@@ -140,12 +140,12 @@ int state_dsc(const processus_t *lhs, const processus_t *rhs) {
 	return rhs->state - lhs->state;
 }
 
-int rss_asc(const processus_t *lhs, const processus_t *rhs) {
-	return lhs->ram_rss - rhs->ram_rss;
+int ram_asc(const processus_t *lhs, const processus_t *rhs) {
+	return lhs->ram - rhs->ram;
 }
 
-int rss_dsc(const processus_t *lhs, const processus_t *rhs) {
-	return rhs->ram_rss - lhs->ram_rss;
+int ram_dsc(const processus_t *lhs, const processus_t *rhs) {
+	return rhs->ram - lhs->ram;
 }
 
 int name_asc(const processus_t *lhs, const processus_t *rhs) {

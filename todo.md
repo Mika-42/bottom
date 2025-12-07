@@ -9,9 +9,12 @@
 + check memory leak with valgrind
 + add doxygen comment
 + check get state 
++ check all sscanf
 
 **ui**
 + implement F[1-8]
-+ improve RAM/RSS format
 + show CPU usage in percent
 + show execution timeé
++ sort CPU & time
++ fix CPU usage 
++ fix RAM

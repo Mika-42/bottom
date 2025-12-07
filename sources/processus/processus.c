@@ -36,77 +36,6 @@ FILE *proc_file_open(const pid_t pid, const char *file) {
         return fopen(path, "r");
 }
 
-error_code_t proc_get_name(processus_t *proc) {
-	
-	if (!proc) return NULLPTR_PARAMETER_ERROR;
-
-	FILE *f = proc_file_open(proc->pid, "comm");
-
-	if (!f) return OPEN_FILE_FAILED;
-
-        if (!fgets(proc->name, PROC_NAME_SIZE, f)) {
-		fclose(f);
-		return READ_FAILED;
-	}
-	
-	const int end_of_str = strcspn(proc->name, "\n");
-	proc->name[end_of_str] = '\0';
-
-        fclose(f);
-
-	return SUCCESS;
-}
-
-error_code_t proc_get_state(processus_t *proc) {
-	
-	if (!proc) return NULLPTR_PARAMETER_ERROR;
-
-	FILE *f = proc_file_open(proc->pid, "stat");
-
-	if (!f) return OPEN_FILE_FAILED; 
-        
-	char buffer[512];
-        
-	if (!fgets(buffer, sizeof(buffer), f)) { 
-		fclose(f);
-		return READ_FAILED;
-	}
-
-	fclose(f);
-
-	char temp = '\0';
-
-	/*
-	 * %*d		--> ignore the first integer (pid)
-	 * (		--> read the '(' character
-	 * %*[^)]	--> ignore all character until ')' has been reached
-	 * )		--> read the ')' character
-	 * %c		--> get the character
-	 */
-
-	const int ret = sscanf(buffer, "%*d (%*[^)]) %c", &temp);
-
-	if(ret != 1) return MALFORMED_STATUS_LINE; 
-        
-	switch(temp) {
-		case 'R': proc->state = RUNNING;	break;
-		case 'S': proc->state = SLEEPING;	break;
-		case 'D': proc->state = DISK_SLEEP;	break;
-		case 'Z': proc->state = ZOMBIE;		break;
-		case 'T': proc->state = STOPPED;	break;
-		case 't': proc->state = TRACED;		break;
-		case 'W': proc->state = WAKING;		break;	
-		case 'K': proc->state = WAKEKILL;	break;
-		case 'P': proc->state = PARKED;		break;  
-		case 'X': proc->state = DEAD;		break;
-		case 'x': proc->state = DEAD;		break;
-		case 'I': proc->state = IDLE;		break;
-		default:  proc->state = UNKNOW;
-	}
-
-    	return SUCCESS;
-}
-
 error_code_t proc_get_user(processus_t *proc) {
     
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
@@ -142,52 +71,80 @@ error_code_t proc_get_user(processus_t *proc) {
 	return SUCCESS;
 }
 
-    
-error_code_t proc_get_rss(processus_t *proc) {
-	
+error_code_t proc_get_stat(processus_t *proc) {
+
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
 
-	char line[200];
+	FILE *f = proc_file_open(proc->pid, "stat");
 
-	FILE *f = proc_file_open(proc->pid, "statm");
+	if(!f) return OPEN_FILE_FAILED;
 
-	if (!f) return OPEN_FILE_FAILED;
+	char line[4096];
 
-	if(!fgets(line, sizeof(line), f)) {
+	if (!fgets(line, sizeof(line), f)) {
+		fclose(f);
+		return READ_FAILED;
+	}
+
+	fclose(f);
+	
+	char *lparen = strchr(line, '(');
+	char *rparen = strrchr(line, ')');
+	
+	if (!lparen || !rparen || rparen <= lparen) return PARSING_FAILED; 
+
+	size_t namelen = rparen - lparen - 1;
+	
+	if (namelen >= sizeof(proc->name)) namelen = sizeof(proc->name) - 1;
+	
+	strncpy(proc->name, lparen + 1, namelen);
+	proc->name[namelen] = '\0';
+	
+	long resident = 0;
+	int ret = sscanf(rparen + 2, 
+		"%c "
+		"%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s "
+		"%lu %lu "
+		"%*s %*s %*s %*s %*s %*s "
+		"%lu "
+		"%*s "
+		"%ld",  
+		&proc->state,
+		&proc->utime, 
+		&proc->stime, 
+		&proc->start_time, 
+		&resident);
+	
+	if(ret != 5) return MALFORMED_STATUS_LINE;
+
+	const unsigned long long page_size = sysconf(_SC_PAGESIZE);
+	proc->ram = (unsigned long long)resident * page_size;
+
+	return SUCCESS;
+}
+
+error_code_t proc_get_cpu_total(long *cpu_total) {
+
+	FILE *f = fopen("/proc/stat", "r");
+
+	if(!f) return OPEN_FILE_FAILED;
+
+
+	char line[512];
+
+	if (!fgets(line, sizeof(line), f)) {
 		fclose(f);
 		return READ_FAILED;
 	}
 
 	fclose(f);
 
-	long resident = 0;
-	unsigned long _;
-	if(sscanf(line,"%lu %ld", &_, &resident) != 2) return MALFORMED_STATUS_LINE;
-	
-	const long page_size = sysconf(_SC_PAGESIZE);
-	proc->ram_rss = resident * page_size; 
-	
-	return SUCCESS;
-}
+	long user, nice, system, idle, iowait, irq, softirq;
 
-error_code_t proc_get_cpu_time(processus_t *proc) {
+	int n = sscanf(line, "cpu  %ld %ld %ld %ld %ld %ld %ld", &user, &nice, &system, &idle, &iowait, &irq, &softirq);
+	if (n < 7) return MALFORMED_STATUS_LINE;
 
-	if(!proc) return NULLPTR_PARAMETER_ERROR;
-
-	FILE *f = proc_file_open(proc->pid, "stat");
-	
-	if(!f) return OPEN_FILE_FAILED;
-
-	char line[2048];
-
-	if (!fgets(line, sizeof(line), f)) {
-    		fclose(f);
-    		return READ_FAILED;
-	}
-
-	fclose(f);
-
-	sscanf(line, "%*d (%*[^)]) %*c %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %lu %lu", &proc->utime, &proc->stime);
+	*cpu_total = user + nice + system + idle + iowait + irq + softirq;
 
 	return SUCCESS;
 }
@@ -195,24 +152,12 @@ error_code_t proc_get_cpu_time(processus_t *proc) {
 error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
 	if(!proc) return NULLPTR_PARAMETER_ERROR;
-	
+
 	proc->pid = pid;
 
-	typedef error_code_t (*proc_getter_t)(processus_t *proc);
+	error_code_t err = proc_get_user(proc);
 	
-	proc_getter_t getters[] = { 
-	        proc_get_name, 
-		proc_get_state, 
-		proc_get_user, 
-		proc_get_rss, 
-		proc_get_cpu_time,
-		nullptr
-	};
-	
-	for (int i = 0; getters[i] != nullptr; ++i) {
-		error_code_t err = getters[i](proc);
-		if (err != SUCCESS) return err;
-	}
-	
-	return SUCCESS;
+	if (err != SUCCESS) return err;
+
+	return proc_get_stat(proc);
 }

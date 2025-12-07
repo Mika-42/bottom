@@ -1,5 +1,8 @@
 #include "ui.h"
 #include <math.h>
+#include<unistd.h>
+
+constexpr size_t header_element_count = 7;
 
 size_t min(const size_t lhs, const size_t rhs)
 {
@@ -22,7 +25,7 @@ void sort_dispatcher(processus_array_t* array, const size_t header_selected, con
 		case 1:  cmp = asc ? user_asc : user_dsc; break;
 		case 2:  cmp = asc ? name_asc : name_dsc; break;
 		case 3:  cmp = asc ? state_asc : state_dsc; break;
-		case 4:  cmp = asc ? rss_asc : rss_dsc; break;
+		case 4:  cmp = asc ? ram_asc : ram_dsc; break;
 		//todo 5 - 6	
 	}
 
@@ -35,11 +38,10 @@ int main()
 	ui_init();
 	
 	processus_array_t l = {0};
-	//---
-	constexpr size_t header_element_count = 7;
-	
+	processus_array_t l1 = {0};
+		
 	//---- USER DEFINE
-	const int scroll_factor = 1;
+	int scroll_factor = 1;
 	//----
 	size_t selected = 0;
 	size_t header_selected = 0;
@@ -48,14 +50,19 @@ int main()
 	for(;;)
 	{
 		
-		proc_array_update("/proc", &l);
-	
+		//thread 2
+		proc_array_update(&l);
+//		sleep(1);
+		proc_array_update(&l1);
+
+		sort_dispatcher(&l, header_selected, asc);
+		sort_dispatcher(&l1, header_selected, asc);
+		//
+
 		ui_show_fn_cmd();
 		ui_show_tab_header(header_selected, asc);
-
-		//thread 2
-		ui_show_proc(&l, selected);
-		sort_dispatcher(&l, header_selected, asc);
+		ui_show_proc(&l, &l1, selected);
+		
 		switch(getch())
 		{
 			case KEY_F(9): endwin(); return 0;

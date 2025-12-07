@@ -11,6 +11,7 @@ typedef enum error_code_t : int {
         UID_NOT_FOUND,
         USER_NOT_FOUND,
         MEMORY_ALLOCATION_FAILED,
+	PARSING_FAILED,
 } error_code_t;
 
 #endif // ERROR_H
