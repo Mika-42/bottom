@@ -155,10 +155,13 @@ int command_run(int argc, char *argv[], options_prog *options){
         }
     }
 
-    FILE *f = fopen(".config", "r");
+    FILE *f = NULL;
+    if (!is_empty(options->remote_config)) {
+        f = fopen(options->remote_config, "r");
+    }
     if (f == NULL)
     {
-        fprintf(stderr, "Le fichier texte.txt n'a pas pu être ouvert\n");
+        fprintf(stderr, "Le fichier config.txt n'a pas pu être ouvert\n");
         return EXIT_FAILURE;
     }
 

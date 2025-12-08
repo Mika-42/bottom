@@ -8,6 +8,9 @@
 #ifndef MAX_LENGTH
 #define MAX_LENGTH 255
 #endif
+static bool is_empty(const char *s) {
+    return s[0] == '\0';
+}
 
 // Définition simplifiée des structures pour le test
 typedef struct 
