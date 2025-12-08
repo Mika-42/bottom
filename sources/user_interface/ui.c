@@ -5,7 +5,9 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <limits.h>
+#include "signal_process.h"
 
+#include <time.h>
 constexpr size_t header_element_count = 7;
 
 static WINDOW *ui_pad = nullptr;
@@ -23,7 +25,7 @@ static int ui_scroll_y = 0;
 
 const char *proc_array_function_command[] = {
 	"┣━━━━━━━━━━━┳┻━━━━━━━━━━━━━┳━━━━━━━━━━━━┻━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┻━━┳━━━━━━━━━┻━━━━━━┳━━━━━┻━━━━━┳━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
-	"┃ [F1] help ┃ [F2] page -> ┃ [F3] page <- ┃ [F4] search ┃ [F5] pause/continue ┃ [F6] terminate ┃ [F7] kill ┃ [F8] reload ┃ [F9] Exit ┃",
+	"┃ [F1] help ┃ [F2] page <- ┃ [F3] page -> ┃ [F4] search ┃ [F5] pause/continue ┃ [F6] terminate ┃ [F7] kill ┃ [F8] reload ┃ [F9] Exit ┃",
 	"┗━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
@@ -161,61 +163,93 @@ void ui_scroll(const int dx, const size_t selected) {
 
 }
 
-void search_mode_event_dispatcher(const int ch, bool *search_mode) {
+void search_mode_event_dispatcher(const int ch, user_selection_t *s) {
 	switch(ch) {
-		case KEY_F(1): *search_mode = false;
+		case KEY_F(1): s->search_mode = false;
 	}
 }
 
 typedef int (*processus_callback_t)(processus_t *);
 
-processus_callback_t normal_mode_event_dispatcher(const int ch, bool *search_mode) {
+processus_callback_t normal_mode_event_dispatcher(/*const*/ processus_array_t *array[], const int ch, user_selection_t *s) {
 	switch(ch) {
-		case KEY_F(1): break;		
-		case KEY_F(2): break;
-		case KEY_F(3): break;
-		case KEY_F(4): *search_mode = false; break;
-		case KEY_F(5): break;
-		case KEY_F(6): break;
-		case KEY_F(7): break;
-		case KEY_F(8): break;
+		case KEY_F(1): break; //todo	
+		case KEY_F(2): if(s->machine_selected != 0) --s->machine_selected; break;
+		case KEY_F(3): if(s->machine_selected < s->max_machine - 1) ++s->machine_selected; break;
+		case KEY_F(4): s->search_mode = true; break;
+		
+		case KEY_F(5): return array[s->machine_selected]->data[s->selected].state != 'T' ? stop_process : cont_process;
+		case KEY_F(6): return term_process;
+		case KEY_F(7): return kill_process;
+		case KEY_F(8): return restart_process;
+
+
 	}
 
 	return nullptr;
 }
 
-error_code_t ui_main(const processus_array_t **array, const int /*scroll_factor*/) {
-	
-	struct {
-		size_t	selected;
-		size_t  machine_selected;
-		size_t	header_selected;
-		bool	asc;
-		bool	search_mode;
-	} user_selection = {
-		.selected = 0, 
-		.machine_selected = 0, 
-		.header_selected = 0, 
-		.asc = true,
-		.search_mode = true,
-	};
-	
+int global_event_dispatcher(const int ch, const processus_array_t *array, user_selection_t *s) {
+
+	switch(ch) {
+		case '\t':
+			s->header_selected = (s->header_selected + 1) % header_element_count; break;
+		case '\n': s->asc = !s->asc; break;
+
+		case KEY_LEFT: return -1;
+		case KEY_RIGHT: return 1;
+		case KEY_UP: 
+			if(s->selected != 0) {
+				--s->selected; 
+			} 
+			break;
+		case KEY_DOWN: 
+			if(s->selected < array->size - 1) {
+				++s->selected; 
+			}
+			break;
+	}
+	return 0;
+}
+
+error_code_t ui_main(/*const*/ processus_array_t array[], user_selection_t *user_selection) {
+
 	ui_init();
 
 	for(;;) {
-		ui_show_header(user_selection.header_selected, user_selection.asc);
-		ui_show_proc(array[user_selection.machine_selected], user_selection.selected);
-		ui_show_footer(user_selection.search_mode ? proc_array_function_command : proc_array_search_bar);
+
+		auto machine = &array[user_selection->machine_selected];
+		auto proc = &machine->data[user_selection->selected];
+
+		/*TEMP*/ // proc_array_update(machine);
+		
+		ui_show_header(user_selection->header_selected, user_selection->asc);
+		ui_show_proc(machine, user_selection->selected);
+		ui_show_footer(!user_selection->search_mode ? proc_array_function_command : proc_array_search_bar);
 
 		const int ch = getch();
-		
+
 		if(ch == KEY_F(9)) {
 			endwin();
 			return SUCCESS;
 		}
 
-		if(user_selection.search_mode) {
-			
+		if(user_selection->search_mode) {
+			search_mode_event_dispatcher(ch, user_selection);
+		} else {
+			auto callback = normal_mode_event_dispatcher(&machine, ch, user_selection);
+			if(callback) callback(proc);
 		}
+		
+		const int scroll_factor = global_event_dispatcher(ch, machine, user_selection);
+		ui_scroll(scroll_factor, user_selection->selected);
+		ui_update(machine->size);
+
+		struct timespec ts = {
+	    		.tv_sec = 0,
+    			.tv_nsec = 1'000'000'000 / 40 // 1/40 seconde
+		};
+
+		nanosleep(&ts, nullptr);
 	}
 }
