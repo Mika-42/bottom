@@ -173,7 +173,7 @@ int command_run(int argc, char *argv[], options_prog *options){
     fclose(f);
     
     struct stat fichier;
-    if (options->remote_config != NULL) {
+    if (!is_empty(options->remote_config)) {
         if (stat(options->remote_config, &fichier) == -1) {
              fprintf(stderr, "Erreur: Impossible d'acceder au fichier de configuration '%s'. %s\n", 
                     options->remote_config, strerror(errno));
