@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "format.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -40,6 +41,10 @@ const char *proc_array_tab_header[] = {
 
 const char* separator = "┃ %-10d ┃ %-24.23s ┃ %-32.31s ┃ %-10s ┃ %-6.1f %s ┃ %-6.1f%% ┃  %-18s ┃";
 
+void constrain_strict(int *value, const int min, const int max) {
+	*value = (*value < min) ? min : (*value > max) ? max : *value;
+}
+
 void ui_init()
 {
 	setlocale(LC_ALL,"");
@@ -56,26 +61,14 @@ void ui_init()
 	ui_header = newpad(ui_header_lines, ui_pad_columns);
 }
 
-void ui_show_fn_cmd()
+void ui_show_footer(const char **array)
 {	
 	werase(ui_footer);
 	box(ui_footer, 0, 0);
 	
-	mvwprintw(ui_footer, 0, 0, proc_array_function_command[0]);
-	mvwprintw(ui_footer, 1, 0, proc_array_function_command[1]);
-	mvwprintw(ui_footer, 2, 0, proc_array_function_command[2]);
-
-	wrefresh(ui_footer);
-}
-
-void ui_show_search_bar()
-{	
-	werase(ui_footer);
-	box(ui_footer, 0, 0);
-	
-	mvwprintw(ui_footer, 0, 0, proc_array_search_bar[0]);
-	mvwprintw(ui_footer, 1, 0, proc_array_search_bar[1]);
-	mvwprintw(ui_footer, 2, 0, proc_array_search_bar[2]);
+	mvwprintw(ui_footer, 0, 0, array[0]);
+	mvwprintw(ui_footer, 1, 0, array[1]);
+	mvwprintw(ui_footer, 2, 0, array[2]);
 
 	wrefresh(ui_footer);
 }
@@ -94,98 +87,48 @@ void ui_show_tab_header(const size_t header_selected, const bool asc)
 
 	wrefresh(ui_header);
 }
+void ui_show_proc(const WINDOW *page, const processus_array_t *array,  const size_t selected) {
+	werase(page);
 
-const char* state_to_str(char s)
-{
-	switch(s) {
-		case 'R': return "RUNNING";
-		case 'S': return "SLEEPING";
-		case 'D': return "DISK_SLEEP";	
-		case 'Z': return "ZOMBIE";
-		case 'T': return "STOPPED";
-		case 't': return "TRACED";
-		case 'W': return "WAKING";
-		case 'K': return "WAKEKILL";
-		case 'P': return "PARKED";
-		case 'X': return "DEAD";	
-		case 'x': return "DEAD";	
-		case 'I': return "IDLE";
-		default: return "UNKNOW";
+	if(!array) return;
+
+	for(size_t i = 0; i < array->size; ++i)
+	{
+		double ram;
+		const char* unit = format_ram(array->data[i].ram, &ram);
+		
+		char buf[32];
+		format_time(array->data[i].start_time, buf, 32);
+
+		if(i == selected) wattron(ui_pad, A_REVERSE);
+		mvwprintw(ui_pad, i, 0, separator, 
+				array->data[i].pid, 
+				array->data[i].user, 
+				array->data[i].name, 
+				state_to_str(array->data[i].state),
+				ram, unit, 
+				100.00 //cpu_percent(array, array, )
+				, buf
+			 );
+		if(i == selected) wattroff(ui_pad, A_REVERSE);
 	}
 }
 
-const char* format_mem(const unsigned long long rss_bytes, double *value)
-{
-	const char *units[] = {"  B", "KiB", "MiB", "GiB", "TiB"};
-	*value = (double)rss_bytes;
-	int i = 0;
-
-	while (*value >= 1024.0 && i < 4) {
-		*value /= 1024.0;
-		i++;
-	}
-
-	return units[i];
-}
-
-void ticks_to_ddhhmmssms(unsigned long ticks, char *buf, size_t bufsize) {
-    long ticks_per_sec = sysconf(_SC_CLK_TCK);
-    unsigned long total_s = ticks / ticks_per_sec;
-
-    unsigned long s = total_s % 60;
-    unsigned long total_m = total_s / 60;
-    unsigned long m = total_m % 60;
-    unsigned long h = total_m / 60;
-
-    snprintf(buf, bufsize, "%02lu:%02lu:%02lu", h, m, s);
-}
-
-void ui_show_proc(const processus_array_t *array,  const size_t selected) {
-	/*TEMP*/ werase(ui_pad);
-
-	if(array && array) {
-		for(size_t i = 0; i < array->size; ++i)
-		{
-			double ram;
-			const char* unit = format_mem(array->data[i].ram, &ram);
-			char buf[32];
-			
-			ticks_to_ddhhmmssms(array->data[i].start_time, buf, 32);
-
-			if(i == selected) wattron(ui_pad, A_REVERSE);
-			mvwprintw(ui_pad, i, 0, separator, 
-					array->data[i].pid, 
-					array->data[i].user, 
-					array->data[i].name, 
-					state_to_str(array->data[i].state),
-					ram, unit, 
-					100.00 //cpu_percent(array, array, )
-					, buf
-				 );
-			if(i == selected) wattroff(ui_pad, A_REVERSE);
-		}
-	}
-}
-
-void update(const size_t size) {
+void update(const WINDOW *page, const size_t size) {
 	int terminal_width = 0;
 	int terminal_height = 0;
 
 	getmaxyx(stdscr, terminal_height, terminal_width);
-	
+
 	const int view_height = terminal_height - ui_header_lines - ui_footer_lines;
 
 	constrain_strict(&ui_scroll_y, 0, (int)size - view_height);
 
-	pnoutrefresh(ui_header, 0, ui_scroll_x, 0, 0, ui_header_lines - 1, terminal_width-1);
-	pnoutrefresh(ui_pad, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
-	pnoutrefresh(ui_footer, 0, ui_scroll_x, terminal_height-ui_footer_lines, 0, terminal_height-1, terminal_width-1);
+	pnoutrefresh(ui_header, 0, ui_scroll_x, 0, 0, ui_header_lines - 1, terminal_width - 1);
+	pnoutrefresh(page, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
+	pnoutrefresh(ui_footer, 0, ui_scroll_x, terminal_height - ui_footer_lines, 0, terminal_height - 1, terminal_width - 1);
 
 	doupdate();
-}
-
-void constrain_strict(int *value, const int min, const int max) {
-	*value = (*value < min) ? min : (*value > max) ? max : *value;
 }
 
 void ui_scroll(const int dx, const size_t selected)

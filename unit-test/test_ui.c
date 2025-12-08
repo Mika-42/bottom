@@ -4,18 +4,20 @@
 #include<unistd.h>
 
 constexpr size_t header_element_count = 7;
+//----TEMP
 
-size_t min(const size_t lhs, const size_t rhs)
-{
-	return (lhs <= rhs) ? lhs : rhs;
-}
+const char *tproc_array_function_command[] = {
+	"┣━━━━━━━━━━━┳┻━━━━━━━━━━━━━┳━━━━━━━━━━━━┻━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┻━━┳━━━━━━━━━┻━━━━━━┳━━━━━┻━━━━━┳━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
+	"┃ [F1] help ┃ [F2] page -> ┃ [F3] page <- ┃ [F4] search ┃ [F5] pause/continue ┃ [F6] terminate ┃ [F7] kill ┃ [F8] reload ┃ [F9] Exit ┃",
+	"┗━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
+};
 
-
-size_t max(const size_t lhs, const size_t rhs)
-{
-	return (lhs >= rhs) ? lhs : rhs;
-}
-
+const char *tproc_array_search_bar[] = {
+	"┣━━━━━━━━━━━━┻┳━━━━━━━━━━━━┳━━━━━━━━━━━┳┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
+	"┃ [F1] cancel ┃ [F2] Prev  ┃ [F3] Next ┃ Search:                                                                         ┃ [F9] Exit ┃",
+	"┗━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
+};
+//
 void sort_dispatcher(processus_array_t* array, const size_t header_selected, const bool asc) 
 {
 	proc_compare_t cmp = nullptr;
@@ -74,16 +76,16 @@ int main()
 		}
 
 		if(search_mode) {
-			ui_show_search_bar();
+			ui_show_footer(tproc_array_search_bar);
 			switch(ch) {
 				case KEY_F(1): search_mode = false; break;	
 			}
 		} else {
-			ui_show_fn_cmd();
+			ui_show_footer(tproc_array_function_command);
 			switch(ch) {
 				case KEY_F(4): search_mode = true; break;
 				case KEY_F(5): 
-					if(l.data[selected].state == 'T') 
+					if(l.data[selected].state != 'T') 
 						stop_process(&l.data[selected]);
 					else cont_process(&l.data[selected]);
 					break;
