@@ -8,6 +8,10 @@
 #include <unistd.h>
 #include <errno.h>
 
+static bool is_empty(const char *s) {
+    return s[0] == '\0';
+}
+
 static void copy_option_arg(char *dest, const char *src) {
     strncpy(dest, src, MAX_LENGTH - 1);
     dest[MAX_LENGTH - 1] = '\0';
