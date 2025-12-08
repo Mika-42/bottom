@@ -156,24 +156,30 @@ int command_run(int argc, char *argv[], options_prog *options){
     }
 
     FILE *f = NULL;
+
     if (!is_empty(options->remote_config)) {
         f = fopen(options->remote_config, "r");
     }
-    if (f == NULL)
+
+    if (!is_empty(options->remote_config) && f == NULL) 
     {
-        fprintf(stderr, "Le fichier config.txt n'a pas pu être ouvert\n");
+        fprintf(stderr, "Le fichier %s n'a pas pu être ouvert\n", options->remote_config);
         return EXIT_FAILURE;
     }
 
-    fichier tab[MAX_LENGTH];
-    int i=0;
-    while (fscanf(f, "%49[^;];%49[^;];%d;%49[^;];%49[^;];%4[^;\n]\n",
-                    tab[i].name_server,tab[i].adress_server,&tab[i].port,
-                    tab[i].username,tab[i].password,tab[i].type_co)==5){
-        i++;
+    if (f != NULL) {
+        fichier tab[MAX_LENGTH];
+        int i=0;
+        
+        while (fscanf(f, "%49[^;];%49[^;];%d;%49[^;];%49[^;];%4[^;\n]\n",
+                        tab[i].name_server,tab[i].adress_server,&tab[i].port,
+                        tab[i].username,tab[i].password,tab[i].type_co)==6){ 
+            i++;
+        }
+        fclose(f); 
     }
 
-    fclose(f);
+    
     
     struct stat fichier;
     if (!is_empty(options->remote_config)) {
