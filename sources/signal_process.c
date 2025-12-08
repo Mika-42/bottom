@@ -147,7 +147,7 @@ int restart_process(processus_t *p) {
 	if (pid_does_not_exists(p->pid)) {
 		return EXIT_FAILURE;
 	}
-       	
+
 	char exe_path[MAX_SIZE_PATH];
 	char *argv[MAX_ARG];
 	char *envp[MAX_ARG];
@@ -171,7 +171,7 @@ int restart_process(processus_t *p) {
 		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
-	
+
 	int timeout_ms = 5000;
 	int waited = 0;
 	while (pid_exists(p->pid) && waited < timeout_ms) {
@@ -194,7 +194,7 @@ int restart_process(processus_t *p) {
 		execve(exe_path, argv, envp);
 		exit(EXIT_FAILURE);
 	}
-	
+
 	p->pid = new_pid;
 	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
 	for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
