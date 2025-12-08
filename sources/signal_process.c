@@ -156,19 +156,19 @@ int restart_process(processus_t *p) {
 		return EXIT_FAILURE;
 	}
 	if (get_arg(p, argv, MAX_ARG) != EXIT_SUCCESS) {
-		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
+		for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 	if (get_env(p, envp, MAX_ARG) != EXIT_SUCCESS) {
-		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
+		for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 
 	if (kill_children(p) != EXIT_SUCCESS || term_process(p) != EXIT_SUCCESS) {
-		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
+		for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 
@@ -179,15 +179,15 @@ int restart_process(processus_t *p) {
 		waited += 10;
 	}
 	if (pid_exists(p->pid)) {
-		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
+		for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 
 	pid_t new_pid = fork();
 	if (new_pid < 0) {
-		for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-		for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+		for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
+		for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;
 	}
 	if (new_pid == 0) {		
@@ -196,8 +196,8 @@ int restart_process(processus_t *p) {
 	}
 
 	p->pid = new_pid;
-	for (int i = 0; argv[i] != NULL; ++i) free(argv[i]);
-	for (int i = 0; envp[i] != NULL; ++i) free(envp[i]);
+	for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
+	for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
 	usleep(100000);
 	if (pid_does_not_exists(p->pid)) {
 		return EXIT_FAILURE;
