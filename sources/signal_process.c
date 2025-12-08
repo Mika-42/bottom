@@ -19,9 +19,9 @@ bool pid_exists(pid_t pid) {
 	int pidfd = syscall(SYS_pidfd_open, pid, 0);
 
 	if (pidfd < 0) return errno != ESRCH;
-	
+
 	close(pidfd); 
-	
+
 	return true;
 }
 
@@ -33,9 +33,9 @@ int send_signal(processus_t *p, int sig) {
 	int pidfd = syscall(SYS_pidfd_open, p->pid, 0);
 
 	if (pidfd < 0) return EXIT_FAILURE;
-	
+
 	int ret = syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0);
-	
+
 	close(pidfd);
 
 	return (ret < 0) ? EXIT_FAILURE : EXIT_SUCCESS;
@@ -72,6 +72,7 @@ int get_exe(processus_t *p, char *exe_path, int size) {
 
 	return EXIT_SUCCESS;
 }
+
 int get_arg(processus_t *p, char *argv[], int max_arg) {
 	char path[MAX_SIZE_PATH];
 	snprintf(path, sizeof(path), "/proc/%d/cmdline", p->pid);
@@ -131,6 +132,8 @@ int kill_children(processus_t *p) {
 	while(fscanf(f, "%d", &child) == 1) {
 		int pidfd = syscall(SYS_pidfd_open, child, 0);
 		if (pidfd < 0) continue;
+		processus_t proc = {.pid = child};
+		kill_children(&proc);
 		syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
 		close(pidfd);
 	}
