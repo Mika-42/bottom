@@ -19,13 +19,30 @@ user_selection_t s = {
 	.max_machine = 1
 };
 
+
+
 void *proc_task(void*) {
 	while (atomic_load(&running)) {
-		if(array) proc_array_update(&array[s.machine_selected]);
+		if(array) {
+			proc_array_update(&array[s.machine_selected]);
+			proc_compare_t cmp = nullptr;
 
+			switch(s.header_selected)
+			{
+				case 0: cmp = s.asc ? pid_asc : pid_dsc; break;
+				case 1: cmp = s.asc ? user_asc : user_dsc; break;
+				case 2: cmp = s.asc ? name_asc : name_dsc; break;
+				case 3: cmp = s.asc ? state_asc : state_dsc; break;
+				case 4: cmp = s.asc ? ram_asc : ram_dsc; break;
+				case 6:	cmp = s.asc ? time_asc : time_dsc; break;
+			}
+
+			proc_array_sort(&array[s.machine_selected], cmp);
+
+		}
 		struct timespec ts = {
 			.tv_sec = 0,
-			.tv_nsec = 1'000'000'000 / 5// 1/10 seconde
+			.tv_nsec = 1'000'000'000 / 2// 1/10 seconde
 		};
 
 		nanosleep(&ts, nullptr);
