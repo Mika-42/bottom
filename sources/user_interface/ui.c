@@ -11,7 +11,7 @@ static WINDOW *ui_pad = nullptr;
 static WINDOW *ui_footer = nullptr;
 static WINDOW *ui_header = nullptr;
 
-static int ui_pad_lines = 5000;
+static int ui_pad_lines = 8000;
 static int ui_pad_columns = 134;
 
 constexpr int ui_footer_lines = 3;
@@ -172,15 +172,13 @@ void update(const size_t size) {
 	int terminal_height = 0;
 
 	getmaxyx(stdscr, terminal_height, terminal_width);
+	
+	const int view_height = terminal_height - ui_header_lines - ui_footer_lines;
 
-	if(ui_scroll_y > (int)size - terminal_height) {
-		ui_scroll_y = abs((int)size - terminal_height) + 4;
-	}
-
-	pnoutrefresh(ui_pad, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
+	constrain_strict(&ui_scroll_y, 0, (int)size - view_height);
 
 	pnoutrefresh(ui_header, 0, ui_scroll_x, 0, 0, ui_header_lines - 1, terminal_width-1);
-
+	pnoutrefresh(ui_pad, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
 	pnoutrefresh(ui_footer, 0, ui_scroll_x, terminal_height-ui_footer_lines, 0, terminal_height-1, terminal_width-1);
 
 	doupdate();
@@ -190,7 +188,7 @@ void constrain_strict(int *value, const int min, const int max) {
 	*value = (*value < min) ? min : (*value > max) ? max : *value;
 }
 
-void ui_scroll(const int dx, const int, const size_t selected)
+void ui_scroll(const int dx, const size_t selected)
 {
 	int terminal_width = 0;
 	int terminal_height = 0;
@@ -200,7 +198,6 @@ void ui_scroll(const int dx, const int, const size_t selected)
 	ui_scroll_x += dx;
 	constrain_strict(&ui_scroll_x, 0, ui_pad_columns - terminal_width);
 
-	//ui_scroll_y += dy;
 	const int view_height = terminal_height - ui_header_lines - ui_footer_lines;
 	const int hi = ui_scroll_y;
 	const int lo = hi + view_height - 1;

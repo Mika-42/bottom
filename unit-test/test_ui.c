@@ -1,4 +1,5 @@
 #include "ui.h"
+#include "signal_process.h"
 #include <math.h>
 #include<unistd.h>
 
@@ -32,6 +33,10 @@ void sort_dispatcher(processus_array_t* array, const size_t header_selected, con
 
 	proc_array_sort(array, cmp);
 
+}
+
+void constrain_strict_ull(size_t *value, const size_t min, const size_t max) {
+	*value = (*value < min) ? min : (*value > max) ? max : *value;
 }
 
 int main()
@@ -77,6 +82,14 @@ int main()
 			ui_show_fn_cmd();
 			switch(ch) {
 				case KEY_F(4): search_mode = true; break;
+				case KEY_F(5): 
+					if(l.data[selected].state == 'T') 
+						stop_process(&l.data[selected]);
+					else cont_process(&l.data[selected]);
+					break;
+				case KEY_F(6): term_process(&l.data[selected]); break;
+				case KEY_F(7): kill_process(&l.data[selected]); break;
+				case KEY_F(8): restart_process(&l.data[selected]); break;
 			}
 		}
 		switch(ch) {
@@ -84,19 +97,18 @@ int main()
 				header_selected = (header_selected + 1) % header_element_count; break;
 			case '\n': asc = !asc; break;
 
-			case KEY_LEFT: ui_scroll(-scroll_factor, 0, selected); break;
-			case KEY_RIGHT: ui_scroll(scroll_factor, 0, selected); break;
+			case KEY_LEFT: ui_scroll(-scroll_factor, selected); break;
+			case KEY_RIGHT: ui_scroll(scroll_factor, selected); break;
 			case KEY_UP: 
-					if(selected > 0) --selected; 	
-					ui_scroll(0, -scroll_factor, selected); 
+					--selected; 	
 					break;
 			case KEY_DOWN: 
-
-					selected = min(l.size, ++selected); 
-					ui_scroll(0, scroll_factor, selected); 
+					++selected;
 					break;
 		}
-
+		
+		constrain_strict_ull(&selected, 0, l.size - 1);
+		ui_scroll(0, selected); 
 		update(l.size);	
 	}
 
