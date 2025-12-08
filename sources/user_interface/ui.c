@@ -33,6 +33,16 @@ const char *proc_array_search_bar[] = {
 	"┗━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
+const char *proc_array_help[] = {
+	"┃ [→] scroll to right                                                                                                                ┃",
+	"┃ [←] scroll to left                                                                                                                 ┃",	
+	"┃ [↑] scroll to top                                                                                                                  ┃",
+	"┃ [↓] scroll to bottom                                                                                                               ┃",
+	"┃                                                                                                                                    ┃",
+	"┃ [tab]   select sorting field                                                                                                       ┃",
+	"┃ [enter] select ascendant/descendent sort                                                                                           ┃",
+};
+
 const char *proc_array_tab_header[] = {
         "┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓",
         "┃ PID      %s ┃ User                   %s ┃ Name                           %s ┃ State    %s ┃ RAM      %s ┃ CPU   %s ┃ Time (hh:mm:ss)   %s ┃",
@@ -73,7 +83,7 @@ void ui_show_footer(const char **array)
 	wrefresh(ui_footer);
 }
 
-void ui_show_tab_header(const size_t header_selected, const bool asc)
+void ui_show_header(const size_t header_selected, const bool asc)
 {
 	werase(ui_header);
 	box(ui_header, 0, 0);
@@ -87,8 +97,8 @@ void ui_show_tab_header(const size_t header_selected, const bool asc)
 
 	wrefresh(ui_header);
 }
-void ui_show_proc(const WINDOW *page, const processus_array_t *array,  const size_t selected) {
-	werase(page);
+void ui_show_proc(const processus_array_t *array,  const size_t selected) {
+	werase(ui_pad);
 
 	if(!array) return;
 
@@ -105,7 +115,7 @@ void ui_show_proc(const WINDOW *page, const processus_array_t *array,  const siz
 				array->data[i].pid, 
 				array->data[i].user, 
 				array->data[i].name, 
-				state_to_str(array->data[i].state),
+				format_state(array->data[i].state),
 				ram, unit, 
 				100.00 //cpu_percent(array, array, )
 				, buf
@@ -114,7 +124,7 @@ void ui_show_proc(const WINDOW *page, const processus_array_t *array,  const siz
 	}
 }
 
-void update(const WINDOW *page, const size_t size) {
+void ui_update(const size_t size) {
 	int terminal_width = 0;
 	int terminal_height = 0;
 
@@ -125,14 +135,13 @@ void update(const WINDOW *page, const size_t size) {
 	constrain_strict(&ui_scroll_y, 0, (int)size - view_height);
 
 	pnoutrefresh(ui_header, 0, ui_scroll_x, 0, 0, ui_header_lines - 1, terminal_width - 1);
-	pnoutrefresh(page, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
+	pnoutrefresh(ui_pad, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
 	pnoutrefresh(ui_footer, 0, ui_scroll_x, terminal_height - ui_footer_lines, 0, terminal_height - 1, terminal_width - 1);
 
 	doupdate();
 }
 
-void ui_scroll(const int dx, const size_t selected)
-{
+void ui_scroll(const int dx, const size_t selected) {
 	int terminal_width = 0;
 	int terminal_height = 0;
 
@@ -150,4 +159,63 @@ void ui_scroll(const int dx, const size_t selected)
 
 	constrain_strict(&ui_scroll_y, 0,  ui_pad_lines - view_height);
 
+}
+
+void search_mode_event_dispatcher(const int ch, bool *search_mode) {
+	switch(ch) {
+		case KEY_F(1): *search_mode = false;
+	}
+}
+
+typedef int (*processus_callback_t)(processus_t *);
+
+processus_callback_t normal_mode_event_dispatcher(const int ch, bool *search_mode) {
+	switch(ch) {
+		case KEY_F(1): break;		
+		case KEY_F(2): break;
+		case KEY_F(3): break;
+		case KEY_F(4): *search_mode = false; break;
+		case KEY_F(5): break;
+		case KEY_F(6): break;
+		case KEY_F(7): break;
+		case KEY_F(8): break;
+	}
+
+	return nullptr;
+}
+
+error_code_t ui_main(const processus_array_t **array, const int /*scroll_factor*/) {
+	
+	struct {
+		size_t	selected;
+		size_t  machine_selected;
+		size_t	header_selected;
+		bool	asc;
+		bool	search_mode;
+	} user_selection = {
+		.selected = 0, 
+		.machine_selected = 0, 
+		.header_selected = 0, 
+		.asc = true,
+		.search_mode = true,
+	};
+	
+	ui_init();
+
+	for(;;) {
+		ui_show_header(user_selection.header_selected, user_selection.asc);
+		ui_show_proc(array[user_selection.machine_selected], user_selection.selected);
+		ui_show_footer(user_selection.search_mode ? proc_array_function_command : proc_array_search_bar);
+
+		const int ch = getch();
+		
+		if(ch == KEY_F(9)) {
+			endwin();
+			return SUCCESS;
+		}
+
+		if(user_selection.search_mode) {
+			
+		}
+	}
 }

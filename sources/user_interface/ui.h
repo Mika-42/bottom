@@ -7,12 +7,12 @@
 void ui_init();
 
 void ui_show_footer(const char **array);
-void ui_show_proc(const WINDOW *page, const processus_array_t *array, const size_t selected);
-void ui_show_tab_header(const size_t header_selected, const bool asc);
+void ui_show_proc(const processus_array_t *array, const size_t selected);
+void ui_show_header(const size_t header_selected, const bool asc);
 
 void constrain_strict(int *value, const int min, const int max);
 
-void update(const WINDOW *page, const size_t size);
+void ui_update(const size_t size);
 void ui_scroll(const int dx, const size_t selected);
 
 

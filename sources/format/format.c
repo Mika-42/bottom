@@ -1,5 +1,7 @@
 #include "format.h"
 #include <stdio.h>
+#include <unistd.h>
+
 const char* format_state(const char state) {
 	switch(state) {
 		case 'R': return "RUNNING";

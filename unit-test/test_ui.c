@@ -65,7 +65,7 @@ int main()
 		sort_dispatcher(&l, header_selected, asc);
 		//---
 
-		ui_show_tab_header(header_selected, asc);
+		ui_show_header(header_selected, asc);
 		ui_show_proc(&l, selected);
 
 		const int ch = getch();	
@@ -102,7 +102,7 @@ int main()
 			case KEY_LEFT: ui_scroll(-scroll_factor, selected); break;
 			case KEY_RIGHT: ui_scroll(scroll_factor, selected); break;
 			case KEY_UP: 
-					--selected; 	
+					if(selected != 0) --selected; 	
 					break;
 			case KEY_DOWN: 
 					++selected;
@@ -111,7 +111,7 @@ int main()
 		
 		constrain_strict_ull(&selected, 0, l.size - 1);
 		ui_scroll(0, selected); 
-		update(l.size);	
+		ui_update(l.size);	
 	}
 
 	proc_array_free(&l);
