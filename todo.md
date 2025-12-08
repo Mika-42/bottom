@@ -13,9 +13,13 @@
 
 **ui**
 + implement F1
-+ implement later F2 - F3
 + add typiying text for search bar
 + add filter alogrithm to get proc that match with name
 + show CPU usage in percent
 + sort CPU
-+ fix CPU usage 
++ fix CPU usagie
+
+**main**
++ F1 
++ CPU
++ threads
