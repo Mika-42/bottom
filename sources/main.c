@@ -26,13 +26,12 @@ user_selection_t s = {
 
 void *proc_task(void*) {
 	while (atomic_load(&running)) {
-		if(array) {
+		if (array) {
 			// local is always first machine
-			if(s.max_machine > 0) proc_array_update(&array[0]);
+			if (s.max_machine > 0) proc_array_update(&array[0]);
 			proc_compare_t cmp = nullptr;
 
-			switch(s.header_selected)
-			{
+			switch (s.header_selected) {
 				case 0: cmp = s.asc ? pid_asc : pid_dsc; break;
 				case 1: cmp = s.asc ? user_asc : user_dsc; break;
 				case 2: cmp = s.asc ? name_asc : name_dsc; break;
@@ -86,7 +85,7 @@ int main(/*int argc, char *argv[]*/){
 
 
 	array = malloc(s.max_machine * sizeof(*array));
-	if(!array) return EXIT_FAILURE;
+	if (!array) return EXIT_FAILURE;
 
 	pthread_t proc_thread, ui_thread;
 	pthread_create(&proc_thread, nullptr, proc_task, nullptr);
@@ -95,7 +94,7 @@ int main(/*int argc, char *argv[]*/){
 	pthread_join(proc_thread, nullptr);
 	pthread_join(ui_thread, nullptr);
 
-	for(size_t i = 0; i < s.max_machine; ++i) {
+	for (size_t i=0; i<s.max_machine; ++i) {
 		proc_array_free(&array[i]);
 	}
 	free(array);

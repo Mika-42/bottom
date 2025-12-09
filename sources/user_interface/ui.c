@@ -81,14 +81,13 @@ const char *proc_array_tab_header[] = {
         "┣━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━┫",
 };
 
-const char* separator = "┃ %-10d ┃ %-24.23s ┃ %-32.31s ┃ %-10s ┃ %-6.1f %s ┃ %-6.1f%% ┃  %-18s ┃";
+const char *separator = "┃ %-10d ┃ %-24.23s ┃ %-32.31s ┃ %-10s ┃ %-6.1f %s ┃ %-6.1f%% ┃  %-18s ┃";
 
 void constrain_strict(int *value, const int min, const int max) {
 	*value = (*value < min) ? min : (*value > max) ? max : *value;
 }
 
-void ui_init()
-{
+void ui_init() {
 	setlocale(LC_ALL,"");
 	initscr();
         noecho();
@@ -103,8 +102,7 @@ void ui_init()
 	ui_header = newpad(ui_header_lines, ui_pad_columns);
 }
 
-void ui_show_footer(const char **array)
-{	
+void ui_show_footer(const char **array) {	
 	box(ui_footer, 0, 0);
 	
 	mvwprintw(ui_footer, 0, 0, array[0]);
@@ -112,12 +110,11 @@ void ui_show_footer(const char **array)
 	mvwprintw(ui_footer, 2, 0, array[2]);
 }
 
-void ui_show_header(const size_t header_selected, const bool asc)
-{
+void ui_show_header(const size_t header_selected, const bool asc) {
 	box(ui_header, 0, 0);
 
-	char* arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
-	if(header_selected < header_element_count) arrow[header_selected] = asc ? "▲" : "▼";
+	char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
+	if (header_selected < header_element_count) arrow[header_selected] = asc ? "▲" : "▼";
         
 	mvwprintw(ui_header, 0, 0, proc_array_tab_header[0]);
         mvwprintw(ui_header, 1, 0, proc_array_tab_header[1], arrow[0],arrow[1],arrow[2],arrow[3],arrow[4],arrow[5],arrow[6]);
@@ -128,20 +125,19 @@ void ui_show_header(const size_t header_selected, const bool asc)
 void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 	werase(ui_pad);
 
-	if(!array) return;
+	if (!array) return;
 	size_t filter_index = 0;
-	for(size_t i = 0; i < array->size; ++i)
-	{
+	for (size_t i=0; i<array->size; ++i) {
 		double ram;
-		const char* unit = format_ram(array->data[i].ram, &ram);
+		const char *unit = format_ram(array->data[i].ram, &ram);
 
 		char buf[32];
 		format_time(array->data[i].start_time, buf, 32);
 
-		if(i == s->selected) wattron(ui_pad, A_REVERSE);
+		if (i == s->selected) wattron(ui_pad, A_REVERSE);
 
-		if(s->search_mode) {
-			if(strncmp(array->data[i].name, s->input, s->input_length) == 0) {
+		if (s->search_mode) {
+			if (strncmp(array->data[i].name, s->input, s->input_length) == 0) {
 				mvwprintw(ui_pad, filter_index++, 0, separator, 
 						array->data[i].pid, 
 						array->data[i].user, 
@@ -163,11 +159,11 @@ void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 					, buf
 				 );
 		}
-		if(i == s->selected) wattroff(ui_pad, A_REVERSE);	
+		if (i == s->selected) wattroff(ui_pad, A_REVERSE);	
 	}
 
-	if(s->search_mode) {
-		for(;filter_index < (size_t)getmaxy(stdscr); ++filter_index) {
+	if (s->search_mode) {
+		for (; filter_index<(size_t)getmaxy(stdscr); ++filter_index) {
 			mvwprintw(ui_pad, filter_index, 0, "┃ %-10s ┃ %-24s ┃ %-32s ┃ %-10s ┃ %-10s ┃ %-7s ┃  %-18s ┃", "", "", "", "", "", "", "");
 		}
 	}
@@ -203,19 +199,19 @@ void ui_scroll(const int dx, const size_t selected) {
 	const int hi = ui_scroll_y;
 	const int lo = hi + view_height - 1;
 
-	if((int)selected < hi) ui_scroll_y = selected;
-	else if((int)selected > lo) ui_scroll_y = selected - view_height + 1;
+	if ((int)selected < hi) ui_scroll_y = selected;
+	else if ((int)selected > lo) ui_scroll_y = selected - view_height + 1;
 
 	constrain_strict(&ui_scroll_y, 0,  ui_pad_lines - view_height);
 
 }
 
 void search_mode_event_dispatcher(const int ch, user_selection_t *s) {
-	if(ch ==KEY_F(1)) {
+	if (ch ==KEY_F(1)) {
 		s->search_mode = false; 
 	}
-	else if(ch ==KEY_F(2)) return; //TODO
-	else if(ch ==KEY_F(3)) return; //TODO
+	else if (ch ==KEY_F(2)) return; //TODO
+	else if (ch ==KEY_F(3)) return; //TODO
 	else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
 		if (s->input_length > 0) s->input[--s->input_length] = '\0';
 	}
@@ -242,12 +238,11 @@ void show_help_page() {
 
 	constexpr size_t size = sizeof(proc_array_help) / sizeof(proc_array_help[0]);
 	size_t i = 0;
-	for(; i < size; ++i)
-	{
+	for (; i<size; ++i) {
 		mvwprintw(ui_pad, i, 0, proc_array_help[i]);
 	}
 
-	for(;i < (size_t)getmaxy(stdscr); ++i) {
+	for (;i<(size_t)getmaxy(stdscr); ++i) {
 		mvwprintw(ui_pad, i, 0, proc_array_help[size - 1]);
 	}
 }
@@ -255,10 +250,10 @@ void show_help_page() {
 typedef int (*processus_callback_t)(processus_t *);
 
 processus_callback_t normal_mode_event_dispatcher(const processus_array_t *array[], const int ch, user_selection_t *s) {
-	switch(ch) {
+	switch (ch) {
 		case KEY_F(1): s->help = true; break;	
-		case KEY_F(2): if(s->machine_selected != 0) --s->machine_selected; break;
-		case KEY_F(3): if(s->machine_selected < s->max_machine - 1) ++s->machine_selected; break;
+		case KEY_F(2): if (s->machine_selected != 0) --s->machine_selected; break;
+		case KEY_F(3): if (s->machine_selected < s->max_machine - 1) ++s->machine_selected; break;
 		case KEY_F(4): s->search_mode = true; break;
 
 		case KEY_F(5): return array[s->machine_selected]->data[s->selected].state != 'T' ? stop_process : cont_process;
@@ -272,30 +267,30 @@ processus_callback_t normal_mode_event_dispatcher(const processus_array_t *array
 
 int global_event_dispatcher(const int ch, const processus_array_t *array, user_selection_t *s) {
 
-	if(ch == KEY_LEFT) return -1;
-	if(ch == KEY_RIGHT) return 1;
+	if (ch == KEY_LEFT) return -1;
+	if (ch == KEY_RIGHT) return 1;
 
-	if(!s->help) {
+	if (!s->help) {
 		switch(ch) {
 			case '\t':
-				if(!s->search_mode) {
+				if (!s->search_mode) {
 					s->header_selected = (s->header_selected + 1) % header_element_count;
 				}
 				break;
 
 			case '\n': 
-				if(!s->search_mode) {
+				if (!s->search_mode) {
 					s->asc = !s->asc; 
 				} 
 				break;
 
 			case KEY_UP: 
-				if(s->selected != 0) {
+				if (s->selected != 0) {
 					--s->selected; 
 				} 
 				break;
 			case KEY_DOWN: 
-				if(s->selected < array->size - 1) {
+				if (s->selected < array->size - 1) {
 					++s->selected; 
 				}
 				break;
@@ -308,33 +303,33 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 
 	ui_init();
 
-	for(;;) {
+	for (; ; ) {
 
 		auto machine = &array[user_selection->machine_selected];
 		auto proc = &machine->data[user_selection->selected];
 
 		const int ch = getch();
 
-		if(user_selection->help) { } else {	
+		if (user_selection->help) { } else {	
 		}
 
-		if(ch == KEY_F(9)) {
+		if (ch == KEY_F(9)) {
 			endwin();
 			return SUCCESS;
 		}
 
-		if(user_selection->help) {
-			if(ch == KEY_F(1)) user_selection->help = false;
+		if (user_selection->help) {
+			if (ch == KEY_F(1)) user_selection->help = false;
 
 			show_help_page();
 			ui_show_footer(proc_array_help_footer);
 		} else {
-			if(user_selection->search_mode) {
+			if (user_selection->search_mode) {
 				ui_show_footer(proc_array_search_bar);
 				search_mode_event_dispatcher(ch, user_selection);
 			} else {
 				auto callback = normal_mode_event_dispatcher(&machine, ch, user_selection);
-				if(callback) callback(proc); 
+				if (callback) callback(proc); 
 				ui_show_footer(proc_array_function_command);
 			}
 
