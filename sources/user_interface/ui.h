@@ -4,6 +4,8 @@
 #include "processus_array.h"
 #include <ncurses.h>
 
+#include "ui_constant.h"
+
 typedef struct user_selection_t {
 	size_t	selected;
 	size_t  machine_selected;
@@ -18,7 +20,7 @@ typedef struct user_selection_t {
 
 void ui_init();
 
-void ui_show_footer(const char **array);
+void ui_show_footer(const char (*array)[ui_max_width]);
 void ui_show_proc(const processus_array_t *array, user_selection_t *s);
 void ui_show_header(const size_t header_selected, const bool asc);
 
