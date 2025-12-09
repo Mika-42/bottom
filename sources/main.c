@@ -18,6 +18,8 @@ user_selection_t s = {
 	.search_mode = false,
 	.max_machine = 2,
 	.help = false,
+	.input = {0},
+	.input_length = 0,
 };
 
 

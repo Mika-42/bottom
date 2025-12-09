@@ -12,6 +12,8 @@ typedef struct user_selection_t {
 	bool	search_mode;
 	size_t	max_machine;
 	bool	help;
+	char	input[255];
+	size_t	input_length;
 } user_selection_t;
 
 void ui_init();

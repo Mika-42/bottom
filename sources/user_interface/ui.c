@@ -105,19 +105,15 @@ void ui_init()
 
 void ui_show_footer(const char **array)
 {	
-	werase(ui_footer);
 	box(ui_footer, 0, 0);
 	
 	mvwprintw(ui_footer, 0, 0, array[0]);
 	mvwprintw(ui_footer, 1, 0, array[1]);
 	mvwprintw(ui_footer, 2, 0, array[2]);
-
-	wrefresh(ui_footer);
 }
 
 void ui_show_header(const size_t header_selected, const bool asc)
 {
-	werase(ui_header);
 	box(ui_header, 0, 0);
 
 	char* arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
@@ -127,7 +123,6 @@ void ui_show_header(const size_t header_selected, const bool asc)
         mvwprintw(ui_header, 1, 0, proc_array_tab_header[1], arrow[0],arrow[1],arrow[2],arrow[3],arrow[4],arrow[5],arrow[6]);
         mvwprintw(ui_header, 2, 0, proc_array_tab_header[2]);
 
-	wrefresh(ui_header);
 }
 void ui_show_proc(const processus_array_t *array,  const size_t selected) {
 	werase(ui_pad);
@@ -149,7 +144,7 @@ void ui_show_proc(const processus_array_t *array,  const size_t selected) {
 				array->data[i].name, 
 				format_state(array->data[i].state),
 				ram, unit, 
-				100.00 //cpu_percent(array, array, )
+				100.00 //fictional data TODO implement CPU usage
 				, buf
 			 );
 		if(i == selected) wattroff(ui_pad, A_REVERSE);
@@ -194,21 +189,32 @@ void ui_scroll(const int dx, const size_t selected) {
 }
 
 void search_mode_event_dispatcher(const int ch, user_selection_t *s) {
-	switch(ch) {
-		case KEY_F(1): s->search_mode = false;
+	if(ch ==KEY_F(1)) {
+		s->search_mode = false; 
 	}
+	else if(ch ==KEY_F(2)) return; //TODO
+	else if(ch ==KEY_F(3)) return; //TODO
+	else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
+		if (s->input_length > 0) s->input[--s->input_length] = '\0';
+	}
+	else if (ch >= 32 && ch <= 126) {
+		if (s->input_length < 255)
+		s->input[s->input_length++] = ch;
+		s->input[s->input_length] = '\0';
+	}
+	mvwprintw(ui_footer, 1, 49, "%-71.71s", s->input);
+	
 }
 
 void show_help_page() {
-	
+
 	werase(ui_pad);	
-	werase(ui_header);
 
 	box(ui_header, 0, 0);
-        
+
 	mvwprintw(ui_header, 0, 0, proc_array_help_header[0]);
-        mvwprintw(ui_header, 1, 0, proc_array_help_header[1]);
-        mvwprintw(ui_header, 2, 0, proc_array_help_header[2]);
+	mvwprintw(ui_header, 1, 0, proc_array_help_header[1]);
+	mvwprintw(ui_header, 2, 0, proc_array_help_header[2]);
 
 	wrefresh(ui_header);
 
@@ -232,13 +238,11 @@ processus_callback_t normal_mode_event_dispatcher(const processus_array_t *array
 		case KEY_F(2): if(s->machine_selected != 0) --s->machine_selected; break;
 		case KEY_F(3): if(s->machine_selected < s->max_machine - 1) ++s->machine_selected; break;
 		case KEY_F(4): s->search_mode = true; break;
-		
+
 		case KEY_F(5): return array[s->machine_selected]->data[s->selected].state != 'T' ? stop_process : cont_process;
 		case KEY_F(6): return term_process;
 		case KEY_F(7): return kill_process;
 		case KEY_F(8): return restart_process;
-
-
 	}
 
 	return nullptr;
@@ -246,23 +250,34 @@ processus_callback_t normal_mode_event_dispatcher(const processus_array_t *array
 
 int global_event_dispatcher(const int ch, const processus_array_t *array, user_selection_t *s) {
 
-	switch(ch) {
-		case '\t':
-			s->header_selected = (s->header_selected + 1) % header_element_count; break;
-		case '\n': s->asc = !s->asc; break;
+	if(ch == KEY_LEFT) return -1;
+	if(ch == KEY_RIGHT) return 1;
 
-		case KEY_LEFT: return -1;
-		case KEY_RIGHT: return 1;
-		case KEY_UP: 
-			if(s->selected != 0) {
-				--s->selected; 
-			} 
-			break;
-		case KEY_DOWN: 
-			if(s->selected < array->size - 1) {
-				++s->selected; 
-			}
-			break;
+	if(!s->help) {
+		switch(ch) {
+			case '\t':
+				if(!s->search_mode) {
+					s->header_selected = (s->header_selected + 1) % header_element_count;
+				}
+				break;
+
+			case '\n': 
+				if(!s->search_mode) {
+					s->asc = !s->asc; 
+				} 
+				break;
+
+			case KEY_UP: 
+				   if(s->selected != 0) {
+					   --s->selected; 
+				   } 
+				   break;
+			case KEY_DOWN: 
+				   if(s->selected < array->size - 1) {
+					   ++s->selected; 
+				   }
+				   break;
+		}
 	}
 	return 0;
 }
@@ -293,15 +308,16 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 			ui_show_footer(proc_array_help_footer);
 		} else {
 			if(user_selection->search_mode) {
+				ui_show_footer(proc_array_search_bar);
 				search_mode_event_dispatcher(ch, user_selection);
 			} else {
 				auto callback = normal_mode_event_dispatcher(&machine, ch, user_selection);
 				if(callback) callback(proc); 
+				ui_show_footer(proc_array_function_command);
 			}
 
 			ui_show_header(user_selection->header_selected, user_selection->asc);
 			ui_show_proc(machine, user_selection->selected);
-			ui_show_footer(!user_selection->search_mode ? proc_array_function_command : proc_array_search_bar);
 		}
 
 		const int scroll_factor = global_event_dispatcher(ch, machine, user_selection);
