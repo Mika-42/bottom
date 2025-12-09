@@ -129,7 +129,7 @@ int kill_children(processus_t *p) {
 	if (!f) return EXIT_FAILURE;
 
 	pid_t child;
-	while(fscanf(f, "%d", &child) == 1) {
+	while (fscanf(f, "%d", &child) == 1) {
 		int pidfd = syscall(SYS_pidfd_open, child, 0);
 		if (pidfd < 0) continue;
 		processus_t proc = {.pid = child};

@@ -8,12 +8,12 @@
 
 bool str_is_numeric(const char *str) {
    	
-	if(!str || *str == '\0') return false;
+	if (!str || *str == '\0') return false;
 
-	if(*str == '-') ++str;
+	if (*str == '-') ++str;
 
 	while (*str) {
-		if(!isdigit((unsigned char)(*str))) return false;
+		if (!isdigit((unsigned char)(*str))) return false;
 		
 		++str;
 	}
@@ -27,7 +27,7 @@ bool proc_is_valid_pid(const char *pid) {
 
 FILE *proc_file_open(const pid_t pid, const char *file) {
 	
-	if(!file) return nullptr;
+	if (!file) return nullptr;
 
 	char path[PROC_PATH_SIZE];
 
@@ -38,7 +38,7 @@ FILE *proc_file_open(const pid_t pid, const char *file) {
 
 error_code_t proc_get_user(processus_t *proc) {
     
-	if(!proc) return NULLPTR_PARAMETER_ERROR;
+	if (!proc) return NULLPTR_PARAMETER_ERROR;
 	 
 	FILE *f = proc_file_open(proc->pid, "status");
 
@@ -52,14 +52,14 @@ error_code_t proc_get_user(processus_t *proc) {
 		if (strncmp(line, "Uid:", 4) != 0) continue;
 
 		const int ret = sscanf(line, "%*s %u", &uid);
-               	if(ret != 1) return MALFORMED_STATUS_LINE;
+               	if (ret != 1) return MALFORMED_STATUS_LINE;
 
                 break;	
         }
 
         fclose(f);  
     	
-	if(uid == (uid_t)-1) return UID_NOT_FOUND;
+	if (uid == (uid_t)-1) return UID_NOT_FOUND;
 
 	struct passwd *user_info = getpwuid(uid);  
 
@@ -73,11 +73,11 @@ error_code_t proc_get_user(processus_t *proc) {
 
 error_code_t proc_get_stat(processus_t *proc) {
 
-	if(!proc) return NULLPTR_PARAMETER_ERROR;
+	if (!proc) return NULLPTR_PARAMETER_ERROR;
 
 	FILE *f = proc_file_open(proc->pid, "stat");
 
-	if(!f) return OPEN_FILE_FAILED;
+	if (!f) return OPEN_FILE_FAILED;
 
 	char line[4096];
 
@@ -115,7 +115,7 @@ error_code_t proc_get_stat(processus_t *proc) {
 		&proc->start_time, 
 		&resident);
 	
-	if(ret != 5) return MALFORMED_STATUS_LINE;
+	if (ret != 5) return MALFORMED_STATUS_LINE;
 
 	const unsigned long long page_size = sysconf(_SC_PAGESIZE);
 	proc->ram = (unsigned long long)resident * page_size;
@@ -127,7 +127,7 @@ error_code_t proc_get_cpu_total(long *cpu_total) {
 
 	FILE *f = fopen("/proc/stat", "r");
 
-	if(!f) return OPEN_FILE_FAILED;
+	if (!f) return OPEN_FILE_FAILED;
 
 
 	char line[512];
@@ -151,7 +151,7 @@ error_code_t proc_get_cpu_total(long *cpu_total) {
 
 error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
-	if(!proc) return NULLPTR_PARAMETER_ERROR;
+	if (!proc) return NULLPTR_PARAMETER_ERROR;
 
 	proc->pid = pid;
 

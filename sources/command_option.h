@@ -3,8 +3,7 @@
 #define MAX_LENGTH 255
 #include <stdbool.h>
 
-typedef struct 
-{
+typedef struct {
     bool help;
     bool dry_run;
     char remote_config[MAX_LENGTH];    
@@ -18,8 +17,7 @@ typedef struct
 
 } options_prog; 
 
-typedef struct 
-{
+typedef struct {
     char name_server[MAX_LENGTH];
     char adress_server[MAX_LENGTH];
     int port; 

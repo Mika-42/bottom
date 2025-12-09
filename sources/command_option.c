@@ -17,9 +17,9 @@ static void copy_option_arg(char *dest, const char *src) {
     dest[MAX_LENGTH - 1] = '\0';
 }
 
-static void print_help(){
+static void print_help() {
 
-    const char* help_message = "-h ou --help : affiche l'aide du programme ainsi que la syntaxe d'exécution du programme\n"
+    const char *help_message = "-h ou --help : affiche l'aide du programme ainsi que la syntaxe d'exécution du programme\n"
      "--dry-run : test l'accès à la liste des processus sur la machine locale et/ou distante sans les afficher\n"
      "-c ou --remote-config : spécifie le chemin vers le fichier de configuration contenant les informations de connexion sur les machines distantes\n"
      "-t ou --connexion-type : spécifie le type de connexion à utiliser pour la connexion sur les machines distantes (ssh, telnet)\n"
@@ -42,7 +42,7 @@ static void print_help(){
         dest[MAX_LENGTH - 1] = '\0'; \
     } while(0)
 
-int command_run(int argc, char *argv[], options_prog *options){
+int command_run(int argc, char *argv[], options_prog *options) {
     int opt = 0;
     struct option long_opts[] = {
         {.name="help",.has_arg=0,.flag=0,.val='h'},
@@ -122,11 +122,11 @@ int command_run(int argc, char *argv[], options_prog *options){
         copy_option_arg(options->username, login_copy);
     }
     
-    if (options->port == 0 && !is_empty(options->connexion_type))    {
+    if (options->port == 0 && !is_empty(options->connexion_type)) {
         if (strcmp(options->connexion_type, "ssh") == 0){
             options->port = 22;
         }
-        else if (strcmp(options->connexion_type, "telnet") == 0){
+        else if (strcmp(options->connexion_type, "telnet") == 0) {
             options->port = 23;
         }
     }
@@ -145,7 +145,7 @@ int command_run(int argc, char *argv[], options_prog *options){
     if (is_empty(options->remote_config)) {
         DIR *d = opendir(".");
         if (d != NULL) { 
-            for (struct dirent *element; (element = readdir(d)) != NULL; ) {
+            for (struct dirent *element; (element=readdir(d))!=NULL; ) {
                 if (strcmp(element->d_name, ".config") == 0) {
                     copy_option_arg(options->remote_config, ".config");
                     break; 
@@ -161,19 +161,18 @@ int command_run(int argc, char *argv[], options_prog *options){
         f = fopen(options->remote_config, "r");
     }
 
-    if (!is_empty(options->remote_config) && f == NULL) 
-    {
+    if (!is_empty(options->remote_config) && f == NULL) {
         fprintf(stderr, "Le fichier %s n'a pas pu être ouvert\n", options->remote_config);
         return EXIT_FAILURE;
     }
 
     if (f != NULL) {
         fichier tab[MAX_LENGTH];
-        int i=0;
+        int i = 0;
         
         while (fscanf(f, "%49[^;];%49[^;];%d;%49[^;];%49[^;];%4[^;\n]\n",
                         tab[i].name_server,tab[i].adress_server,&tab[i].port,
-                        tab[i].username,tab[i].password,tab[i].type_co)==6){ 
+                        tab[i].username,tab[i].password,tab[i].type_co) == 6){ 
             i++;
         }
         fclose(f); 
