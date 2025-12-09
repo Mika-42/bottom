@@ -6,7 +6,7 @@
 #include <locale.h>
 #include <limits.h>
 #include "signal_process.h"
-
+#include <string.h>
 #include <time.h>
 constexpr size_t header_element_count = 7;
 
@@ -124,30 +124,52 @@ void ui_show_header(const size_t header_selected, const bool asc)
         mvwprintw(ui_header, 2, 0, proc_array_tab_header[2]);
 
 }
-void ui_show_proc(const processus_array_t *array,  const size_t selected) {
+
+void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 	werase(ui_pad);
 
 	if(!array) return;
-
+	size_t filter_index = 0;
 	for(size_t i = 0; i < array->size; ++i)
 	{
 		double ram;
 		const char* unit = format_ram(array->data[i].ram, &ram);
-		
+
 		char buf[32];
 		format_time(array->data[i].start_time, buf, 32);
 
-		if(i == selected) wattron(ui_pad, A_REVERSE);
-		mvwprintw(ui_pad, i, 0, separator, 
-				array->data[i].pid, 
-				array->data[i].user, 
-				array->data[i].name, 
-				format_state(array->data[i].state),
-				ram, unit, 
-				100.00 //fictional data TODO implement CPU usage
-				, buf
-			 );
-		if(i == selected) wattroff(ui_pad, A_REVERSE);
+		if(i == s->selected) wattron(ui_pad, A_REVERSE);
+
+		if(s->search_mode) {
+			if(strncmp(array->data[i].name, s->input, s->input_length) == 0) {
+				mvwprintw(ui_pad, filter_index++, 0, separator, 
+						array->data[i].pid, 
+						array->data[i].user, 
+						array->data[i].name, 
+						format_state(array->data[i].state),
+						ram, unit, 
+						100.00 //fictional data TODO implement CPU usage
+						, buf
+					 );
+			}
+		} else {	
+			mvwprintw(ui_pad, i, 0, separator, 
+					array->data[i].pid, 
+					array->data[i].user, 
+					array->data[i].name, 
+					format_state(array->data[i].state),
+					ram, unit, 
+					100.00 //fictional data TODO implement CPU usage
+					, buf
+				 );
+		}
+		if(i == s->selected) wattroff(ui_pad, A_REVERSE);	
+	}
+
+	if(s->search_mode) {
+		for(;filter_index < (size_t)getmaxy(stdscr); ++filter_index) {
+			mvwprintw(ui_pad, filter_index, 0, "┃ %-10s ┃ %-24s ┃ %-32s ┃ %-10s ┃ %-10s ┃ %-7s ┃  %-18s ┃", "", "", "", "", "", "", "");
+		}
 	}
 }
 
@@ -199,11 +221,11 @@ void search_mode_event_dispatcher(const int ch, user_selection_t *s) {
 	}
 	else if (ch >= 32 && ch <= 126) {
 		if (s->input_length < 255)
-		s->input[s->input_length++] = ch;
+			s->input[s->input_length++] = ch;
 		s->input[s->input_length] = '\0';
 	}
 	mvwprintw(ui_footer, 1, 49, "%-71.71s", s->input);
-	
+
 }
 
 void show_help_page() {
@@ -268,15 +290,15 @@ int global_event_dispatcher(const int ch, const processus_array_t *array, user_s
 				break;
 
 			case KEY_UP: 
-				   if(s->selected != 0) {
-					   --s->selected; 
-				   } 
-				   break;
+				if(s->selected != 0) {
+					--s->selected; 
+				} 
+				break;
 			case KEY_DOWN: 
-				   if(s->selected < array->size - 1) {
-					   ++s->selected; 
-				   }
-				   break;
+				if(s->selected < array->size - 1) {
+					++s->selected; 
+				}
+				break;
 		}
 	}
 	return 0;
@@ -317,7 +339,7 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 			}
 
 			ui_show_header(user_selection->header_selected, user_selection->asc);
-			ui_show_proc(machine, user_selection->selected);
+			ui_show_proc(machine, user_selection);
 		}
 
 		const int scroll_factor = global_event_dispatcher(ch, machine, user_selection);

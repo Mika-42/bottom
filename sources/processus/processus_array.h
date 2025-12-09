@@ -34,4 +34,5 @@ int		user_dsc(const processus_t *lhs, const processus_t *rhs);
 int		time_asc(const processus_t *lhs, const processus_t *rhs);
 int		time_dsc(const processus_t *lhs, const processus_t *rhs);
 
+size_t		filter_by_name();
 #endif //PROCESSUS_ARRAY_H
