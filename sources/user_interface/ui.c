@@ -35,14 +35,44 @@ const char *proc_array_search_bar[] = {
 	"┗━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
+const char *proc_array_help_header[] = {
+        "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
+	"┃                                                                                                                                    ┃",
+	"┃                                                                                                                                    ┃",
+};
 const char *proc_array_help[] = {
-	"┃ [→] scroll to right                                                                                                                ┃",
-	"┃ [←] scroll to left                                                                                                                 ┃",	
-	"┃ [↑] scroll to top                                                                                                                  ┃",
-	"┃ [↓] scroll to bottom                                                                                                               ┃",
+	"┃ ---------------------- G L O B A L ----------------------                                                                          ┃",
+	"┃ [→]     scroll to right                                                                                                            ┃",
+	"┃ [←]     scroll to left                                                                                                             ┃",	
+	"┃ [↑]     scroll to top                                                                                                              ┃",
+	"┃ [↓]     scroll to bottom                                                                                                           ┃",
 	"┃                                                                                                                                    ┃",
 	"┃ [tab]   select sorting field                                                                                                       ┃",
 	"┃ [enter] select ascendant/descendent sort                                                                                           ┃",
+	"┃                                                                                                                                    ┃",
+	"┃ [F9]    exit from the program                                                                                                      ┃",
+	"┃                                                                                                                                    ┃",
+	"┃ ----------------- N O R M A L ~ M O D E -----------------                                                                          ┃",
+	"┃ [F1]    show the help page                                                                                                         ┃",
+	"┃ [F2]    switch to the previous machine processus page                                                                              ┃",
+	"┃ [F3]    switch to the next machine processus page                                                                                  ┃",
+	"┃ [F4]    switch to the search mode                                                                                                  ┃",
+	"┃ [F5]    pause/continue the selected processus                                                                                      ┃",
+	"┃ [F6]    terminate the selected processus                                                                                           ┃",
+	"┃ [F7]    kill the selected processus                                                                                                ┃",
+	"┃ [F8]    reload the selected processus                                                                                              ┃",
+	"┃                                                                                                                                    ┃",
+	"┃ ----------------- S E A R C H ~ M O D E -----------------                                                                          ┃",
+	"┃ [F1]    exit from search mode (go back to normal mode)                                                                             ┃",
+	"┃ [F2]    go to the previous occurent that match                                                                                     ┃",
+	"┃ [F3]    go to the next occurent that match                                                                                         ┃",
+	"┃                                                                                                                                    ┃",
+};
+
+const char *proc_array_help_footer[] = {
+	"┣━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┫",
+	"┃ [F1] cancel ┃                                                                                                          ┃ [F9] Exit ┃",
+	"┗━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
 const char *proc_array_tab_header[] = {
@@ -169,11 +199,36 @@ void search_mode_event_dispatcher(const int ch, user_selection_t *s) {
 	}
 }
 
+void show_help_page() {
+	
+	werase(ui_pad);	
+	werase(ui_header);
+
+	box(ui_header, 0, 0);
+        
+	mvwprintw(ui_header, 0, 0, proc_array_help_header[0]);
+        mvwprintw(ui_header, 1, 0, proc_array_help_header[1]);
+        mvwprintw(ui_header, 2, 0, proc_array_help_header[2]);
+
+	wrefresh(ui_header);
+
+	constexpr size_t size = sizeof(proc_array_help) / sizeof(proc_array_help[0]);
+	size_t i = 0;
+	for(; i < size; ++i)
+	{
+		mvwprintw(ui_pad, i, 0, proc_array_help[i]);
+	}
+
+	for(;i < (size_t)getmaxy(stdscr); ++i) {
+		mvwprintw(ui_pad, i, 0, proc_array_help[size - 1]);
+	}
+}
+
 typedef int (*processus_callback_t)(processus_t *);
 
-processus_callback_t normal_mode_event_dispatcher(/*const*/ processus_array_t *array[], const int ch, user_selection_t *s) {
+processus_callback_t normal_mode_event_dispatcher(const processus_array_t *array[], const int ch, user_selection_t *s) {
 	switch(ch) {
-		case KEY_F(1): break; //todo	
+		case KEY_F(1): s->help = true; break;	
 		case KEY_F(2): if(s->machine_selected != 0) --s->machine_selected; break;
 		case KEY_F(3): if(s->machine_selected < s->max_machine - 1) ++s->machine_selected; break;
 		case KEY_F(4): s->search_mode = true; break;
@@ -212,7 +267,7 @@ int global_event_dispatcher(const int ch, const processus_array_t *array, user_s
 	return 0;
 }
 
-error_code_t ui_main(/*const*/ processus_array_t array[], user_selection_t *user_selection) {
+error_code_t ui_main(const processus_array_t array[], user_selection_t *user_selection) {
 
 	ui_init();
 
@@ -221,33 +276,41 @@ error_code_t ui_main(/*const*/ processus_array_t array[], user_selection_t *user
 		auto machine = &array[user_selection->machine_selected];
 		auto proc = &machine->data[user_selection->selected];
 
-		/*TEMP*/ // proc_array_update(machine);
-		
-		ui_show_header(user_selection->header_selected, user_selection->asc);
-		ui_show_proc(machine, user_selection->selected);
-		ui_show_footer(!user_selection->search_mode ? proc_array_function_command : proc_array_search_bar);
-
 		const int ch = getch();
+
+		if(user_selection->help) { } else {	
+		}
 
 		if(ch == KEY_F(9)) {
 			endwin();
 			return SUCCESS;
 		}
 
-		if(user_selection->search_mode) {
-			search_mode_event_dispatcher(ch, user_selection);
+		if(user_selection->help) {
+			if(ch == KEY_F(1)) user_selection->help = false;
+
+			show_help_page();
+			ui_show_footer(proc_array_help_footer);
 		} else {
-			auto callback = normal_mode_event_dispatcher(&machine, ch, user_selection);
-			if(callback) callback(proc);
+			if(user_selection->search_mode) {
+				search_mode_event_dispatcher(ch, user_selection);
+			} else {
+				auto callback = normal_mode_event_dispatcher(&machine, ch, user_selection);
+				if(callback) callback(proc); 
+			}
+
+			ui_show_header(user_selection->header_selected, user_selection->asc);
+			ui_show_proc(machine, user_selection->selected);
+			ui_show_footer(!user_selection->search_mode ? proc_array_function_command : proc_array_search_bar);
 		}
-		
+
 		const int scroll_factor = global_event_dispatcher(ch, machine, user_selection);
 		ui_scroll(scroll_factor, user_selection->selected);
 		ui_update(machine->size);
 
 		struct timespec ts = {
-	    		.tv_sec = 0,
-    			.tv_nsec = 1'000'000'000 / 40 // 1/40 seconde
+			.tv_sec = 0,
+			.tv_nsec = 1'000'000'000 / 40 // 1/40 seconde
 		};
 
 		nanosleep(&ts, nullptr);

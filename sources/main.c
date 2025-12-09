@@ -16,7 +16,8 @@ user_selection_t s = {
 	.header_selected = 0, 
 	.asc = true,
 	.search_mode = false,
-	.max_machine = 1
+	.max_machine = 2,
+	.help = false,
 };
 
 
@@ -24,7 +25,8 @@ user_selection_t s = {
 void *proc_task(void*) {
 	while (atomic_load(&running)) {
 		if(array) {
-			proc_array_update(&array[s.machine_selected]);
+			// local is always first machine
+			if(s.max_machine > 0) proc_array_update(&array[0]);
 			proc_compare_t cmp = nullptr;
 
 			switch(s.header_selected)
@@ -42,7 +44,7 @@ void *proc_task(void*) {
 		}
 		struct timespec ts = {
 			.tv_sec = 0,
-			.tv_nsec = 1'000'000'000 / 2// 1/10 seconde
+			.tv_nsec = 1'000'000'000 / 20 // 1/20 seconde
 		};
 
 		nanosleep(&ts, nullptr);
