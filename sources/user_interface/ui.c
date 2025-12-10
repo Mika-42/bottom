@@ -11,6 +11,7 @@
 
 #include "ui_utils.h"
 #include "ui_event_dispatcher.h"
+#include "ui_page.h"
 
 static WINDOW *ui_pad = nullptr;
 static WINDOW *ui_footer = nullptr;
@@ -36,14 +37,10 @@ void ui_init() {
 }
 
 void ui_show_footer(const char (*array)[ui_max_width]) {	
-	box(ui_footer, 0, 0);
-
-	for(size_t i = 0; i < ui_footer_lines; ++i) {
-		mvwprintw(ui_footer, i, 0, array[i]);
-	}
+	ui_show_array(ui_footer, array);
 }
 
-void ui_show_header(const size_t header_selected, const bool asc) {
+void ui_show_header_temp(const size_t header_selected, const bool asc) {
 	box(ui_header, 0, 0);
 
 	char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
@@ -157,29 +154,6 @@ void search_mode_event_dispatcher(const int ch, user_selection_t *s) {
 
 }
 
-void show_help_page() {
-
-	werase(ui_pad);	
-
-	box(ui_header, 0, 0);
-
-	mvwprintw(ui_header, 0, 0, proc_array_help_header[0]);
-	mvwprintw(ui_header, 1, 0, proc_array_help_header[1]);
-	mvwprintw(ui_header, 2, 0, proc_array_help_header[2]);
-
-	wrefresh(ui_header);
-
-	constexpr size_t size = sizeof(proc_array_help) / sizeof(proc_array_help[0]);
-	size_t i = 0;
-	for (; i<size; ++i) {
-		mvwprintw(ui_pad, i, 0, proc_array_help[i]);
-	}
-
-	for (;i<(size_t)getmaxy(stdscr); ++i) {
-		mvwprintw(ui_pad, i, 0, proc_array_help[size - 1]);
-	}
-}
-
 int global_event_dispatcher(const int ch, const processus_array_t *array, user_selection_t *s) {
 
 	if (ch == KEY_LEFT) return -1;
@@ -236,8 +210,7 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 		if(user_selection->help) {
 			ui_event_dispatcher_help(ch, user_selection);
 
-			show_help_page();
-			ui_show_footer(proc_array_help_footer);
+			show_help_page(ui_pad, ui_header, ui_footer);
 		} else {
 			if (user_selection->search_mode) {
 				ui_show_footer(proc_array_search_bar);
@@ -248,7 +221,7 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 				ui_show_footer(proc_array_function_command);
 			}
 
-			ui_show_header(user_selection->header_selected, user_selection->asc);
+			ui_show_header_temp(user_selection->header_selected, user_selection->asc);
 			ui_show_proc(machine, user_selection);
 		}
 
