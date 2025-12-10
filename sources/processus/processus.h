@@ -23,7 +23,6 @@ typedef struct processus_t {
 bool		str_is_numeric(const char *str);
 bool		proc_is_valid_pid(const char *pid);
 error_code_t	proc_get_user(processus_t *proc);
-// get name + utime + stime + start_time
 error_code_t	proc_get_stat(processus_t *proc);
 error_code_t	proc_get_cpu_total(long *cpu_total);
 error_code_t	proc_get_all_infos(const pid_t pid, processus_t *proc);

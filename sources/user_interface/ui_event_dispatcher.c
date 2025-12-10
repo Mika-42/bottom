@@ -1,3 +1,4 @@
+#include "ui_page.h"
 #include "ui_event_dispatcher.h"
 #include "signal_process.h"
 
@@ -33,20 +34,23 @@ processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[]
 	return nullptr;
 }
 
-void ui_event_dispatcher_help(const int ch, user_selection_t *s) {
+void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
+	
 	if(ch == KEY_F(1)) {
 		s->help = false;
 	}
+
+	show_help_page(ui->pad, ui->header, ui->footer);
 }
 
-
-void ui_event_dispatcher_search(const int ch, user_selection_t *s) {
-	if (ch ==KEY_F(1)) {
-		s->search_mode = false; 
+void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
+	if (ch == KEY_F(1)) {
+		s->search_mode = false;
+		return;
 	}
 
-	else if (ch ==KEY_F(2)) return; //TODO
-	else if (ch ==KEY_F(3)) return; //TODO
+	if (ch == KEY_F(2)) return; //TODO
+	if (ch == KEY_F(3)) return; //TODO
 	
 	else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
 		if (s->input_length > 0) s->input[--s->input_length] = '\0';
@@ -60,4 +64,7 @@ void ui_event_dispatcher_search(const int ch, user_selection_t *s) {
 
 		s->input[s->input_length] = '\0';
 	}
+
+	ui_show_array(ui->footer, proc_array_search_bar);
+	mvwprintw(ui->footer, 1, 49, "%-71.71s", s->input);
 }

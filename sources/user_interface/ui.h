@@ -18,6 +18,12 @@ typedef struct user_selection_t {
 	size_t	input_length;
 } user_selection_t;
 
+typedef struct ui_t {
+	WINDOW *pad;
+	WINDOW *footer;
+	WINDOW *header;
+} ui_t;
+
 void ui_init();
 
 void ui_show_proc(const processus_array_t *array, user_selection_t *s);

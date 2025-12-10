@@ -13,10 +13,7 @@
 #include "ui_event_dispatcher.h"
 #include "ui_page.h"
 
-static WINDOW *ui_pad = nullptr;
-static WINDOW *ui_footer = nullptr;
-static WINDOW *ui_header = nullptr;
-
+ui_t ui = {0};
 
 static int ui_scroll_x = 0;
 static int ui_scroll_y = 0;
@@ -31,25 +28,26 @@ void ui_init() {
         curs_set(0);
 	nodelay(stdscr, TRUE);
 	
-	ui_pad = newpad(ui_pad_lines, ui_pad_columns);
-	ui_footer = newpad(ui_footer_lines, ui_pad_columns);
-	ui_header = newpad(ui_header_lines, ui_pad_columns);
+	ui.pad = newpad(ui_pad_lines, ui_pad_columns);
+	ui.footer = newpad(ui_footer_lines, ui_pad_columns);
+	ui.header = newpad(ui_header_lines, ui_pad_columns);
 }
 
 void ui_show_header_temp(const size_t header_selected, const bool asc) {
-	box(ui_header, 0, 0);
+	box(ui.header, 0, 0);
 
 	char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
 	if (header_selected < header_element_count) arrow[header_selected] = asc ? "▲" : "▼";
         
-	mvwprintw(ui_header, 0, 0, proc_array_tab_header[0]);
-	mvwprintw(ui_header, 1, 0, proc_array_tab_header[1], arrow[0],arrow[1],arrow[2],arrow[3],arrow[4],arrow[5],arrow[6]);
-	mvwprintw(ui_header, 2, 0, proc_array_tab_header[2]);
+	mvwprintw(ui.header, 0, 0, proc_array_tab_header[0]);
+	mvwprintw(ui.header, 1, 0, proc_array_tab_header[1], arrow[0],arrow[1],arrow[2],arrow[3],arrow[4],arrow[5],arrow[6]);
+	mvwprintw(ui.header, 2, 0, proc_array_tab_header[2]);
 
 }
 
 void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
-	werase(ui_pad);
+
+	werase(ui.pad);
 
 	if (!array) return;
 	size_t filter_index = 0;
@@ -60,11 +58,11 @@ void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 		char buf[32];
 		format_time(array->data[i].start_time, buf, 32);
 
-		if (i == s->selected) wattron(ui_pad, A_REVERSE);
+		if (i == s->selected) wattron(ui.pad, A_REVERSE);
 
 		if (s->search_mode) {
 			if (strncmp(array->data[i].name, s->input, s->input_length) == 0) {
-				mvwprintw(ui_pad, filter_index++, 0, separator, 
+				mvwprintw(ui.pad, filter_index++, 0, separator, 
 						array->data[i].pid, 
 						array->data[i].user, 
 						array->data[i].name, 
@@ -75,7 +73,7 @@ void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 					 );
 			}
 		} else {	
-			mvwprintw(ui_pad, i, 0, separator, 
+			mvwprintw(ui.pad, i, 0, separator, 
 					array->data[i].pid, 
 					array->data[i].user, 
 					array->data[i].name, 
@@ -85,12 +83,12 @@ void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 					, buf
 				 );
 		}
-		if (i == s->selected) wattroff(ui_pad, A_REVERSE);	
+		if (i == s->selected) wattroff(ui.pad, A_REVERSE);	
 	}
 
 	if (s->search_mode) {
 		for (; filter_index<(size_t)getmaxy(stdscr); ++filter_index) {
-			mvwprintw(ui_pad, filter_index, 0, "┃ %-10s ┃ %-24s ┃ %-32s ┃ %-10s ┃ %-10s ┃ %-7s ┃  %-18s ┃", "", "", "", "", "", "", "");
+			mvwprintw(ui.pad, filter_index, 0, "┃ %-10s ┃ %-24s ┃ %-32s ┃ %-10s ┃ %-10s ┃ %-7s ┃  %-18s ┃", "", "", "", "", "", "", "");
 		}
 	}
 }
@@ -105,9 +103,9 @@ void ui_update(const size_t size) {
 
 	ui_utils_clamp_int(&ui_scroll_y, 0, (int)size - view_height);
 
-	pnoutrefresh(ui_header, 0, ui_scroll_x, 0, 0, ui_header_lines - 1, terminal_width - 1);
-	pnoutrefresh(ui_pad, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
-	pnoutrefresh(ui_footer, 0, ui_scroll_x, terminal_height - ui_footer_lines, 0, terminal_height - 1, terminal_width - 1);
+	pnoutrefresh(ui.header, 0, ui_scroll_x, 0, 0, ui_header_lines - 1, terminal_width - 1);
+	pnoutrefresh(ui.pad, ui_scroll_y, ui_scroll_x, ui_header_lines, 0, terminal_height - ui_footer_lines - 1, terminal_width - 1);
+	pnoutrefresh(ui.footer, 0, ui_scroll_x, terminal_height - ui_footer_lines, 0, terminal_height - 1, terminal_width - 1);
 
 	doupdate();
 }
@@ -185,22 +183,20 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 			return SUCCESS;
 		}
 
-		if(user_selection->help) {
-			ui_event_dispatcher_help(ch, user_selection);
+		if(user_selection->help) ui_event_dispatcher_help(ch, &ui, user_selection);
 
-			show_help_page(ui_pad, ui_header, ui_footer);
+		else if (user_selection->search_mode) {
+
+			ui_event_dispatcher_search(ch, &ui, user_selection);
+
+			ui_show_header_temp(user_selection->header_selected, user_selection->asc);
+			ui_show_proc(machine, user_selection);
+
 		} else {
-			if (user_selection->search_mode) {
-				ui_event_dispatcher_search(ch, user_selection);
 
-				ui_show_array(ui_footer, proc_array_search_bar);
-				mvwprintw(ui_footer, 1, 49, "%-71.71s", user_selection->input);
-
-			} else {
-				auto callback = ui_event_dispatcher_normal(&machine, ch, user_selection);
-				if (callback) callback(proc); 
-				ui_show_array(ui_footer, proc_array_function_command);
-			}
+			auto callback = ui_event_dispatcher_normal(&machine, ch, user_selection);
+			if (callback) callback(proc); 
+			ui_show_array(ui.footer, proc_array_function_command);
 
 			ui_show_header_temp(user_selection->header_selected, user_selection->asc);
 			ui_show_proc(machine, user_selection);
