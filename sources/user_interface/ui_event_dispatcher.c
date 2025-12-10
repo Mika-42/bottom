@@ -4,8 +4,7 @@
 processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[], const int ch, user_selection_t *s) {
 	switch(ch) {
 		case KEY_F(1): s->help = true; break;
-		case KEY_F(2):
-			       {
+		case KEY_F(2): {
 				       if(s->machine_selected != 0) {
 					       --s->machine_selected;
 				       }
@@ -37,5 +36,28 @@ processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[]
 void ui_event_dispatcher_help(const int ch, user_selection_t *s) {
 	if(ch == KEY_F(1)) {
 		s->help = false;
+	}
+}
+
+
+void ui_event_dispatcher_search(const int ch, user_selection_t *s) {
+	if (ch ==KEY_F(1)) {
+		s->search_mode = false; 
+	}
+
+	else if (ch ==KEY_F(2)) return; //TODO
+	else if (ch ==KEY_F(3)) return; //TODO
+	
+	else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
+		if (s->input_length > 0) s->input[--s->input_length] = '\0';
+	}
+
+	else if (ch >= 32 && ch <= 126) {
+		
+		if (s->input_length < 255) {
+			s->input[s->input_length++] = ch;
+		}
+
+		s->input[s->input_length] = '\0';
 	}
 }

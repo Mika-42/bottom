@@ -20,7 +20,6 @@ typedef struct user_selection_t {
 
 void ui_init();
 
-void ui_show_footer(const char (*array)[ui_max_width]);
 void ui_show_proc(const processus_array_t *array, user_selection_t *s);
 void ui_show_header(const size_t header_selected, const bool asc);
 
