@@ -11,4 +11,6 @@ typedef struct index_array_t {
 
 void	ui_index_array_reset(index_array_t *array);
 size_t	*ui_index_array_emplace_back(index_array_t *array, size_t value);
+void	ui_index_array_free(index_array_t *array);
+
 #endif /* UI_INDEX_ARRAY_H */

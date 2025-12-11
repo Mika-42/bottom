@@ -25,3 +25,12 @@ size_t *ui_index_array_emplace_back(index_array_t *array, size_t value) {
 
 	return &array->data[array->size - 1];	
 }
+
+void ui_index_array_free(index_array_t *array) {
+        if (!array) return;
+
+        free(array->data);
+        array->data = nullptr;
+        array->size = 0;
+        array->capacity = 0;
+}
