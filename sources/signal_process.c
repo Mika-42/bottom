@@ -34,11 +34,20 @@ int send_signal(processus_t *p, int sig) {
 
 	if (pidfd < 0) return EXIT_FAILURE;
 
-	int ret = syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0);
+	if (syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0) < 0) {
+		close(pidfd);
+		return EXIT_FAILURE;
+	}
 
 	close(pidfd);
 
-	return (ret < 0) ? EXIT_FAILURE : EXIT_SUCCESS;
+	if (!(sig ==  SIGKILL || sig == SIGTERM)) return EXIT_SUCCESS;
+
+	if (p->ppid != getpid()) return EXIT_SUCCESS;
+
+	waitpid(p->pid, NULL, 0);
+
+	return EXIT_SUCCESS;
 }
 
 int kill_process(processus_t *p) {
@@ -172,16 +181,21 @@ int restart_process(processus_t *p) {
 		return EXIT_FAILURE;
 	}
 
-	int timeout_ms = 5000;
-	int waited = 0;
-	while (pid_exists(p->pid) && waited < timeout_ms) {
-		usleep(10000);
-		waited += 10;
-	}
-	if (pid_exists(p->pid)) {
-		for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
-		for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
-		return EXIT_FAILURE;
+	if (p->ppid == getpid()) {
+		waitpid(p->pid, NULL, 0);
+	} else {
+		int timeout_ms = 5000;
+		int waited = 0;
+		while (pid_exists(p->pid) && waited < timeout_ms) {
+			usleep(10000);
+			waited += 10;
+		}
+	
+		if (pid_exists(p->pid)) {
+			for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
+			for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
+			return EXIT_FAILURE;
+		}
 	}
 
 	pid_t new_pid = fork();
