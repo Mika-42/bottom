@@ -52,6 +52,8 @@ processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[]
 }
 
 void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
+	
+	s->selected = 0;
 
 	if(ch == KEY_F(1)) {
 		s->help = false;
@@ -62,8 +64,7 @@ void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
 
 void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 	
-	ui_utils_clamp_size_t(&s->selected, 0, s->indices.size > 0 ? s->indices.size
-- 1 : 0);
+	ui_utils_clamp_size_t(&s->selected, 0, s->indices.size > 0 ? s->indices.size - 1 : 0);
 	
 	if (ch == KEY_F(1)) {
 		s->search_mode = false;
@@ -104,4 +105,12 @@ void ui_event_dispatcher_sort(const int ch, user_selection_t *s) {
 	} else if (ch == KEY_F(12)) {
 	       	s->asc = !s->asc;
 	}
+}
+
+int ui_event_dispatcher_global(const int ch) {
+
+	if (ch == KEY_LEFT) return -1;
+	if (ch == KEY_RIGHT) return 1;
+
+	return 0;
 }

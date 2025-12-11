@@ -1,6 +1,7 @@
 #include "ui_page.h"
 #include <string.h>
 #include "ui_format.h"
+#include "ui_filter.h"
 
 void ui_show_array(WINDOW *win, const char (*array)[ui_max_width]) {	
 	box(win, 0, 0);
@@ -39,19 +40,6 @@ void show_help_page(ui_t *ui) {
 	ui_show_array(ui->footer, proc_array_help_footer);
 }
 
-//------
-
-void filter_proc(const processus_array_t *array, user_selection_t *s) {
-	ui_index_array_reset(&s->indices);
-
-	for (size_t i=0; i<array->size; ++i) {
-                if (strncmp(array->data[i].name, s->input, s->input_length) == 0 || s->input[0] == '\0') {
-
-			ui_index_array_emplace_back(&s->indices, i);
-		}
-        }
-}
-//------
 void ui_show_proc(const processus_array_t *array, ui_t *ui, user_selection_t *s) {
 
 	werase(ui->pad);
@@ -60,11 +48,11 @@ void ui_show_proc(const processus_array_t *array, ui_t *ui, user_selection_t *s)
 	
 	size_t i = 0;
 
-	filter_proc(array, s);
+	ui_filter_proc(array, s);
 
 	for (; i< s->indices.size; ++i) {
 		size_t index = s->indices.data[i];
-		/**/
+		
 		double ram;
 		const char *unit = ui_format_ram(array->data[index].ram, &ram);
 

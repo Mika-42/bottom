@@ -10,6 +10,7 @@ constexpr size_t PROC_PATH_SIZE = 4096;
 
 typedef struct processus_t {  
 	pid_t		pid;
+	pid_t		ppid;
 	char		name[PROC_NAME_SIZE];
 	char		state;
 	unsigned long long ram;

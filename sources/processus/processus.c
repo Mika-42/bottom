@@ -103,19 +103,21 @@ error_code_t proc_get_stat(processus_t *proc) {
 	long resident = 0;
 	int ret = sscanf(rparen + 2, 
 		"%c "
-		"%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s "
+		"%d "
+		"%*s %*s %*s %*s %*s %*s %*s %*s %*s "
 		"%lu %lu "
 		"%*s %*s %*s %*s %*s %*s "
 		"%lu "
 		"%*s "
 		"%ld",  
 		&proc->state,
+		&proc->ppid,
 		&proc->utime, 
 		&proc->stime, 
 		&proc->start_time, 
 		&resident);
 	
-	if (ret != 5) return MALFORMED_STATUS_LINE;
+	if (ret != 6) return MALFORMED_STATUS_LINE;
 
 	const unsigned long long page_size = sysconf(_SC_PAGESIZE);
 	proc->ram = (unsigned long long)resident * page_size;

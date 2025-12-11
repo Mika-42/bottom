@@ -65,17 +65,8 @@ void ui_scroll(const int dx, const size_t selected) {
 	else if ((int)selected >= lo) ui_scroll_y = selected - view_height + 1;
 
 	ui_utils_clamp_int(&ui_scroll_y, 0,  ui_pad_lines - view_height);
-
 }
 
-int global_event_dispatcher(const int ch) {
-
-	if (ch == KEY_LEFT) return -1;
-	if (ch == KEY_RIGHT) return 1;
-
-	return 0;
-
-}
 
 error_code_t ui_main(const processus_array_t array[], user_selection_t *user_selection) {
 
@@ -96,26 +87,24 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 			endwin();
 			return SUCCESS;
 		}
-
-		if(user_selection->help) ui_event_dispatcher_help(ch, &ui, user_selection);
-
-		else if (user_selection->search_mode) {
-
+		
+		if(user_selection->help) {
+			ui_event_dispatcher_help(ch, &ui, user_selection);
+		} else if (user_selection->search_mode) {
+			
 			ui_event_dispatcher_search(ch, &ui, user_selection);
 			ui_show_proc(machine, &ui, user_selection);
 
-		const int scroll_factor = global_event_dispatcher(ch);
-		ui_scroll(scroll_factor, user_selection->selected);
 		} else {
 
 			auto callback = ui_event_dispatcher_normal(&machine, ch, &ui, user_selection);
 			if (callback) callback(proc); 
 			ui_show_proc(machine, &ui, user_selection);
 		
-		const int scroll_factor = global_event_dispatcher(ch);
-		ui_scroll(scroll_factor, user_selection->selected);
 		}
 
+		const int scroll_factor = ui_event_dispatcher_global(ch);
+		ui_scroll(scroll_factor, user_selection->selected);
 		ui_update(machine->size);
 
 		struct timespec ts = {
