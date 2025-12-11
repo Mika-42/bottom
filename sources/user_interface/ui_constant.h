@@ -11,6 +11,8 @@ static constexpr size_t ui_max_width		= 403;
 
 static const char separator[ui_max_width] = "┃ %-10d ┃ %-24.23s ┃ %-32.31s ┃ %-10s ┃ %-6.1f %s ┃ %-6.1f%% ┃  %-18s ┃";
 
+static constexpr char empty_separator[ui_max_width] = "┃ %-10s ┃ %-24s ┃ %-32s ┃ %-10s ┃ %-10s ┃ %-7s ┃  %-18s ┃";
+
 static constexpr char proc_array_function_command[ui_footer_lines][ui_max_width] = {
 	"┣━━━━━━━━━━━┳┻━━━━━━━━━━━━━┳━━━━━━━━━━━━┻━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┻━━┳━━━━━━━━━┻━━━━━━┳━━━━━┻━━━━━┳━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
 	"┃ [F1] help ┃ [F2] page <- ┃ [F3] page -> ┃ [F4] search ┃ [F5] pause/continue ┃ [F6] terminate ┃ [F7] kill ┃ [F8] reload ┃ [F9] Exit ┃",
@@ -49,7 +51,7 @@ static constexpr char proc_array_help[ui_help_lines][ui_max_width] = {
 	"┃ [↓]     scroll to bottom                                                                                                           ┃",
 	"┃                                                                                                                                    ┃",
 	"┃ [tab]   select sorting field                                                                                                       ┃",
-	"┃ [enter] select ascendant/descendent sort                                                                                           ┃",
+	"┃ [F12]   select ascendant/descendent sort                                                                                           ┃",
 	"┃                                                                                                                                    ┃",
 	"┃ [F9]    exit from the program                                                                                                      ┃",
 	"┃                                                                                                                                    ┃",

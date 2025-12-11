@@ -11,13 +11,6 @@
 + check get state 
 + check all sscanf
 
-**ui**
-+ add typiying text for search bar
-+ add filter alogrithm to get proc that match with name
-+ show CPU usage in percent
-+ sort CPU
-+ fix CPU usagie
-
 **main** 
 + CPU
 + F4 : adjust selection

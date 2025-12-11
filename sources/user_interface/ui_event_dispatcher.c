@@ -18,8 +18,11 @@ processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[]
 				       }
 				       break;
 			       }
-		case KEY_F(4): s->search_mode = true; break;
-
+		case KEY_F(4): {
+				       s->search_mode = true; 
+				       s->selected = 0;
+				       break;
+			       }
 		case KEY_F(5): {
 				       auto machine = array[s->machine_selected];
 				       auto proc = &(machine->data[s->selected]);
@@ -28,10 +31,19 @@ processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[]
 		case KEY_F(6): return term_process;
 		case KEY_F(7): return kill_process;
 		case KEY_F(8): return restart_process;
-		case '\t': s->header_selected = (s->header_selected + 1) % header_element_count; break;
-		case '\n': s->asc = !s->asc; break;
+		case KEY_UP:
+			   if (s->selected != 0) {
+				   --s->selected;
+			   }
+			   break;
+		case KEY_DOWN:
+			   if (s->selected < array[s->machine_selected]->size - 1) {
+				   ++s->selected;
+			   }
+			   break;
 	}
 
+	ui_event_dispatcher_sort(ch, s);
 	ui_show_array(ui->footer, proc_array_function_command);
 	ui_show_header(s->header_selected, ui, s->asc);
 
@@ -69,8 +81,17 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 		s->input[s->input_length] = '\0';
 	}
 
+	ui_event_dispatcher_sort(ch, s);
 	ui_show_array(ui->footer, proc_array_search_bar);
 	mvwprintw(ui->footer, 1, 49, "%-71.71s", s->input);
 
 	ui_show_header(s->header_selected, ui, s->asc);
+}
+
+void ui_event_dispatcher_sort(const int ch, user_selection_t *s) {
+	if(ch == '\t') { 
+		s->header_selected = (s->header_selected + 1) % header_element_count;
+	} else if (ch == KEY_F(12)) {
+	       	s->asc = !s->asc;
+	}
 }
