@@ -1,5 +1,4 @@
 #include "ui.h"
-#include "format.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -9,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "ui_format.h"
 #include "ui_utils.h"
 #include "ui_event_dispatcher.h"
 #include "ui_page.h"
@@ -33,18 +33,6 @@ void ui_init() {
 	ui.header = newpad(ui_header_lines, ui_pad_columns);
 }
 
-void ui_show_header_temp(const size_t header_selected, const bool asc) {
-	box(ui.header, 0, 0);
-
-	char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
-	if (header_selected < header_element_count) arrow[header_selected] = asc ? "▲" : "▼";
-        
-	mvwprintw(ui.header, 0, 0, proc_array_tab_header[0]);
-	mvwprintw(ui.header, 1, 0, proc_array_tab_header[1], arrow[0],arrow[1],arrow[2],arrow[3],arrow[4],arrow[5],arrow[6]);
-	mvwprintw(ui.header, 2, 0, proc_array_tab_header[2]);
-
-}
-
 void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 
 	werase(ui.pad);
@@ -53,10 +41,10 @@ void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 	size_t filter_index = 0;
 	for (size_t i=0; i<array->size; ++i) {
 		double ram;
-		const char *unit = format_ram(array->data[i].ram, &ram);
+		const char *unit = ui_format_ram(array->data[i].ram, &ram);
 
 		char buf[32];
-		format_time(array->data[i].start_time, buf, 32);
+		ui_format_time(array->data[i].start_time, buf, 32);
 
 		if (i == s->selected) wattron(ui.pad, A_REVERSE);
 
@@ -66,7 +54,7 @@ void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 						array->data[i].pid, 
 						array->data[i].user, 
 						array->data[i].name, 
-						format_state(array->data[i].state),
+						ui_format_state(array->data[i].state),
 						ram, unit, 
 						100.00 //fictional data TODO implement CPU usage
 						, buf
@@ -77,7 +65,7 @@ void ui_show_proc(const processus_array_t *array,  user_selection_t *s) {
 					array->data[i].pid, 
 					array->data[i].user, 
 					array->data[i].name, 
-					format_state(array->data[i].state),
+					ui_format_state(array->data[i].state),
 					ram, unit, 
 					100.00 //fictional data TODO implement CPU usage
 					, buf
@@ -137,17 +125,6 @@ int global_event_dispatcher(const int ch, const processus_array_t *array, user_s
 
 	if (!s->help) {
 		switch(ch) {
-			case '\t':
-				if (!s->search_mode) {
-					s->header_selected = (s->header_selected + 1) % header_element_count;
-				}
-				break;
-
-			case '\n': 
-				if (!s->search_mode) {
-					s->asc = !s->asc; 
-				} 
-				break;
 
 			case KEY_UP: 
 				if (s->selected != 0) {
@@ -162,6 +139,7 @@ int global_event_dispatcher(const int ch, const processus_array_t *array, user_s
 		}
 	}
 	return 0;
+
 }
 
 error_code_t ui_main(const processus_array_t array[], user_selection_t *user_selection) {
@@ -189,16 +167,13 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 
 			ui_event_dispatcher_search(ch, &ui, user_selection);
 
-			ui_show_header_temp(user_selection->header_selected, user_selection->asc);
 			ui_show_proc(machine, user_selection);
 
 		} else {
 
-			auto callback = ui_event_dispatcher_normal(&machine, ch, user_selection);
+			auto callback = ui_event_dispatcher_normal(&machine, ch, &ui, user_selection);
 			if (callback) callback(proc); 
-			ui_show_array(ui.footer, proc_array_function_command);
 
-			ui_show_header_temp(user_selection->header_selected, user_selection->asc);
 			ui_show_proc(machine, user_selection);
 		}
 

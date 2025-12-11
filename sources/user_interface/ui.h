@@ -27,7 +27,6 @@ typedef struct ui_t {
 void ui_init();
 
 void ui_show_proc(const processus_array_t *array, user_selection_t *s);
-void ui_show_header(const size_t header_selected, const bool asc);
 
 void constrain_strict(int *value, const int min, const int max);
 
