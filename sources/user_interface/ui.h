@@ -5,17 +5,19 @@
 #include <ncurses.h>
 
 #include "ui_constant.h"
+#include "ui_index_array.h"
 
 typedef struct user_selection_t {
-	size_t	selected;
-	size_t  machine_selected;
-	size_t	header_selected;
-	bool	asc;
-	bool	search_mode;
-	size_t	max_machine;
-	bool	help;
-	char	input[255];
-	size_t	input_length;
+	size_t		selected;
+	size_t		machine_selected;
+	size_t		header_selected;
+	bool		asc;
+	bool		search_mode;
+	size_t		max_machine;
+	bool		help;
+	char		input[255];
+	size_t		input_length;
+	index_array_t	indices;
 } user_selection_t;
 
 typedef struct ui_t {

@@ -20,19 +20,4 @@ error_code_t	proc_array_update(processus_array_t* array);
 processus_t	*proc_array_find_by_pid(processus_array_t *array, const pid_t pid);
 void		proc_array_remove_if(processus_array_t *array, proc_predicate_t pred);
 
-void		proc_array_sort(processus_array_t *array, proc_compare_t cmp);
-int		pid_asc(const processus_t *lhs, const processus_t *rhs);
-int		pid_dsc(const processus_t *lhs, const processus_t *rhs);
-int		state_asc(const processus_t *lhs, const processus_t *rhs);
-int		state_dsc(const processus_t *lhs, const processus_t *rhs);
-int		ram_asc(const processus_t *lhs, const processus_t *rhs);
-int		ram_dsc(const processus_t *lhs, const processus_t *rhs);
-int		name_asc(const processus_t *lhs, const processus_t *rhs);
-int		name_dsc(const processus_t *lhs, const processus_t *rhs);
-int		user_asc(const processus_t *lhs, const processus_t *rhs);
-int		user_dsc(const processus_t *lhs, const processus_t *rhs);
-int		time_asc(const processus_t *lhs, const processus_t *rhs);
-int		time_dsc(const processus_t *lhs, const processus_t *rhs);
-
-size_t		filter_by_name();
 #endif //PROCESSUS_ARRAY_H

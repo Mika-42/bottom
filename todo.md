@@ -13,5 +13,3 @@
 
 **main** 
 + CPU
-+ F4 : adjust selection
-+ F4 : adjust scroll

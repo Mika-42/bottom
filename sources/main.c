@@ -6,6 +6,7 @@
 #include "ui.h"
 #include <stdatomic.h>
 #include <time.h>
+#include "processus_sort.h"
 
 atomic_bool running = true;
 processus_array_t *array = nullptr;

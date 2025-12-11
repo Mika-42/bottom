@@ -1,7 +1,10 @@
-#include "ui_page.h"
 #include "ui_event_dispatcher.h"
 #include "ui_constant.h"
+#include "ui_page.h"
+#include "ui_utils.h"
 #include "signal_process.h"
+
+#include <string.h>
 
 processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[], const int ch, ui_t *ui, user_selection_t *s) {
 	switch(ch) {
@@ -18,11 +21,8 @@ processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[]
 				       }
 				       break;
 			       }
-		case KEY_F(4): {
-				       s->search_mode = true; 
-				       s->selected = 0;
-				       break;
-			       }
+		case KEY_F(4): s->search_mode = true; break;
+			       
 		case KEY_F(5): {
 				       auto machine = array[s->machine_selected];
 				       auto proc = &(machine->data[s->selected]);
@@ -42,7 +42,8 @@ processus_callback_t ui_event_dispatcher_normal(const processus_array_t *array[]
 			   }
 			   break;
 	}
-
+	
+	//todo constrain selected in range [0, index_array->size[
 	ui_event_dispatcher_sort(ch, s);
 	ui_show_array(ui->footer, proc_array_function_command);
 	ui_show_header(s->header_selected, ui, s->asc);
@@ -60,14 +61,17 @@ void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
 }
 
 void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
+	
+	ui_utils_clamp_size_t(&s->selected, 0, s->indices.size > 0 ? s->indices.size
+- 1 : 0);
+	
 	if (ch == KEY_F(1)) {
 		s->search_mode = false;
+		memset(s->input, 0, sizeof(s->input));
+		if(s->indices.size > 0) s->selected = s->indices.data[s->selected];
 		return;
 	}
-
-	if (ch == KEY_F(2)) return; //TODO
-	if (ch == KEY_F(3)) return; //TODO
-
+	
 	else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
 		if (s->input_length > 0) s->input[--s->input_length] = '\0';
 	}
@@ -80,10 +84,16 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 
 		s->input[s->input_length] = '\0';
 	}
-
+	else if(ch == KEY_UP && s->selected != 0) {
+                                   --s->selected;
+	}
+	else if(ch == KEY_DOWN && s->selected < s->indices.size - 1) {
+                                   ++s->selected;
+	}
+		
 	ui_event_dispatcher_sort(ch, s);
 	ui_show_array(ui->footer, proc_array_search_bar);
-	mvwprintw(ui->footer, 1, 49, "%-71.71s", s->input);
+	mvwprintw(ui->footer, 1, 24, "%-96.96s", s->input);
 
 	ui_show_header(s->header_selected, ui, s->asc);
 }

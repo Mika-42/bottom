@@ -88,7 +88,8 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 
 		const int ch = getch();
 
-		if (user_selection->help) { } else {	
+		if (user_selection->help) {
+			ui_scroll_y = 0;       
 		}
 
 		if (ch == KEY_F(9)) {
@@ -103,15 +104,18 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 			ui_event_dispatcher_search(ch, &ui, user_selection);
 			ui_show_proc(machine, &ui, user_selection);
 
+		const int scroll_factor = global_event_dispatcher(ch);
+		ui_scroll(scroll_factor, user_selection->selected);
 		} else {
 
 			auto callback = ui_event_dispatcher_normal(&machine, ch, &ui, user_selection);
 			if (callback) callback(proc); 
 			ui_show_proc(machine, &ui, user_selection);
-		}
-
+		
 		const int scroll_factor = global_event_dispatcher(ch);
 		ui_scroll(scroll_factor, user_selection->selected);
+		}
+
 		ui_update(machine->size);
 
 		struct timespec ts = {
