@@ -26,12 +26,10 @@ typedef struct ui_t {
 	WINDOW *header;
 } ui_t;
 
-void ui_init();
-
-void constrain_strict(int *value, const int min, const int max);
-
-void ui_update(const size_t size);
-void ui_scroll(const int dx, const size_t selected);
-error_code_t ui_main(const processus_array_t array[], user_selection_t *user_selection);
+void		ui_init();
+void		constrain_strict(int *value, const int min, const int max);
+void		ui_update(const size_t size);
+void		ui_scroll(const int dx, const size_t selected);
+error_code_t	ui_main(const processus_array_t array[], user_selection_t *user_selection);
 
 #endif //UI_H

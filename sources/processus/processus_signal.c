@@ -1,6 +1,6 @@
 #define _GNU_SOURCE
 
-#include "signal_process.h"
+#include "processus_signal.h"
 
 #include <string.h>
 #include <signal.h>
@@ -50,23 +50,23 @@ int send_signal(processus_t *p, int sig) {
 	return EXIT_SUCCESS;
 }
 
-int kill_process(processus_t *p) {
+int proc_kill(processus_t *p) {
 	return send_signal(p, SIGKILL);
 }
 
-int stop_process(processus_t *p) {
+int proc_stop(processus_t *p) {
 	return send_signal(p, SIGSTOP);
 }
 
-int cont_process(processus_t *p) {
+int proc_cont(processus_t *p) {
 	return send_signal(p, SIGCONT);
 }
 
-int term_process(processus_t *p) {
+int proc_term(processus_t *p) {
 	return send_signal(p, SIGTERM);
 }
 
-//Déclaration des fonctions utile pour la fonction restart_process()
+//Déclaration des fonctions utile pour la fonction proc_restart()
 int get_exe(processus_t *p, char *exe_path, int size);
 int get_arg(processus_t *p, char *argv[], int max_arg);
 int get_env(processus_t *p, char *envp[], int max_env);
@@ -152,7 +152,7 @@ int kill_children(processus_t *p) {
 }
 
 
-int restart_process(processus_t *p) {
+int proc_restart(processus_t *p) {
 	if (pid_does_not_exists(p->pid)) {
 		return EXIT_FAILURE;
 	}
@@ -175,7 +175,7 @@ int restart_process(processus_t *p) {
 		return EXIT_FAILURE;
 	}
 
-	if (kill_children(p) != EXIT_SUCCESS || term_process(p) != EXIT_SUCCESS) {
+	if (kill_children(p) != EXIT_SUCCESS || proc_term(p) != EXIT_SUCCESS) {
 		for (int i=0; argv[i]!=NULL; ++i) free(argv[i]);
 		for (int i=0; envp[i]!=NULL; ++i) free(envp[i]);
 		return EXIT_FAILURE;

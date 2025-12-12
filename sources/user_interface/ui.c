@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <locale.h>
 #include <limits.h>
-#include "signal_process.h"
 #include <time.h>
 
+#include "processus_signal.h"
 #include "ui_utils.h"
 #include "ui_event_dispatcher.h"
 #include "ui_page.h"
@@ -67,58 +67,48 @@ void ui_scroll(const int dx, const size_t selected) {
 	ui_utils_clamp_int(&ui_scroll_y, 0,  ui_pad_lines - view_height);
 }
 
-
-error_code_t ui_main(const processus_array_t array[], user_selection_t *user_selection) {
+error_code_t ui_main(const processus_array_t array[], user_selection_t *s) {
 
 	ui_init();
 
+	constexpr struct timespec ts = {
+		.tv_sec = 0,
+		.tv_nsec = 1'000'000'000 / 40 // 1/40 seconde
+	};
+
+	size_t select = 0;
+	
 	for (;;) {
 
-		auto machine = &array[user_selection->machine_selected];
-		auto proc = &machine->data[user_selection->selected];
+		auto machine = &array[s->machine_selected];
 
 		const int ch = getch();
-
-		if (user_selection->help) {
-			ui_scroll_y = 0;       
-		}
 
 		if (ch == KEY_F(9)) {
 			endwin();
 			return SUCCESS;
 		}
 
-		if(user_selection->help) {
-			ui_event_dispatcher_help(ch, &ui, user_selection);
-		} else if (user_selection->search_mode) {
-
-			ui_event_dispatcher_search(ch, &ui, user_selection);
-
-			const error_code_t err = ui_show_proc(machine, &ui, user_selection);
-			if(err != SUCCESS) {
-				return err;
-			}
-
+		if(s->help) {	
+			ui_scroll_y = 0;       
+			ui_event_dispatcher_help(ch, &ui, s);
+			select = 0;
 		} else {
+			if (s->search_mode) {
 
-			auto callback = ui_event_dispatcher_normal(&machine, ch, &ui, user_selection);
-			if (callback) callback(proc); 
+				ui_event_dispatcher_search(array, ch, &ui, s);
 
-			const error_code_t err = ui_show_proc(machine, &ui, user_selection);
-			if(err != SUCCESS) {
-				return err;
+
+			} else {
+				ui_event_dispatcher_normal(array, ch, &ui, s);
 			}
 
+			select = s->selected;
 		}
 
 		const int scroll_factor = ui_event_dispatcher_global(ch);
-		ui_scroll(scroll_factor, user_selection->selected);
+		ui_scroll(scroll_factor, select);
 		ui_update(machine->size);
-
-		struct timespec ts = {
-			.tv_sec = 0,
-			.tv_nsec = 1'000'000'000 / 40 // 1/40 seconde
-		};
 
 		nanosleep(&ts, nullptr);
 	}

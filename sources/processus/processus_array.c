@@ -1,5 +1,5 @@
 #include "processus_array.h"
-#include "signal_process.h"
+#include "processus_signal.h"
 #include <stdlib.h>
 #include <dirent.h>
 #include <stdio.h>

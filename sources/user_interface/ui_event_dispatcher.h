@@ -3,11 +3,11 @@
 
 #include "processus_array.h"
 #include "ui.h"
+#include "error.h"
 
-typedef int (*processus_callback_t)(processus_t *);
-processus_callback_t	ui_event_dispatcher_normal(const processus_array_t *array[], const int ch,ui_t *ui, user_selection_t *s);
+error_code_t		ui_event_dispatcher_normal(const processus_array_t *array, const int ch,ui_t *ui, user_selection_t *s);
 void			ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s);
-void			ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s);
+error_code_t		ui_event_dispatcher_search(const processus_array_t *array, const int ch, ui_t *ui, user_selection_t *s);
 void			ui_event_dispatcher_sort(const int ch, user_selection_t *s);
 int			ui_event_dispatcher_global(const int ch);
 
