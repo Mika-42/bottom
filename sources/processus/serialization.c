@@ -8,7 +8,7 @@
 int process_to_string(const processus_t *proc, char *buffer, size_t max_size) {
 
   int recup = snprintf(buffer, max_size, 
-        "%d|%s|%c|%s|%ld|%lu|%lu\n", 
+        "%d|%s|%c|%s|%llu|%lu|%lu\n", 
         proc->pid,          
         proc->name,         
         proc->state,        
