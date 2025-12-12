@@ -2,8 +2,10 @@
 #include <unistd.h> 
 #include <string.h> 
 #include <stdlib.h> 
+#include <stddef.h>
 #include <stdio.h>
 #include "serialization.h"
+
 
 int process_to_string(const processus_t *proc, char *buffer, size_t max_size) {
 
