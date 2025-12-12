@@ -2,8 +2,9 @@
 #define UI_FILTER_H
 
 #include "processus_array.h"
+#include "error.h"
 #include "ui.h"
 
-void ui_filter_proc(const processus_array_t *array, user_selection_t *s);
+error_code_t ui_filter_proc(const processus_array_t *array, user_selection_t *s);
 
 #endif /* UI_FILTER_H */

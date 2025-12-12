@@ -40,15 +40,16 @@ void show_help_page(ui_t *ui) {
 	ui_show_array(ui->footer, proc_array_help_footer);
 }
 
-void ui_show_proc(const processus_array_t *array, ui_t *ui, user_selection_t *s) {
+error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selection_t *s) {
 
 	werase(ui->pad);
 
-	if (!array) return;
+	if (!array) return NULLPTR_PARAMETER_ERROR;
 	
 	size_t i = 0;
 
-	ui_filter_proc(array, s);
+	const error_code_t err = ui_filter_proc(array, s);
+	if(err != SUCCESS) return err;
 
 	for (; i< s->indices.size; ++i) {
 		size_t index = s->indices.data[i];
@@ -77,4 +78,6 @@ void ui_show_proc(const processus_array_t *array, ui_t *ui, user_selection_t *s)
 	}
 	
 	if(s->indices.size != 0) mvwchgat(ui->pad, s->selected, 0, -1, A_REVERSE, 0, NULL);
+
+	return SUCCESS;
 }

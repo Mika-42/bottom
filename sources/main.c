@@ -21,6 +21,11 @@ user_selection_t s = {
 	.help = false,
 	.input = {0},
 	.input_length = 0,
+	.indices = {
+		.data = nullptr,
+		.size = 0,
+		.capacity = 0,
+	}
 };
 
 
@@ -29,7 +34,12 @@ void *proc_task(void*) {
 	while (atomic_load(&running)) {
 		if (array) {
 			// local is always first machine
-			if (s.max_machine > 0) proc_array_update(&array[0]);
+			if (s.max_machine > 0) {
+				if(proc_array_update(&array[0]) != SUCCESS) {
+					atomic_store(&running, false);
+					break;
+				}
+			}
 			proc_compare_t cmp = nullptr;
 
 			switch (s.header_selected) {
@@ -99,5 +109,7 @@ int main(/*int argc, char *argv[]*/){
 		proc_array_free(&array[i]);
 	}
 	free(array);
+
+	ui_index_array_free(&s.indices);
 }
 

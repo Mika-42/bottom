@@ -19,13 +19,13 @@ static int ui_scroll_y = 0;
 void ui_init() {
 	setlocale(LC_ALL,"");
 	initscr();
-        noecho();
-        cbreak();
-        keypad(stdscr, TRUE);
-        flushinp();
-        curs_set(0);
+	noecho();
+	cbreak();
+	keypad(stdscr, TRUE);
+	flushinp();
+	curs_set(0);
 	nodelay(stdscr, TRUE);
-	
+
 	ui.pad = newpad(ui_pad_lines, ui_pad_columns);
 	ui.footer = newpad(ui_footer_lines, ui_pad_columns);
 	ui.header = newpad(ui_header_lines, ui_pad_columns);
@@ -72,7 +72,7 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 
 	ui_init();
 
-	for (; ; ) {
+	for (;;) {
 
 		auto machine = &array[user_selection->machine_selected];
 		auto proc = &machine->data[user_selection->selected];
@@ -87,20 +87,28 @@ error_code_t ui_main(const processus_array_t array[], user_selection_t *user_sel
 			endwin();
 			return SUCCESS;
 		}
-		
+
 		if(user_selection->help) {
 			ui_event_dispatcher_help(ch, &ui, user_selection);
 		} else if (user_selection->search_mode) {
-			
+
 			ui_event_dispatcher_search(ch, &ui, user_selection);
-			ui_show_proc(machine, &ui, user_selection);
+
+			const error_code_t err = ui_show_proc(machine, &ui, user_selection);
+			if(err != SUCCESS) {
+				return err;
+			}
 
 		} else {
 
 			auto callback = ui_event_dispatcher_normal(&machine, ch, &ui, user_selection);
 			if (callback) callback(proc); 
-			ui_show_proc(machine, &ui, user_selection);
-		
+
+			const error_code_t err = ui_show_proc(machine, &ui, user_selection);
+			if(err != SUCCESS) {
+				return err;
+			}
+
 		}
 
 		const int scroll_factor = ui_event_dispatcher_global(ch);
