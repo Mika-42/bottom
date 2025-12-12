@@ -103,7 +103,7 @@ error_code_t ui_event_dispatcher_search(const processus_array_t *array, const in
 void ui_event_dispatcher_sort(const int ch, user_selection_t *s) {
 	if(ch == '\t') { 
 		s->header_selected = (s->header_selected + 1) % header_element_count;
-	} else if (ch == KEY_F(12)) {
+	} else if (ch == '\n') {
 		s->asc = !s->asc;
 	}
 }

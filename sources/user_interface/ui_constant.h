@@ -51,7 +51,7 @@ static constexpr char proc_array_help[ui_help_lines][ui_max_width] = {
 	"┃ [↓]     scroll to bottom                                                                                                           ┃",
 	"┃                                                                                                                                    ┃",
 	"┃ [tab]   select sorting field                                                                                                       ┃",
-	"┃ [F12]   select ascendant/descendent sort                                                                                           ┃",
+	"┃ [enter] select ascendant/descendent sort                                                                                           ┃",
 	"┃                                                                                                                                    ┃",
 	"┃ [F9]    exit from the program                                                                                                      ┃",
 	"┃                                                                                                                                    ┃",

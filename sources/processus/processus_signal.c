@@ -158,8 +158,8 @@ int proc_restart(processus_t *p) {
 	}
 
 	char exe_path[MAX_SIZE_PATH];
-	char *argv[MAX_ARG];
-	char *envp[MAX_ARG];
+	char *argv[MAX_ARG]; 
+	char *envp[MAX_ARG]; 
 
 	if (get_exe(p, exe_path, sizeof(exe_path)) != EXIT_SUCCESS) {
 		return EXIT_FAILURE;
