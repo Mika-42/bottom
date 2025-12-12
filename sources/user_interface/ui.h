@@ -3,7 +3,7 @@
 
 #include "processus_array.h"
 #include <ncurses.h>
-
+#include <pthread.h>
 #include "ui_constant.h"
 #include "ui_index_array.h"
 
@@ -18,6 +18,7 @@ typedef struct user_selection_t {
 	char		input[255];
 	size_t		input_length;
 	index_array_t	indices;
+	pthread_mutex_t lock;
 } user_selection_t;
 
 typedef struct ui_t {
@@ -26,10 +27,8 @@ typedef struct ui_t {
 	WINDOW *header;
 } ui_t;
 
-void		ui_init();
-void		constrain_strict(int *value, const int min, const int max);
-void		ui_update(const size_t size);
+void		ui_init(ui_t *ui);
+void		ui_update(ui_t* ui, const size_t size);
 void		ui_scroll(const int dx, const size_t selected);
-error_code_t	ui_main(const processus_array_t array[], user_selection_t *user_selection);
 
 #endif //UI_H

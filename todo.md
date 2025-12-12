@@ -10,6 +10,7 @@
 + add doxygen comment
 + check get state 
 + check all sscanf
++ optimize processus_signal.h/.c
 
 **main** 
 + CPU

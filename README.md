@@ -1,5 +1,10 @@
 # Projet LP25 - A2025
 
+## Dépendances à installer
+arch-linux
+```bash
+    sudo pacman -S ncurses
+```
 ## Pour compiler et exécuter le projet 
 
 ```bash

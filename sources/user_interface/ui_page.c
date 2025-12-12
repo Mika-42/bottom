@@ -66,8 +66,8 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 				array->data[index].name, 
 				ui_format_state(array->data[index].state),
 				ram, unit, 
-				100.00 //fictional data TODO implement CPU usage
-				, buf
+				array->data[index].cpu_usage,
+				buf
 			 );
 	}
 
