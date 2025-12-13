@@ -3,9 +3,9 @@
 
 #include "processus_array.h"
 #include <ncurses.h>
-#include <pthread.h>
 #include "ui_constant.h"
 #include "ui_index_array.h"
+#include <pthread.h>
 
 typedef struct user_selection_t {
 	size_t		selected;
@@ -25,10 +25,14 @@ typedef struct ui_t {
 	WINDOW *pad;
 	WINDOW *footer;
 	WINDOW *header;
+
+	int ui_scroll_x;
+	int ui_scroll_y;
 } ui_t;
 
-void		ui_init(ui_t *ui);
-void		ui_update(ui_t* ui, const size_t size);
-void		ui_scroll(const int dx, const size_t selected);
+void	ui_init(ui_t *ui);
+void	ui_deinit(ui_t *ui);
+void	ui_update(ui_t* ui, const size_t size);
+void	ui_scroll(ui_t *ui, const int dx, const size_t selected);
 
 #endif //UI_H

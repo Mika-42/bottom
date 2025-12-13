@@ -2,14 +2,30 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "command_option.h"
-#include "ui.h"
 #include <stdatomic.h>
 #include <time.h>
+#include "ui.h"
 #include "processus_sort.h"
 #include "ui_event_dispatcher.h"
+#include "command_option.h"
+
+/*Notes
+ *	array[0] is ALWAYS the local machine !
+ */
 
 atomic_bool running = true;
+
+constexpr size_t one_sec = 1'000'000'000; //nanosec
+
+constexpr struct timespec proc_thread_time_interval = {
+		.tv_sec = 0,
+		.tv_nsec = one_sec / 2	
+};
+
+constexpr struct timespec ui_thread_time_interval = {
+		.tv_sec = 0,
+		.tv_nsec = one_sec / 40
+};
 
 typedef struct double_buffer_t {
 	processus_array_t	buffer[2];
@@ -38,134 +54,141 @@ user_selection_t s = {
 	}
 };
 
-
-
-void *proc_task(void*) {
-
-	constexpr struct timespec ts = {
-		.tv_sec = 0,
-		.tv_nsec = 1'000'000'000 / 2 // 1/4 seconde
-	};
+void *proc_task(void *arg) {
+	double_buffer_t *db = arg;
 
 	while (atomic_load_explicit(&running, memory_order_acquire)) {
-		
-		if (!array) break;
-		
-		const int index = 1 - atomic_load_explicit(&(array[0].active), memory_order_acquire);
-		
-		auto proc_list = &(array[0].buffer[index]);
-
 
 		pthread_mutex_lock(&s.lock);
-		// local is always first machine
-		if (s.max_machine > 0) {
-			if(proc_array_update(proc_list) != SUCCESS) {
+		int header = s.header_selected;
+		bool asc = s.asc;
+		pthread_mutex_unlock(&s.lock);			
 
-				pthread_mutex_unlock(&s.lock);
-				atomic_store_explicit(&running, false, memory_order_release);
-				break;
-			}
+		const int index = 1 - atomic_load_explicit(&db->active, memory_order_acquire);
+		processus_array_t *proc_list = &db->buffer[index];
+
+		if(proc_array_update(proc_list) != SUCCESS) {
+			atomic_store_explicit(&running, false, memory_order_release);
+			break;
 		}
 
 		proc_compare_t cmp = nullptr;
 
-		switch (s.header_selected) {
-			case 0: cmp = s.asc ? pid_asc : pid_dsc; break;
-			case 1: cmp = s.asc ? user_asc : user_dsc; break;
-			case 2: cmp = s.asc ? name_asc : name_dsc; break;
-			case 3: cmp = s.asc ? state_asc : state_dsc; break;
-			case 4: cmp = s.asc ? ram_asc : ram_dsc; break;
-			case 6:	cmp = s.asc ? time_asc : time_dsc; break;
+		switch (header) {
+			case 0: cmp = asc ? pid_asc : pid_dsc; break;
+			case 1: cmp = asc ? user_asc : user_dsc; break;
+			case 2: cmp = asc ? name_asc : name_dsc; break;
+			case 3: cmp = asc ? state_asc : state_dsc; break;
+			case 4: cmp = asc ? ram_asc : ram_dsc; break;
+			case 6:	cmp = asc ? time_asc : time_dsc; break;
 		}
-	
-		proc_array_sort(proc_list, cmp);
-	
-		atomic_store_explicit(&(array[0].active), index, memory_order_release);
 
-		pthread_mutex_unlock(&s.lock);
-		
-		nanosleep(&ts, nullptr);
+		if(cmp) proc_array_sort(proc_list, cmp);
+
+		atomic_store_explicit(&db->active, index, memory_order_release);
+
+		nanosleep(&proc_thread_time_interval, nullptr);
 
 	}
 
 	return nullptr;
 }
 
-void *ui_task(void*) {
+void *ui_task(void *arg) {
+
 	ui_t ui = {0};
 	ui_init(&ui);
 
-	constexpr struct timespec ts = {
-		.tv_sec = 0,
-		.tv_nsec = 1'000'000'000 / 40 // 1/40 seconde
-	};
-
 	size_t select = 0;
-	
-	for (;;) {
-		
+
+	while (atomic_load_explicit(&running, memory_order_acquire)) {
+
 		const int ch = getch();
-		
+
 		pthread_mutex_lock(&s.lock);
-		
-		int index = atomic_load_explicit(&(array[s.machine_selected].active), memory_order_acquire);
-		auto proc_list = &(array[s.machine_selected].buffer[index]);
 
 		if (ch == KEY_F(9)) {
-			endwin(); break;
+			pthread_mutex_unlock(&s.lock);
+			atomic_store_explicit(&running, false, memory_order_release);
+			break;
 		}
+
+		double_buffer_t *machines = arg;	
+		double_buffer_t *db = &machines[s.machine_selected];
+		int index = atomic_load_explicit(&db->active, memory_order_acquire);
+		processus_array_t *proc_list = &db->buffer[index];
 
 		if(s.help) {	
-		//TODO remettre le ui_scroll_y à 0//	ui_scroll_y = 0;       
+			ui.ui_scroll_y = 0;       
 			ui_event_dispatcher_help(ch, &ui, &s);
 			select = 0;
+		} else if (s.search_mode) {
+
+			ui_event_dispatcher_search(proc_list, ch, &ui, &s);
+			select = s.selected;
+
 		} else {
-			if (s.search_mode) {
-
-				ui_event_dispatcher_search(proc_list, ch, &ui, &s);
-
-
-			} else {
-				ui_event_dispatcher_normal(proc_list, ch, &ui, &s);
-			}
-
+			ui_event_dispatcher_normal(proc_list, ch, &ui, &s);
 			select = s.selected;
 		}
+
 		pthread_mutex_unlock(&s.lock);
 
 		const int scroll_factor = ui_event_dispatcher_global(ch);
-		ui_scroll(scroll_factor, select);
+		ui_scroll(&ui, scroll_factor, select);
 		ui_update(&ui, proc_list->size);
 
-		nanosleep(&ts, nullptr);
+		nanosleep(&ui_thread_time_interval, nullptr);
 	}
+	
+	ui_deinit(&ui);
 
-	atomic_store_explicit(&running, false, memory_order_release);
 	return nullptr;
 }
 
 error_code_t alloc_data() {
 
-	pthread_mutex_init(&s.lock, nullptr);
-	
+	if(pthread_mutex_init(&s.lock, nullptr) != 0) {
+		return THREAD_FAILED;
+	}
+
 	array = calloc(s.max_machine, sizeof(*array));
 	if (!array) return MEMORY_ALLOCATION_FAILED;
 
-	if(pthread_create(&proc_thread, nullptr, proc_task, nullptr) != 0) {
-		free(array);
-		pthread_mutex_destroy(&s.lock);
-        	return THREAD_FAILED;
+	for(size_t i = 0; i < s.max_machine; ++i) {
+		proc_array_init(&array[i].buffer[0]);
+		proc_array_init(&array[i].buffer[1]);
+
+		atomic_store_explicit(&array[i].active, 0, memory_order_release);
 	}
 
-	if(pthread_create(&ui_thread, nullptr, ui_task, nullptr) != 0) {
+	if(pthread_create(&proc_thread, nullptr, proc_task, &array[0]) != 0) {
+		free(array);
+		pthread_mutex_destroy(&s.lock);
+		return THREAD_FAILED;
+	}
+
+	if(pthread_create(&ui_thread, nullptr, ui_task, array) != 0) {
 		atomic_store_explicit(&running, false, memory_order_release);
 		pthread_join(proc_thread, nullptr);
 		free(array);
-                pthread_mutex_destroy(&s.lock);
-                return THREAD_FAILED;
+		pthread_mutex_destroy(&s.lock);
+		return THREAD_FAILED;
 	}
 
 	return SUCCESS;
+}
+
+void release_data() {
+	for (size_t i=0; i<s.max_machine; ++i) {
+		proc_array_free(&array[i].buffer[0]);
+		proc_array_free(&array[i].buffer[1]);
+	}
+
+	free(array);
+
+	pthread_mutex_destroy(&s.lock);
+	ui_index_array_free(&s.indices);
 }
 
 int main(/*int argc, char *argv[]*/){	
@@ -196,16 +219,7 @@ int main(/*int argc, char *argv[]*/){
 
 	pthread_join(proc_thread, nullptr);
 	pthread_join(ui_thread, nullptr);
-
-	for (size_t i=0; i<s.max_machine; ++i) {
-		proc_array_free(&array[i].buffer[0]);
-		proc_array_free(&array[i].buffer[1]);
-	}
-
-	free(array);
-
-	ui_index_array_free(&s.indices);
-//rember to free ui.pad, ui.footer, ui.header
-	pthread_mutex_destroy(&s.lock);
+	
+	release_data();
 }
 

@@ -4,6 +4,13 @@
 #include <dirent.h>
 #include <stdio.h>
 
+void proc_array_init(processus_array_t *array) {
+	array->data = nullptr;
+	array->size = 0;
+	array->capacity = 0;
+	array->cpu_tick = 0;
+}
+
 processus_t *proc_array_get_last(processus_array_t *array) {
 	return (!array || array->size == 0 || !array->data) ? 
 		nullptr : &array->data[array->size - 1];

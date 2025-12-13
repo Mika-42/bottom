@@ -1,6 +1,7 @@
 #include "ui_format.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <stdint.h>
 
 const char* ui_format_state(const char state) {
 	switch(state) {
@@ -34,13 +35,27 @@ const char* ui_format_ram(const unsigned long long rss_bytes, double *value) {
 }
 
 void ui_format_time(const unsigned long ticks, char *buf, const size_t bufsize) {
-    const long ticks_per_sec = sysconf(_SC_CLK_TCK);
-    const unsigned long total_s = ticks / ticks_per_sec;
 
-    const unsigned long s = total_s % 60;
-    const unsigned long total_m = total_s / 60;
-    const unsigned long m = total_m % 60;
-    const unsigned long h = total_m / 60;
+	const long tps = sysconf(_SC_CLK_TCK);
+	if (tps <= 0) {
+		snprintf(buf, bufsize, "??:??:??:??");
+		return;
+	}
 
-    snprintf(buf, bufsize, "%02lu:%02lu:%02lu", h, m, s);
+	uint64_t total_s = ticks / (uint64_t)tps;
+
+	uint64_t s = total_s % 60;
+	uint64_t total_m = total_s / 60;
+
+	uint64_t m = total_m % 60;
+	uint64_t total_h = total_m / 60;
+
+	uint64_t h = total_h % 24;
+	uint64_t d = total_h / 24;
+
+	snprintf(buf, bufsize, "%02llu:%02llu:%02llu:%02llu",
+			(unsigned long long)d,
+			(unsigned long long)h,
+			(unsigned long long)m,
+			(unsigned long long)s);
 }

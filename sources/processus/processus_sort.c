@@ -39,9 +39,11 @@ int name_asc(const processus_t *lhs, const processus_t *rhs) {
 int name_dsc(const processus_t *lhs, const processus_t *rhs) {
 	return strcmp(rhs->name, lhs->name);
 }
+
 int user_asc(const processus_t *lhs, const processus_t *rhs) {
 	return strcmp(lhs->user, rhs->user);
 }
+
 int user_dsc(const processus_t *lhs, const processus_t *rhs) {
 	return strcmp(rhs->user, lhs->user);
 }
