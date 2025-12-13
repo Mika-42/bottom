@@ -16,13 +16,11 @@ error_code_t ui_event_dispatcher_normal(const processus_array_t *array, const in
 	else if(ch == KEY_F(2) && s->machine_selected != 0) {
 		--s->machine_selected;
 	}
-
 	else if(ch == KEY_F(3) && s->machine_selected < s->max_machine - 1) {
 		++s->machine_selected;
 	}
-
 	else if (ch == KEY_F(4)) { 
-		s->search_mode = true; 
+		s->search_mode = true;
 		ui_utils_reset_input_buffer(s);
 	}
 	else if (ch == KEY_F(5)) {
@@ -80,6 +78,7 @@ error_code_t ui_event_dispatcher_search(const processus_array_t *array, const in
 
 		if (s->input_length < 255) {
 			s->input[s->input_length++] = ch;
+			s->selected = 0;
 		}
 
 		s->input[s->input_length] = '\0';

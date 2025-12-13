@@ -1,6 +1,18 @@
 #ifndef UI_CONSTANT_H
 #define UI_CONSTANT_H
 
+static constexpr size_t one_sec = 1'000'000'000; //nanosec
+
+static constexpr struct timespec proc_thread_time_interval = {
+		.tv_sec = 0,
+		.tv_nsec = one_sec / 10	
+};
+
+static constexpr struct timespec ui_thread_time_interval = {
+		.tv_sec = 0,
+		.tv_nsec = one_sec / 40
+};
+
 static constexpr size_t header_element_count	= 7;
 static constexpr size_t ui_pad_lines		= 8000;
 static constexpr size_t ui_pad_columns		= 134;
