@@ -1,5 +1,6 @@
 #include "ui_page.h"
 #include <string.h>
+#include <unistd.h>
 #include "ui_format.h"
 #include "ui_filter.h"
 
@@ -57,8 +58,10 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 		double ram;
 		const char *unit = ui_format_ram(array->data[index].ram, &ram);
 
-		char buf[32];
-		ui_format_time(array->data[index].start_time, buf, 32);
+		char buf[16];
+		const long ticks_per_sec = sysconf(_SC_CLK_TCK);
+		const time_t start_time = array->boot_time +  array->data[index].start_time / ticks_per_sec;
+		ui_format_time(time(nullptr) - start_time, buf, 16);
 
 		mvwprintw(ui->pad, i, 0, separator, 
 				array->data[index].pid, 

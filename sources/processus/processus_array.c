@@ -9,6 +9,7 @@ void proc_array_init(processus_array_t *array) {
 	array->size = 0;
 	array->capacity = 0;
 	array->cpu_tick = 0;
+	array->boot_time = 0;
 }
 
 processus_t *proc_array_get_last(processus_array_t *array) {
@@ -92,7 +93,7 @@ error_code_t proc_array_update(processus_array_t* array) {
 
 	closedir(rep_proc);
 
-	return proc_get_cpu_total(&array->cpu_tick);
+	return proc_get_global_stat(&array->cpu_tick, &array->boot_time);
 }
 
 

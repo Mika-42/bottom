@@ -125,7 +125,7 @@ error_code_t proc_get_stat(processus_t *proc) {
 	return SUCCESS;
 }
 
-error_code_t proc_get_cpu_total(long *cpu_total) {
+error_code_t proc_get_global_stat(long *cpu_total, time_t *boot_time) {
 
 	FILE *f = fopen("/proc/stat", "r");
 
@@ -139,8 +139,6 @@ error_code_t proc_get_cpu_total(long *cpu_total) {
 		return READ_FAILED;
 	}
 
-	fclose(f);
-
 	long user, nice, system, idle, iowait, irq, softirq;
 
 	int n = sscanf(line, "cpu  %ld %ld %ld %ld %ld %ld %ld", &user, &nice, &system, &idle, &iowait, &irq, &softirq);
@@ -148,6 +146,12 @@ error_code_t proc_get_cpu_total(long *cpu_total) {
 
 	*cpu_total = user + nice + system + idle + iowait + irq + softirq;
 
+	*boot_time = 0;
+    	while (fgets(line, sizeof(line), f)) {
+        	if (sscanf(line, "btime %ld", boot_time) == 1) break;
+    	}
+
+	fclose(f);
 	return SUCCESS;
 }
 

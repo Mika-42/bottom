@@ -1,13 +1,15 @@
 #ifndef PROCESSUS_ARRAY_H
 #define PROCESSUS_ARRAY_H
 
+#include <time.h>
 #include "processus.h"
 
 typedef struct processus_array_t {
 	processus_t	*data;
 	size_t		size;
 	size_t		capacity;
-	long		cpu_tick;
+	time_t		cpu_tick;
+	time_t		boot_time;
 } processus_array_t;
 
 typedef int (*proc_compare_t)(const processus_t *, const processus_t *);

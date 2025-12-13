@@ -35,27 +35,12 @@ const char* ui_format_ram(const unsigned long long rss_bytes, double *value) {
 }
 
 void ui_format_time(const unsigned long ticks, char *buf, const size_t bufsize) {
+    unsigned long s = ticks % 60;
+    unsigned long total_m = ticks / 60;
+    unsigned long m = total_m % 60;
+    unsigned long total_h = total_m / 60;
+    unsigned long h = total_h % 24;
+    unsigned long d = total_h / 24;
 
-	const long tps = sysconf(_SC_CLK_TCK);
-	if (tps <= 0) {
-		snprintf(buf, bufsize, "??:??:??:??");
-		return;
-	}
-
-	uint64_t total_s = ticks / (uint64_t)tps;
-
-	uint64_t s = total_s % 60;
-	uint64_t total_m = total_s / 60;
-
-	uint64_t m = total_m % 60;
-	uint64_t total_h = total_m / 60;
-
-	uint64_t h = total_h % 24;
-	uint64_t d = total_h / 24;
-
-	snprintf(buf, bufsize, "%02llu:%02llu:%02llu:%02llu",
-			(unsigned long long)d,
-			(unsigned long long)h,
-			(unsigned long long)m,
-			(unsigned long long)s);
+    snprintf(buf, bufsize, "%02lu:%02lu:%02lu:%02lu", d, h, m, s);
 }
