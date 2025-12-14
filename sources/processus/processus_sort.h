@@ -18,5 +18,6 @@ int	user_asc(const processus_t *lhs, const processus_t *rhs);
 int	user_dsc(const processus_t *lhs, const processus_t *rhs);
 int	time_asc(const processus_t *lhs, const processus_t *rhs);
 int	time_dsc(const processus_t *lhs, const processus_t *rhs);
-
+int	cpu_asc(const processus_t *lhs, const processus_t *rhs);
+int	cpu_dsc(const processus_t *lhs, const processus_t *rhs);
 #endif /* PROCESSUS_SORT_H */

@@ -20,8 +20,8 @@ void *proc_task(void *arg) {
 	user_selection_t *s = &args->selection;
 
 	static const proc_compare_t sort_func[2][header_element_count] = {
-		{pid_dsc, user_dsc, name_dsc, state_dsc, ram_dsc, nullptr /*cpu sort*/, time_dsc },
-		{pid_asc, user_asc, name_asc, state_asc, ram_asc, nullptr /*cpu sort*/, time_asc }
+		{pid_dsc, user_dsc, name_dsc, state_dsc, ram_dsc, cpu_dsc, time_dsc },
+		{pid_asc, user_asc, name_asc, state_asc, ram_asc, cpu_asc, time_asc }
 	};
 
 	while (atomic_load_explicit(&args->running, memory_order_acquire)) {

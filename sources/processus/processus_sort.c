@@ -54,3 +54,11 @@ int time_asc(const processus_t *lhs, const processus_t *rhs) {
 int time_dsc(const processus_t *lhs, const processus_t *rhs) {
 	return (lhs->start_time > rhs->start_time) - (lhs->start_time < rhs->start_time);
 }
+
+int cpu_asc(const processus_t *lhs, const processus_t *rhs) {
+	return (lhs->cpu_usage > rhs->cpu_usage) - (lhs->cpu_usage < rhs->cpu_usage);
+}
+
+int cpu_dsc(const processus_t *lhs, const processus_t *rhs) {
+	return (lhs->cpu_usage < rhs->cpu_usage) - (lhs->cpu_usage > rhs->cpu_usage);
+}
