@@ -5,7 +5,7 @@ static constexpr size_t one_sec = 1'000'000'000; //nanosec
 
 static constexpr struct timespec proc_thread_time_interval = {
 		.tv_sec = 0,
-		.tv_nsec = one_sec / 10	
+		.tv_nsec = one_sec / 40	
 };
 
 static constexpr struct timespec ui_thread_time_interval = {

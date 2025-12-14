@@ -13,4 +13,3 @@ error_code_t ui_filter_proc(const processus_array_t *array, user_selection_t *s)
 
 	return SUCCESS;
 }
-

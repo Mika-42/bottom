@@ -81,7 +81,5 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 		}
 	}
 	
-	if(s->indices.size != 0) mvwchgat(ui->pad, s->selected, 0, -1, A_REVERSE, 0, NULL);
-
 	return SUCCESS;
 }

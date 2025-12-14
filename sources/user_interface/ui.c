@@ -69,3 +69,12 @@ void ui_scroll(ui_t *ui, const int dx, const size_t selected) {
 
 	ui_utils_clamp_int(&ui->ui_scroll_y, 0,  ui_pad_lines - view_height);
 }
+
+void ui_select(ui_t *ui, user_selection_t *s) {
+
+	if(s->indices.size != 0) {
+		if(s->selected > 0) mvwchgat(ui->pad, s->selected - 1, 0, -1, A_NORMAL, 0, nullptr);
+		mvwchgat(ui->pad, s->selected, 0, -1, A_REVERSE, 0, nullptr);
+		if(s->selected < s->indices.size) mvwchgat(ui->pad, s->selected + 1, 0, -1, A_NORMAL, 0, nullptr);
+	}
+}

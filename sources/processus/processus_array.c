@@ -97,7 +97,7 @@ error_code_t proc_array_update(processus_array_t* array) {
 }
 
 
-processus_t *proc_array_find_by_pid(processus_array_t *array, const pid_t pid) {
+processus_t *proc_array_find_by_pid(const processus_array_t *array, const pid_t pid) {
 
 	if (!array) return nullptr;
 
@@ -121,4 +121,33 @@ void proc_array_remove_if(processus_array_t *array, proc_predicate_t pred) {
 	}
 
 	array->size = (size_t)(write - array->data);
+}
+
+error_code_t proc_array_get_cpu(const processus_array_t *prev_array, processus_array_t *current_array) {
+	
+	if(!prev_array || !current_array) return NULLPTR_PARAMETER_ERROR;
+
+	const size_t d_machine_time = current_array->cpu_tick - prev_array->cpu_tick;
+	
+	if (d_machine_time == 0) return SUCCESS;
+	
+	for(size_t i = 0; i < current_array->size; ++i) {
+		processus_t *current_proc = &current_array->data[i];
+		const processus_t *prev_proc = proc_array_find_by_pid(prev_array, current_proc->pid);
+		
+		if(!prev_proc) {
+			current_proc->cpu_usage = 0;
+			continue;
+		}
+
+		const size_t current_proc_time = current_proc->stime + current_proc->utime;
+		const size_t prev_proc_time = prev_proc->stime + prev_proc->utime;
+		const size_t d_proc_time = current_proc_time - prev_proc_time;
+		
+		const double cpu_usage = ((double)d_proc_time / (double)d_machine_time) * 100.0 * 16.0; //todo get nb cores
+		
+		const double alpha = 0.01;
+		current_proc->cpu_usage = alpha * cpu_usage + (1.0 - alpha) * current_proc->cpu_usage;
+	}
+	return SUCCESS;
 }

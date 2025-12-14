@@ -1,6 +1,7 @@
 #include "thread.h"
 #include "processus_sort.h"
 #include "ui_event_dispatcher.h"
+#include "ui_page.h"
 
 /* Notes:
  *	array[0] is ALWAYS the local machine !
@@ -38,12 +39,15 @@ void *proc_task(void *arg) {
 			break;
 		}
 
-		if((size_t)header < header_element_count) proc_array_sort(proc_list, sort_func[asc][header]);
+		if(proc_array_get_cpu(&db->buffer[1 - index], &db->buffer[index]) != SUCCESS) {
+		atomic_store_explicit(&args->running, false, memory_order_release);                         break;
+		}
 
-		atomic_store_explicit(&db->active, index, memory_order_release);
+		if((size_t)header < header_element_count) proc_array_sort(proc_list, sort_func[asc][header]);
 
 		nanosleep(&proc_thread_time_interval, nullptr);
 
+		atomic_store_explicit(&db->active, index, memory_order_release);
 	}
 
 	return nullptr;
@@ -61,6 +65,7 @@ void *ui_task(void *arg) {
 	thread_args_t *args = arg;	
 	user_selection_t *s = &args->selection;
 	double_buffer_t *machines = args->array;	
+	struct timespec last_update = {0, 0};	
 	
 	while (atomic_load_explicit(&args->running, memory_order_acquire)) {
 
@@ -83,17 +88,29 @@ void *ui_task(void *arg) {
 			ui.ui_scroll_y = 0;       
 			ui_event_dispatcher_help(ch, &ui, s);
 			select = 0;
-		} else if (s->search_mode) {
-			ui_event_dispatcher_search(proc_list, ch, &ui, s);
-			select = s->selected;
 		} else {
+			if (s->search_mode) {
+			ui_event_dispatcher_search(ch, &ui, s);
+			} else {
 			ui_event_dispatcher_normal(proc_list, ch, &ui, s);
+			}
+		
+			//non-bloking delay
+			struct timespec now;
+    			clock_gettime(CLOCK_MONOTONIC, &now);
+    			if ((now.tv_sec - last_update.tv_sec) * 1000 + (now.tv_nsec - last_update.tv_nsec)/1000000 >= 200) {
+				ui_show_proc(proc_list, &ui, s);
+				last_update = now;
+			}
+			
+			ui_select(&ui, s);
+
 			select = s->selected;
 		}
-
 		const int scroll_factor = ui_event_dispatcher_global(ch);
 
 		ui_scroll(&ui, scroll_factor, select);
+
 		ui_update(&ui, proc_list->size);
 
 		pthread_mutex_unlock(&s->lock);
