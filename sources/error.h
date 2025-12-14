@@ -1,6 +1,8 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#define DO_NOT_IGNORE __attribute__((warn_unused_result))
+
 typedef enum error_code_t : int {
         SUCCESS,
         GENERIC_ERROR,

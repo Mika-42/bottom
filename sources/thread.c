@@ -91,15 +91,17 @@ void *ui_task(void *arg) {
 		} else {
 			if (s->search_mode) {
 			ui_event_dispatcher_search(ch, &ui, s);
-			} else {
-			ui_event_dispatcher_normal(proc_list, ch, &ui, s);
+			} else if(ui_event_dispatcher_normal(proc_list, ch, &ui, s) != SUCCESS) { 
+				break;
 			}
 		
-			//non-bloking delay
+			//non-bloking delay 200ms
 			struct timespec now;
     			clock_gettime(CLOCK_MONOTONIC, &now);
     			if ((now.tv_sec - last_update.tv_sec) * 1000 + (now.tv_nsec - last_update.tv_nsec)/1000000 >= 200) {
-				ui_show_proc(proc_list, &ui, s);
+				if(ui_show_proc(proc_list, &ui, s) != SUCCESS) {
+					break;
+				}
 				last_update = now;
 			}
 			
