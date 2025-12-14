@@ -29,23 +29,23 @@ bool pid_does_not_exists(pid_t pid) {
 	return !pid_exists(pid);
 }
 
-int send_signal(processus_t *p, int sig) {
+error_code_t send_signal(processus_t *p, int sig) {
+	
+	if(!p) return NULLPTR_PARAMETER_ERROR;
+
 	int pidfd = syscall(SYS_pidfd_open, p->pid, 0);
+	if (pidfd < 0) return SEND_SIGNAL_PIDFD_OPEN_FAILED;
 
-	if (pidfd < 0) return EXIT_FAILURE;
-
-	if (syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0) < 0) {
-		close(pidfd);
-		return EXIT_FAILURE;
-	}
-
+	int ret = syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0);
 	close(pidfd);
+	
+	if (ret < 0) return SEND_SIGNAL_SEND_FAILED;
 
-	if (!(sig ==  SIGKILL || sig == SIGTERM)) return EXIT_SUCCESS;
+	if (sig !=  SIGKILL && sig != SIGTERM) return SUCCESS;
 
-	if (p->ppid != getpid()) return EXIT_SUCCESS;
+	if (p->ppid != getpid()) return SUCCESS;
 
-	waitpid(p->pid, NULL, 0);
+	if (waitpid(p->pid, NULL, 0);
 
 	return EXIT_SUCCESS;
 }

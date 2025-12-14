@@ -26,6 +26,6 @@ int main(/*int argc, char *argv[]*/){
 	   }
 	   */
 	thread_args_t args;
-	bottom_ui(&args);
+	return (bottom_ui(&args) != SUCCESS) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
