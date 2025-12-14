@@ -17,7 +17,7 @@ typedef enum error_code_t : int {
 	THREAD_FAILED,
 	SEND_SIGNAL_PIDFD_OPEN_FAILED,
 	SEND_SIGNAL_SEND_FAILED,
-
+	SEND_SIGNAL_WAIT_FAILED,
 } error_code_t;
 
 #endif // ERROR_H

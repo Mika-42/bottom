@@ -1,5 +1,6 @@
 #include "processus_array.h"
 #include "processus_signal.h"
+#include <unistd.h>
 #include <stdlib.h>
 #include <dirent.h>
 #include <stdio.h>
@@ -144,7 +145,8 @@ error_code_t proc_array_get_cpu(const processus_array_t *prev_array, processus_a
 		const size_t prev_proc_time = prev_proc->stime + prev_proc->utime;
 		const size_t d_proc_time = current_proc_time - prev_proc_time;
 		
-		const double cpu_usage = ((double)d_proc_time / (double)d_machine_time) * 100.0 * 16.0; //todo get nb cores
+		const long ncores = sysconf(_SC_NPROCESSORS_ONLN);
+		const double cpu_usage = ((double)d_proc_time / (double)d_machine_time) * 100.0 * ncores;
 		
 		const double alpha = 0.01;
 		current_proc->cpu_usage = alpha * cpu_usage + (1.0 - alpha) * current_proc->cpu_usage;
