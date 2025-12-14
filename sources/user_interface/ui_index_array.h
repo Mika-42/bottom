@@ -2,6 +2,7 @@
 #define UI_INDEX_ARRAY_H
 
 #include <stddef.h>
+#include "error.h"
 
 typedef struct index_array_t {
 	size_t *data;

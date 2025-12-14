@@ -22,8 +22,8 @@ typedef struct processus_t {
 	double		cpu_usage;
 } processus_t;
 
-bool		str_is_numeric(const char *str);
-bool		proc_is_valid_pid(const char *pid);
+bool		DO_NOT_IGNORE str_is_numeric(const char *str);
+bool		DO_NOT_IGNORE proc_is_valid_pid(const char *pid);
 error_code_t	DO_NOT_IGNORE proc_get_user(processus_t *proc);
 error_code_t	DO_NOT_IGNORE proc_get_stat(processus_t *proc);
 error_code_t	DO_NOT_IGNORE proc_get_global_stat(long *cpu_total, time_t *boot_time);
