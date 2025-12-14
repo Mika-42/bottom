@@ -13,8 +13,9 @@ static bool is_empty(const char *s) {
 }
 
 static void copy_option_arg(char *dest, const char *src) {
-    strncpy(dest, src, MAX_LENGTH - 1);
-    dest[MAX_LENGTH - 1] = '\0';
+	size_t len = strnlen(src, MAX_LENGTH - 1);
+	memcpy(dest, src, len);
+	dest[len] = '\0';
 }
 
 static void print_help() {

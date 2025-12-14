@@ -17,7 +17,7 @@ SOURCES_WITH_HEADER := $(filter $(HEADERS_FILES), $(SOURCES_FILES:.c=.h))
 C_FILES := $(SOURCES_WITH_HEADER:.h=.c)
 
 DEBUG_FLAG := -g -Og
-RELEASE_FLAG := -DNDEBUG -O3
+RELEASE_FLAG := -DNDEBUG -O2
 FLAGS := -Wall -Wextra -Werror -Wpedantic -Werror=unused-result -lncursesw -lssh -std=gnu23
 
 

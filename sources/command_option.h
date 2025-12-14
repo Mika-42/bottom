@@ -1,6 +1,8 @@
 #ifndef COMMAND_OPTION_H
 #define COMMAND_OPTION_H
-#define MAX_LENGTH 255
+
+#define MAX_LENGTH 256
+
 #include <stdbool.h>
 
 typedef struct {

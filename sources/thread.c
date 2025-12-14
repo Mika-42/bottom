@@ -40,7 +40,8 @@ void *proc_task(void *arg) {
 		}
 
 		if(proc_array_get_cpu(&db->buffer[1 - index], &db->buffer[index]) != SUCCESS) {
-		atomic_store_explicit(&args->running, false, memory_order_release);                         break;
+			atomic_store_explicit(&args->running, false, memory_order_release);
+			break;
 		}
 
 		if((size_t)header < header_element_count) proc_array_sort(proc_list, sort_func[asc][header]);
@@ -143,6 +144,7 @@ error_code_t init_data(thread_args_t* args) {
 	s->indices.data = nullptr;
 	s->indices.size = 0;
 	s->indices.capacity = 0;
+	atomic_store_explicit(&args->running, true, memory_order_release);
 
 	if(pthread_mutex_init(&s->lock, nullptr) != 0) {
 		return MEMORY_ALLOCATION_FAILED;

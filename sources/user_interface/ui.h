@@ -15,7 +15,7 @@ typedef struct user_selection_t {
 	bool		search_mode;
 	size_t		max_machine;
 	bool		help;
-	char		input[255];
+	char		input[256];
 	size_t		input_length;
 	index_array_t	indices;
 	pthread_mutex_t lock;

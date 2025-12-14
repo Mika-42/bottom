@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "command_option.h"
+//#include "command_option.h"
 #include "thread.h"
 
 int main(/*int argc, char *argv[]*/){	
