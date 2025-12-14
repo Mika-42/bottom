@@ -7,7 +7,7 @@
 void ui_show_array(WINDOW *win, const char (*array)[ui_max_width]) {	
 	box(win, 0, 0);
 
-	for(size_t i = 0; i < ui_footer_lines; ++i) {
+	for (size_t i=0; i<ui_footer_lines; ++i) {
 		mvwprintw(win, i, 0, array[i]);
 	}
 }
@@ -50,7 +50,7 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 	size_t i = 0;
 
 	const error_code_t err = ui_filter_proc(array, s);
-	if(err != SUCCESS) return err;
+	if (err != SUCCESS) return err;
 
 	for (; i< s->indices.size; ++i) {
 		size_t index = s->indices.data[i];

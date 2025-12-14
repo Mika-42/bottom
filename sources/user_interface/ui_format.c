@@ -3,8 +3,8 @@
 #include <unistd.h>
 #include <stdint.h>
 
-const char* ui_format_state(const char state) {
-	switch(state) {
+const char *ui_format_state(const char state) {
+	switch (state) {
 		case 'R': return "RUNNING";
 		case 'S': return "SLEEPING";
 		case 'D': return "DISK_SLEEP";
@@ -21,7 +21,7 @@ const char* ui_format_state(const char state) {
 	}
 }
 
-const char* ui_format_ram(const unsigned long long rss_bytes, double *value) {
+const char *ui_format_ram(const unsigned long long rss_bytes, double *value) {
 	const char *units[] = {"  B", "KiB", "MiB", "GiB", "TiB"};
 	*value = (double)rss_bytes;
 	int i = 0;
