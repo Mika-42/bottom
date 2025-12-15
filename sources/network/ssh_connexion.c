@@ -1,6 +1,7 @@
 #include "ssh_connexion.h"
 
 #include <libssh/libssh.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 void ssh_end_session(ssh_session session) {
@@ -55,4 +56,28 @@ int ssh_cmd_exec(ssh_session session, char *cmd, char *output, size_t len_max) {
 int ssh_dry_run(ssh_session session) {
 	char output[4096];
 	return ssh_cmd_exec(session, "ps", output, sizeof(output));
+}
+
+int ssh_kill_processus(ssh_session session, int pid) {
+	char cmd[64];
+	snprintf(cmd, sizeof(cmd), "kill -KILL %d", pid);
+	return ssh_cmd_exec(session, cmd, NULL, 0);
+}
+
+int ssh_term_processus(ssh_session session, int pid) {
+	char cmd[64];
+	snprintf(cmd, sizeof(cmd), "kill -TERM %d", pid);
+	return ssh_cmd_exec(session, cmd, NULL, 0);
+}
+
+int ssh_stop_processus(ssh_session session, int pid) {
+	char cmd[64];
+	snprintf(cmd, sizeof(cmd), "kill -STOP %d", pid);
+	return ssh_cmd_exec(session, cmd, NULL, 0);
+}
+
+int ssh_cont_processus(ssh_session session, int pid) {
+	char cmd[64];
+	snprintf(cmd, sizeof(cmd), "kill -CONT %d", pid);
+	return ssh_cmd_exec(session, cmd, NULL, 0);
 }
