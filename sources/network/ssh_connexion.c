@@ -8,6 +8,11 @@ void ssh_end_session(ssh_session session) {
 	ssh_free(session);
 }
 
+int verify_knownhost(ssh_session session) {
+	return 0;
+}
+
+
 ssh_session ssh_connexion_init(char *host, int port, char *user, char *password) {
 	ssh_session session = ssh_new();
 	if (session == NULL) return NULL;
@@ -20,6 +25,7 @@ ssh_session ssh_connexion_init(char *host, int port, char *user, char *password)
 		ssh_free(session);
 		return NULL;
 	}
+
 
 	if (ssh_userauth_password(session, NULL, password) != SSH_AUTH_SUCCESS) {
 		ssh_end_session(session);
