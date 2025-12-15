@@ -9,4 +9,12 @@ ssh_session ssh_connexion_init(char *host, int port, char *user, char *password)
 
 int ssh_dry_run(ssh_session session); //EXIT_SUCCESS si réussi sinon EXIT_FAILURE
 
+int ssh_kill_processus(ssh_session session, int pid);
+
+int ssh_term_processus(ssh_session session, int pid);
+
+int ssh_stop_processus(ssh_session session, int pid);
+
+int ssh_cont_processus(ssh_session session, int pid);
+
 #endif //SSH_CONNEXION
