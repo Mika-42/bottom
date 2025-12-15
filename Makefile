@@ -23,6 +23,8 @@ FLAGS := -Wall -Wextra -Werror -Wpedantic -Werror=unused-result -lncursesw -lssh
 
 MAKEFLAGS += --no-print-directory
 
+all: build-debug run
+
 build-debug: create-build-directory 
 	@$(MAKE) build-generic COMPILATION_FLAGS="$(DEBUG_FLAG)" SRCS_FILES="$(SOURCES_FILES)" OUTPUT_FILENAME="$(BUILD_DIRECTORY)/$(PROJECT_NAME)"
 	

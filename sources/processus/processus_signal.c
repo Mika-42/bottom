@@ -30,6 +30,13 @@ bool pid_does_not_exists(pid_t pid) {
     return !pid_exists(pid);
 }
 
+static void free_str_array(char* arr[]) {
+    if (!arr)
+        return;
+    for (int i = 0; arr[i]; ++i)
+        free(arr[i]);
+}
+
 error_code_t send_signal(processus_t* p, int sig) {
 
     if (!p)
@@ -73,7 +80,7 @@ error_code_t proc_term(processus_t* p) {
     return send_signal(p, SIGTERM);
 }
 
-//TODO refacto the code below
+// TODO refacto the code below
 int get_exe(processus_t* p, char* exe_path, int size) {
     char proc_link[MAX_SIZE_PATH];
     snprintf(proc_link, sizeof(proc_link), "/proc/%d/exe", p->pid);
@@ -84,7 +91,7 @@ int get_exe(processus_t* p, char* exe_path, int size) {
 
     return EXIT_SUCCESS;
 }
-
+/******/
 int get_arg(processus_t* p, char* argv[], int max_arg) {
     char path[MAX_SIZE_PATH];
     snprintf(path, sizeof(path), "/proc/%d/cmdline", p->pid);
@@ -108,7 +115,7 @@ int get_arg(processus_t* p, char* argv[], int max_arg) {
                 free(argv[i]);
             return EXIT_FAILURE;
         }
-        argc++;
+        ++argc;
         b += strlen(b) + 1;
     }
     argv[argc] = NULL;
@@ -119,6 +126,7 @@ int get_env(processus_t* p, char* envp[], int max_env) {
     char path[MAX_SIZE_PATH];
     snprintf(path, sizeof(path), "/proc/%d/environ", p->pid);
     int fd = open(path, O_RDONLY);
+    
     if (fd < 0)
         return EXIT_FAILURE;
 
@@ -132,12 +140,15 @@ int get_env(processus_t* p, char* envp[], int max_env) {
     int count = 0;
     char* b = buffer;
     while (b < buffer + n && count < max_env - 1) {
-        envp[count++] = strdup(b);
-        b += strlen(b) + 1;
+        envp[count] = strdup(b);
+	/*ICI*/
+	++count;
+	b += strlen(b) + 1;
     }
     envp[count] = NULL;
     return EXIT_SUCCESS;
 }
+/****/
 
 int kill_children(processus_t* p) {
     char path[MAX_SIZE_PATH];
@@ -174,25 +185,19 @@ error_code_t proc_restart(processus_t* p) {
         return EXIT_FAILURE;
     }
     if (get_arg(p, argv, MAX_ARG) != EXIT_SUCCESS) {
-        for (int i = 0; argv[i] != NULL; ++i)
-            free(argv[i]);
-        for (int i = 0; envp[i] != NULL; ++i)
-            free(envp[i]);
+        free_str_array(argv);
+        free_str_array(envp);
         return EXIT_FAILURE;
     }
     if (get_env(p, envp, MAX_ARG) != EXIT_SUCCESS) {
-        for (int i = 0; argv[i] != NULL; ++i)
-            free(argv[i]);
-        for (int i = 0; envp[i] != NULL; ++i)
-            free(envp[i]);
+        free_str_array(argv);
+        free_str_array(envp);
         return EXIT_FAILURE;
     }
 
     if (kill_children(p) != EXIT_SUCCESS || proc_term(p) != EXIT_SUCCESS) {
-        for (int i = 0; argv[i] != NULL; ++i)
-            free(argv[i]);
-        for (int i = 0; envp[i] != NULL; ++i)
-            free(envp[i]);
+        free_str_array(argv);
+        free_str_array(envp);
         return EXIT_FAILURE;
     }
 
@@ -207,20 +212,16 @@ error_code_t proc_restart(processus_t* p) {
         }
 
         if (pid_exists(p->pid)) {
-            for (int i = 0; argv[i] != NULL; ++i)
-                free(argv[i]);
-            for (int i = 0; envp[i] != NULL; ++i)
-                free(envp[i]);
+            free_str_array(argv);
+            free_str_array(envp);
             return EXIT_FAILURE;
         }
     }
 
     pid_t new_pid = fork();
     if (new_pid < 0) {
-        for (int i = 0; argv[i] != NULL; ++i)
-            free(argv[i]);
-        for (int i = 0; envp[i] != NULL; ++i)
-            free(envp[i]);
+        free_str_array(argv);
+        free_str_array(envp);
         return EXIT_FAILURE;
     }
     if (new_pid == 0) {
@@ -229,10 +230,8 @@ error_code_t proc_restart(processus_t* p) {
     }
 
     p->pid = new_pid;
-    for (int i = 0; argv[i] != NULL; ++i)
-        free(argv[i]);
-    for (int i = 0; envp[i] != NULL; ++i)
-        free(envp[i]);
+        free_str_array(argv);
+        free_str_array(envp);
     usleep(100000);
     if (pid_does_not_exists(p->pid)) {
         return EXIT_FAILURE;
