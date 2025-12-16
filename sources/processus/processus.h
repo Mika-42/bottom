@@ -9,17 +9,20 @@ constexpr size_t PROC_NAME_SIZE = 256;
 constexpr size_t PROC_USERNAME_SIZE = 32;
 constexpr size_t PROC_PATH_SIZE = 4096;
 
+/**
+ * @brief Represente un processus avec toutes les informations dont on a besoin.
+ */
 typedef struct processus_t {  
-	pid_t		pid;
-	pid_t		ppid;
-	char		name[PROC_NAME_SIZE];
-	char		state;
-	unsigned long long ram;
-	char		user[PROC_USERNAME_SIZE];
-	unsigned long	utime;    // Temps CPU utilisateur
-	unsigned long	stime;    // Temps CPU système
-	unsigned long	start_time;
-	double		cpu_usage;
+	pid_t		pid;				/**< ID du processus */
+	pid_t		ppid;				/**< ID du processus parent */
+	char		name[PROC_NAME_SIZE];		/**< Nom du processus */
+	char		state;				/**< Etat du processus */
+	unsigned long long ram;				/**< Mémoire utilisé en octets par le processus */
+	char		user[PROC_USERNAME_SIZE];	/**< Nom de l'utilisateur */
+	unsigned long	utime;				/**< Temps CPU utilisateur */
+	unsigned long	stime;				/**< Temps CPU système */
+	unsigned long	start_time;			/**< Durée de lancement */
+	double		cpu_usage;			/**< Pourcentage du CPU utilisé */
 } processus_t;
 
 bool		DO_NOT_IGNORE str_is_numeric(const char *str);
