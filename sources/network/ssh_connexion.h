@@ -5,7 +5,6 @@
 
 void ssh_end_session(ssh_session session);
 
-int verify_knownhost(ssh_session session);
 
 ssh_session ssh_connexion_init(char *host, int port, char *user, char *password);
 

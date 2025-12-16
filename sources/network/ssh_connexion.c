@@ -1,16 +1,14 @@
 #include "ssh_connexion.h"
-
 #include <libssh/libssh.h>
 #include <stdlib.h>
+#include <stdio.h>
+
 
 void ssh_end_session(ssh_session session) {
 	ssh_disconnect(session);
 	ssh_free(session);
 }
 
-int verify_knownhost(ssh_session session) {
-	return 0;
-}
 
 
 ssh_session ssh_connexion_init(char *host, int port, char *user, char *password) {
@@ -20,6 +18,8 @@ ssh_session ssh_connexion_init(char *host, int port, char *user, char *password)
 	ssh_options_set(session, SSH_OPTIONS_HOST, host);
 	ssh_options_set(session, SSH_OPTIONS_PORT, &port);
 	ssh_options_set(session, SSH_OPTIONS_USER, user);
+
+	
 
 	if (ssh_connect(session) != SSH_OK) {
 		ssh_free(session);
