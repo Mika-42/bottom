@@ -9,7 +9,7 @@ void ssh_end_session(ssh_session session) {
 	ssh_free(session);
 }
 
-ssh_session ssh_connexion_init(char *host, int port, char *user, char *password) {
+ssh_session ssh_connexion_init(const char *host, int port, const char *user, const char *password) {
 	ssh_session session = ssh_new();
 	if (session == nullptr) return nullptr;
 
@@ -29,9 +29,9 @@ ssh_session ssh_connexion_init(char *host, int port, char *user, char *password)
 	return session;
 }
 
-int ssh_cmd_exec(ssh_session session, char *cmd, char *output, size_t len_max) {
+int ssh_cmd_exec(ssh_session session, const char *cmd, char *output, size_t len_max) {
 	ssh_channel channel = ssh_channel_new(session);
-	if (channel == nullptr) return SSH_ERROR;
+	if (!channel) return SSH_ERROR;
 	if (ssh_channel_open_session(channel) != SSH_OK) {
 		ssh_channel_free(channel);
 		return EXIT_FAILURE;
@@ -44,7 +44,7 @@ int ssh_cmd_exec(ssh_session session, char *cmd, char *output, size_t len_max) {
 	}
 
 	int nbytes = ssh_channel_read(channel, output, len_max - 1, 0);
-	if (nbytes >= 0) output[nbytes] = '\0';
+	if (nbytes >= 0 && output != nullptr)  output[nbytes] = '\0';
 	
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
@@ -61,35 +61,42 @@ int ssh_dry_run(ssh_session session) {
 int ssh_kill_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -KILL %d", pid);
-	return ssh_cmd_exec(session, cmd, NULL, 0);
+	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
 int ssh_term_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -TERM %d", pid);
-	return ssh_cmd_exec(session, cmd, NULL, 0);
+	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
 int ssh_stop_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -STOP %d", pid);
-	return ssh_cmd_exec(session, cmd, NULL, 0);
+	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
 int ssh_cont_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -CONT %d", pid);
-	return ssh_cmd_exec(session, cmd, NULL, 0);
+	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
 /**
  * @brief Met le contenue du fichier /proc/file dans le buffer
  *
  * @param session Session ssh
- * @param buffer Adresse de la chaine de caractère dans laquel sera écrit le contenue du fichier
+ * @param buffer Adresse de la chaine de caractère dans laquel sera écrit le contenue du fichier, à liberer par l'appelant
  * @param file Fichier du dossier /proc/ qui sera lu
+ * @return Code d'erreur correspondant de libssh
  */
-int ssh_get_file(ssh_session session, char **buffer, char *file) {
+int ssh_get_file(ssh_session session, char **buffer, const char *file) {
+	for (const char *p = file; *p; ++p) {
+		if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
+			return SSH_ERROR;
+		}
+	}
+	
 	int n;
 	char *buf = nullptr;
 	size_t size = 0, capacity = 8192;
