@@ -5,7 +5,7 @@
 
 void ssh_end_session(ssh_session session);
 
-ssh_session ssh_connexion_init(char *host, int port, char *user, char *password);
+ssh_session ssh_connexion_init(const char *host, int port, const char *user, const char *password);
 
 int ssh_dry_run(ssh_session session); //EXIT_SUCCESS si réussi sinon EXIT_FAILURE
 

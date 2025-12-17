@@ -75,7 +75,7 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 			 );
 	}
 
-	if (s->search_mode) {
+	if (s->mode == SEARCH) {
 		for (; i<(size_t)getmaxy(stdscr); ++i) {
 			mvwprintw(ui->pad, i, 0, empty_separator, "", "", "", "", "", "", "");
 		}
