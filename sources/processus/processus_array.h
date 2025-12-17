@@ -4,12 +4,15 @@
 #include <time.h>
 #include "processus.h"
 
+/**
+ * @brief Tableau de processus
+ */
 typedef struct processus_array_t {
-	processus_t	*data;
-	size_t		size;
-	size_t		capacity;
-	time_t		cpu_tick;
-	time_t		boot_time;
+	processus_t	*data;		/**< Tableau de processus */
+	size_t		size;		/**< Nombre de processus dans le tableau */
+	size_t		capacity;	/**< Capacité maximum d'élément du tableau (taille alloué) */
+	time_t		cpu_tick;	/**< Temps d’activité des CPU */
+	time_t		boot_time;	/**< Temps écoulé depuis le démmarage de la machine */
 } processus_array_t;
 
 typedef int (*proc_compare_t)(const processus_t *, const processus_t *);

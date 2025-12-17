@@ -11,13 +11,13 @@ error_code_t ui_event_dispatcher_normal(const processus_array_t *array, const in
 	error_code_t err = SUCCESS;
 
 	if (ch == KEY_F(1)) {
-		s->help = true;
+		s->mode = HELP;
 	} else if (ch == KEY_F(2) && s->machine_selected != 0) {
 		--s->machine_selected;
 	} else if (ch == KEY_F(3) && s->machine_selected < s->max_machine - 1) {
 		++s->machine_selected;
 	} else if (ch == KEY_F(4)) { 
-		s->search_mode = true;
+		s->mode = SEARCH;
 		ui_utils_reset_input_buffer(s);
 	} else if (ch == KEY_F(5)) {
 		err = proc->state != 'T' ? proc_stop(proc) : proc_cont(proc);
@@ -44,7 +44,7 @@ error_code_t ui_event_dispatcher_normal(const processus_array_t *array, const in
 void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
 
 	if (ch == KEY_F(1)) {
-		s->help = false;
+		s->mode = NORMAL;
 	}
 
 	show_help_page(ui);
@@ -55,7 +55,7 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 	ui_utils_clamp_size_t(&s->selected, 0, s->indices.size > 0 ? s->indices.size - 1 : 0);
 
 	if (ch == KEY_F(1)) {
-		s->search_mode = false;
+		s->mode = NORMAL;
 		ui_utils_reset_input_buffer(s);
 		return;
 	} else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {

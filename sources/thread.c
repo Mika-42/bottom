@@ -85,12 +85,12 @@ void *ui_task(void *arg) {
 		int index = atomic_load_explicit(&db->active, memory_order_acquire);
 		processus_array_t *proc_list = &db->buffer[index];
 
-		if(s->help) {	
+		if(s->mode == HELP) {	
 			ui.ui_scroll_y = 0;       
 			ui_event_dispatcher_help(ch, &ui, s);
 			select = 0;
 		} else {
-			if (s->search_mode) {
+			if (s->mode == SEARCH) {
 			ui_event_dispatcher_search(ch, &ui, s);
 			} else if(ui_event_dispatcher_normal(proc_list, ch, &ui, s) != SUCCESS) { 
 				break;
@@ -136,9 +136,8 @@ error_code_t init_data(thread_args_t* args) {
 	s->machine_selected = 0;
 	s->header_selected = 0;
 	s->asc = true;
-	s->search_mode = false;
+	s->mode = NORMAL;
 	s->max_machine = 2;
-	s->help = false;
 	s->input[0] = '\0';
 	s->input_length = 0;
 	s->indices.data = nullptr;
