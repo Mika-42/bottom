@@ -1,6 +1,7 @@
 #include "../processus/processus.h"
 #include "../error.h"
 #include <libssh2.h>
+#include <string.h>
 
 unsigned long NOUVEAU_TEMPS_CPU = 0; 
 unsigned long ANCIEN_TEMPS_CPU = 0;
@@ -9,17 +10,16 @@ int parse_stat(char *buffer, processus_t *p) {
     if (buffer == NULL || p == NULL) {
         return NULLPTR_PARAMETER_ERROR; 
     }
-    int element=sscanf(buffer, "%d (%[^)]) %c %d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %lu %lu %*ld %*ld %*ld %*ld %*ld %*ld %lu",
-                     &p->pid,
-                     p->name,
-                     &p->state,
-                     &p->ppid,
-                     &p->utime,
-                     &p->stime,
-                     &p->start_time);
+    int element = sscanf(buffer, "%d %*[^ ] %c %d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %lu %lu %*ld %*ld %*ld %*ld %*ld %*ld %lu",
+                         &p->pid,
+                         &p->state,
+                         &p->ppid,
+                         &p->utime,
+                         &p->stime,
+                         &p->start_time);
     ///on mets les elements dans la struct et si ils sont pas tous mis ca renvoie l'erreur
 
-    return (element == 7) ? 0 : PARSING_FAILED; 
+    return (element == 6) ? 0 : PARSING_FAILED; 
 }
 
 int parse_status(char *buffer, processus_t *p) {
@@ -37,6 +37,30 @@ int parse_status(char *buffer, processus_t *p) {
     }
     return 0; 
 }
+
+int parse_cmdline(char *buffer, processus_t *p) {
+
+    if (buffer == NULL || p == NULL) {
+        return NULLPTR_PARAMETER_ERROR; 
+    }
+    
+    const int max_size = sizeof(p->name); 
+    int length = 0; 
+    for (int i = 0; i < max_size - 1; i++) {
+        if (buffer[i] == '\0' && buffer[i+1] == '\0') {
+            break; 
+        }
+        if (buffer[i] == '\0') {
+            p->name[i] = ' ';
+        } else {
+            p->name[i] = buffer[i]; 
+        }
+        
+        length = i; 
+    }
+    p->name[length + 1] = '\0';
+    return 0;
+}/// on parse le cmdline pour avoir le nom du processus
 
 void temps_cpu(char *buffer) {
     unsigned long user, nice, system, idle, iowait, irq, softirq;
@@ -62,12 +86,18 @@ double calcul_cpu(const processus_t *p_now, const processus_t *p_prev) {
 } /// on calcul le % du cpu utilise par le processus
 
 
-int read_processus(char *buf_stat, char *buf_status, processus_t *p) {
-    if (p == NULL) {
+int read_processus(char *buf_stat, char *buf_status, processus_t *p_now, const processus_t *p_prev, char *buf_cmdline) {
+    if (p_now == NULL) {
         return NULLPTR_PARAMETER_ERROR; 
     }
 
-    parse_stat(buf_stat, p);
-    parse_status(buf_status, p);
+    parse_stat(buf_stat, p_now);
+    parse_status(buf_status, p_now);
+    parse_cmdline(buf_cmdline, p_now);
+    if (p_prev != NULL) {
+        p_now->cpu_usage = calcul_cpu(p_now, p_prev);
+    } else {
+        p_now->cpu_usage = 0.0; 
+    }
     return 0;
 }
