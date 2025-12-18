@@ -2,8 +2,18 @@
 #define COMMAND_OPTION_H
 
 #define MAX_LENGTH 256
+#define MAX_HOSTS 10 
 
 #include <stdbool.h>
+
+typedef struct {
+    char name_server[MAX_LENGTH];
+    char adress_server[MAX_LENGTH];
+    int port; 
+    char username[MAX_LENGTH];
+    char password[MAX_LENGTH]; 
+    char type_co[7];
+} fichier;
 
 typedef struct {
     bool help;
@@ -16,18 +26,11 @@ typedef struct {
     char username[MAX_LENGTH];
     char password[MAX_LENGTH]; 
     bool all;
+    fichier hosts[MAX_HOSTS];
+    int nb_hosts;
 
 } options_prog; 
 
-typedef struct {
-    char name_server[MAX_LENGTH];
-    char adress_server[MAX_LENGTH];
-    int port; 
-    char username[MAX_LENGTH];
-    char password[MAX_LENGTH]; 
-    char type_co[7];
-} fichier;
-
-int command_run(int argc, char *argv[],options_prog *options);
+int command_run(int argc, char *argv[], options_prog *options);
 
 #endif 
