@@ -22,7 +22,7 @@ bool str_is_numeric(const char *str) {
 }
 
 bool proc_is_valid_pid(const char *pid) {
-	return str_is_numeric(pid) && (*pid != '-' || *pid != '0');
+	return str_is_numeric(pid) && *pid != '0';
 }
 
 FILE *proc_file_open(const pid_t pid, const char *file) {
@@ -52,8 +52,10 @@ error_code_t proc_get_user(processus_t *proc) {
 		if (strncmp(line, "Uid:", 4) != 0) continue;
 
 		const int ret = sscanf(line, "%*s %u", &uid);
-               	if (ret != 1) return MALFORMED_STATUS_LINE;
-
+               	if (ret != 1) {
+					fclose(f);
+					return MALFORMED_STATUS_LINE;
+				}
                 break;	
         }
 
@@ -161,9 +163,9 @@ error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
 	proc->pid = pid;
 
-	error_code_t err = proc_get_user(proc);
+	error_code_t err = proc_get_stat(proc);
 	
 	if (err != SUCCESS) return err;
 
-	return proc_get_stat(proc);
+	return proc_get_user(proc);
 }

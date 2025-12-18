@@ -4,11 +4,7 @@
 #include "ui_utils.h"
 #include "processus_signal.h"
 
-error_code_t ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui_t *ui, user_selection_t *s) {
-
-	auto machine = &array[s->machine_selected];
-	auto proc = &(machine->data[s->selected]);
-	error_code_t err = SUCCESS;
+void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui_t *ui, user_selection_t *s) {
 
 	if (ch == KEY_F(1)) {
 		s->mode = HELP;
@@ -20,13 +16,13 @@ error_code_t ui_event_dispatcher_normal(const processus_array_t *array, const in
 		s->mode = SEARCH;
 		ui_utils_reset_input_buffer(s);
 	} else if (ch == KEY_F(5)) {
-		err = proc->state != 'T' ? proc_stop(proc) : proc_cont(proc);
+		s->event = PAUSE_CONTINUE;
 	} else if (ch == KEY_F(6)) {
-		err = proc_term(proc);
+		s->event = TERMINATE;
 	} else if (ch == KEY_F(7)) {
-		err = proc_kill(proc);
+		s->event = KILL;
 	} else if (ch == KEY_F(8)) {
-		err = proc_restart(proc);
+		s->event = RELOAD;
 	} else if (ch == KEY_UP && s->selected != 0) {
 		--s->selected;
 	} else if (ch == KEY_DOWN && s->selected < array[s->machine_selected].size - 1) {
@@ -36,9 +32,6 @@ error_code_t ui_event_dispatcher_normal(const processus_array_t *array, const in
 	ui_event_dispatcher_sort(ch, s);
 	ui_show_array(ui->footer, proc_array_function_command);
 	ui_show_header(s->header_selected, ui, s->asc);
-	
-	return err;
-
 }
 
 void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {

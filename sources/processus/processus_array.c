@@ -48,9 +48,9 @@ void proc_array_free(processus_array_t *array) {
 	array->capacity = 0;
 }
 
-bool wrapper(processus_t* proc) { 
-	return pid_does_not_exists(proc->pid); 
-}	
+void proc_array_reset(processus_array_t *array) {
+	array->size = 0;
+}
 
 error_code_t proc_array_update(processus_array_t* array) {
 
@@ -60,26 +60,21 @@ error_code_t proc_array_update(processus_array_t* array) {
 	if (!rep_proc) return OPEN_FILE_FAILED;
 
 	struct dirent *ent = nullptr;
+	
+	proc_array_reset(array);
 
-	proc_array_remove_if(array, wrapper);
-
-	while ((ent = readdir(rep_proc))) {
-		if (!proc_is_valid_pid(ent->d_name)) continue;
+	while ((ent = readdir(rep_proc)) != nullptr) {
 
 		char *end = nullptr;
 		const pid_t pid = strtol(ent->d_name, &end, 10);
 		if (*end != '\0' || pid <= 0) continue;
 
-		processus_t *proc = proc_array_find_by_pid(array, pid);
-
-		if (!proc) {
-			proc = proc_array_emplace_back(array);
+		processus_t *proc = proc_array_emplace_back(array);
 
 			if (!proc) {
 				closedir(rep_proc);
 				return MEMORY_ALLOCATION_FAILED;
 			}
-		}
 
 		if (proc_get_all_infos(pid, proc) != SUCCESS) {
 			processus_t *last = proc_array_get_last(array);
