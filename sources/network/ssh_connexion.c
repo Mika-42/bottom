@@ -132,7 +132,8 @@ int ssh_get_file(ssh_session session, char **buffer, const char *file) {
  	
 	buf[size] = '\0';
 	*buffer = buf;
-
+	
+	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
 	ssh_channel_free(channel);
  
@@ -141,6 +142,7 @@ int ssh_get_file(ssh_session session, char **buffer, const char *file) {
 error:
 	free(buf);
 	if (channel) {
+		ssh_channel_send_eof(channel);
 		ssh_channel_close(channel);
 		ssh_channel_free(channel);
 	}

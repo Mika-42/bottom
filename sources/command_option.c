@@ -7,19 +7,19 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include "error.h"
 
 static bool is_empty(const char *s) {
     return s[0] == '\0';
 }
 
 static void copy_option_arg(char *dest, const char *src) {
-	size_t len = strnlen(src, MAX_LENGTH - 1);
-	memcpy(dest, src, len);
-	dest[len] = '\0';
+    size_t len = strnlen(src, MAX_LENGTH - 1);
+    memcpy(dest, src, len);
+    dest[len] = '\0';
 }
 
 static void print_help() {
-
     const char *help_message = "-h ou --help : affiche l'aide du programme ainsi que la syntaxe d'exécution du programme\n"
      "--dry-run : test l'accès à la liste des processus sur la machine locale et/ou distante sans les afficher\n"
      "-c ou --remote-config : spécifie le chemin vers le fichier de configuration contenant les informations de connexion sur les machines distantes\n"
@@ -103,7 +103,7 @@ int command_run(int argc, char *argv[], options_prog *options) {
                 options->all = true;
                 break;
             case '?':
-                return -1;
+                return PARSING_FAILED;
                 break;
         }
     }
@@ -116,7 +116,7 @@ int command_run(int argc, char *argv[], options_prog *options) {
         
         if (separator == NULL) {
             fprintf(stderr, "Erreur: Le format de l'option -l doit etre 'username@remote_server'.\n");
-            return -1;
+            return PARSING_FAILED;;
         }
         copy_option_arg(options->remote_server, separator + 1);
         *separator = '\0'; 
@@ -139,7 +139,7 @@ int command_run(int argc, char *argv[], options_prog *options) {
     if (is_empty(options->remote_config) && is_empty(options->remote_server)) {
         if (!is_empty(options->username) || !is_empty(options->password) || !is_empty(options->connexion_type) || options->port != 0) {
             fprintf(stderr, "Erreur: Les options de connexion (-u, -p, -t, -P) ne sont valides qu'avec -s, -l ou -c.\n");
-            return -1;
+            return PARSING_FAILED;
         }
     }
 
@@ -164,37 +164,45 @@ int command_run(int argc, char *argv[], options_prog *options) {
 
     if (!is_empty(options->remote_config) && f == NULL) {
         fprintf(stderr, "Le fichier %s n'a pas pu être ouvert\n", options->remote_config);
-        return EXIT_FAILURE;
+        return OPEN_FILE_FAILED;
     }
 
+    
     if (f != NULL) {
-        fichier tab[MAX_LENGTH];
-        int i = 0;
-        
-        while (fscanf(f, "%49[^;];%49[^;];%d;%49[^;];%49[^;];%4[^;\n]\n",
-                        tab[i].name_server,tab[i].adress_server,&tab[i].port,
-                        tab[i].username,tab[i].password,tab[i].type_co) == 6){ 
-            i++;
+        options->nb_hosts = 0;
+       
+        while (options->nb_hosts < 10 && 
+               fscanf(f, "%255[^:]:%255[^:]:%d:%255[^:]:%255[^:]:%9[^\n]\n",
+                      options->hosts[options->nb_hosts].name_server,
+                      options->hosts[options->nb_hosts].adress_server,
+                      &options->hosts[options->nb_hosts].port,
+                      options->hosts[options->nb_hosts].username,
+                      options->hosts[options->nb_hosts].password,
+                      options->hosts[options->nb_hosts].type_co) == 6) { 
+            options->nb_hosts++;
         }
         fclose(f); 
     }
+  
 
-    
-    
-    struct stat fichier;
+    struct stat fichier_stat;
     if (!is_empty(options->remote_config)) {
-        if (stat(options->remote_config, &fichier) == -1) {
+        if (stat(options->remote_config, &fichier_stat) == -1) {
              fprintf(stderr, "Erreur: Impossible d'acceder au fichier de configuration '%s'. %s\n", 
                     options->remote_config, strerror(errno));
-            return -1;
+            return OPEN_FILE_FAILED;
         }
-        if ((fichier.st_mode & 0777) != 0600) {
+        if ((fichier_stat.st_mode & 0777) != 0600) {
             fprintf(stderr, "Erreur: Le fichier de configuration '%s' doit avoir les permissions 600 ( rw-------)\n", options->remote_config);
-            return -1;
+            return READ_FAILED;
         }
     }
 
-    
-    return 0;
+    if (is_empty(options->password) && !is_empty(options->username) && (!is_empty(options->remote_server) || !is_empty(options->remote_config))) {
+        if (fgets(options->password, MAX_LENGTH, stdin) != NULL) {
+            options->password[strcspn(options->password, "\n")] = '\0';
+        }
+    }
 
+    return 0;
 }

@@ -17,4 +17,5 @@ int ssh_stop_processus(ssh_session session, int pid);
 
 int ssh_cont_processus(ssh_session session, int pid);
 
+int ssh_get_file(ssh_session session, char **buffer, const char *file);
 #endif //SSH_CONNEXION
