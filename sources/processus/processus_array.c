@@ -123,9 +123,9 @@ error_code_t proc_array_get_cpu(const processus_array_t *prev_array, processus_a
 	
 	if(!prev_array || !current_array) return NULLPTR_PARAMETER_ERROR;
 
-	const size_t d_machine_time = current_array->cpu_tick - prev_array->cpu_tick;
+	const long d_machine_time = current_array->cpu_tick - prev_array->cpu_tick;
 	
-	if (d_machine_time == 0) return SUCCESS;
+	if (d_machine_time <= 0) return SUCCESS;
 	
 	for(size_t i = 0; i < current_array->size; ++i) {
 		processus_t *current_proc = &current_array->data[i];
@@ -136,15 +136,19 @@ error_code_t proc_array_get_cpu(const processus_array_t *prev_array, processus_a
 			continue;
 		}
 
+		if (prev_proc->start_time != current_proc->start_time) {
+			current_proc->cpu_usage = 0;
+			continue;
+		}
 		const size_t current_proc_time = current_proc->stime + current_proc->utime;
 		const size_t prev_proc_time = prev_proc->stime + prev_proc->utime;
-		const size_t d_proc_time = current_proc_time - prev_proc_time;
+		const size_t d_proc_time = (current_proc_time >= prev_proc_time) ? (current_proc_time - prev_proc_time) : 0;
 		
 		const long ncores = sysconf(_SC_NPROCESSORS_ONLN);
 		const double cpu_usage = ((double)d_proc_time / (double)d_machine_time) * 100.0 * ncores;
 		
-		const double alpha = 0.01;
-		current_proc->cpu_usage = alpha * cpu_usage + (1.0 - alpha) * current_proc->cpu_usage;
+		const double alpha = 0.3;
+		current_proc->cpu_usage = alpha * cpu_usage + (1.0 - alpha) * prev_proc->cpu_usage;
 	}
 	return SUCCESS;
 }

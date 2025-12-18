@@ -137,7 +137,7 @@ void *ui_task(void *arg) {
       clock_gettime(CLOCK_MONOTONIC, &now);
       if ((now.tv_sec - last_update.tv_sec) * 1000 +
               (now.tv_nsec - last_update.tv_nsec) / 1000000 >=
-          200) {
+          250) {
         if (ui_show_proc(proc_list, &ui, s) != SUCCESS) {
 
           pthread_mutex_unlock(&s->lock);
