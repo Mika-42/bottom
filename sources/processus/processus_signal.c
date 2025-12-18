@@ -80,17 +80,6 @@ error_code_t proc_term(processus_t* p) {
     return send_signal(p, SIGTERM);
 }
 
-// TODO refacto the code below
-int get_exe(processus_t* p, char* exe_path, int size) {
-    char proc_link[MAX_SIZE_PATH];
-    snprintf(proc_link, sizeof(proc_link), "/proc/%d/exe", p->pid);
-    ssize_t len = readlink(proc_link, exe_path, size - 1);
-    if (len < 0)
-        return EXIT_FAILURE;
-    exe_path[len] = '\0';
-
-    return EXIT_SUCCESS;
-}
 /******/
 int get_arg(processus_t* p, char* argv[], int max_arg) {
     char path[MAX_SIZE_PATH];
@@ -178,13 +167,9 @@ error_code_t proc_restart(processus_t* p) {
         return EXIT_FAILURE;
     }
 
-    char exe_path[MAX_SIZE_PATH];
     char* argv[MAX_ARG];
     char* envp[MAX_ARG];
 
-    if (get_exe(p, exe_path, sizeof(exe_path)) != EXIT_SUCCESS) {
-        return EXIT_FAILURE;
-    }
     if (get_arg(p, argv, MAX_ARG) != EXIT_SUCCESS) {
         free_str_array(argv);
         free_str_array(envp);
@@ -226,7 +211,7 @@ error_code_t proc_restart(processus_t* p) {
         return EXIT_FAILURE;
     }
     if (new_pid == 0) {
-        execve(exe_path, argv, envp);
+        execve(p->executable, argv, envp);
         exit(EXIT_FAILURE);
     }
 

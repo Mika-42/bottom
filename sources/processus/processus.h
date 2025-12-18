@@ -23,6 +23,7 @@ typedef struct processus_t {
 	unsigned long	stime;				/**< Temps CPU système */
 	unsigned long	start_time;			/**< Durée de lancement */
 	double		cpu_usage;			/**< Pourcentage du CPU utilisé */
+	char		executable[PROC_PATH_SIZE];
 } processus_t;
 
 [[nodiscard]] bool str_is_numeric(const char *str);
@@ -31,5 +32,5 @@ typedef struct processus_t {
 [[nodiscard]] error_code_t proc_get_stat(processus_t *proc);
 [[nodiscard]] error_code_t proc_get_global_stat(long *cpu_total, time_t *boot_time);
 [[nodiscard]] error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc);
-
+void proc_get_exe(processus_t *proc);
 #endif //PROCESSUS_H

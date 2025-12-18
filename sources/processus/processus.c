@@ -163,9 +163,19 @@ error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
 	proc->pid = pid;
 
+	proc_get_exe(proc);
+
 	error_code_t err = proc_get_stat(proc);
 	
 	if (err != SUCCESS) return err;
 
 	return proc_get_user(proc);
+}
+
+void proc_get_exe(processus_t *proc) {
+	char path[64];
+	snprintf(path, sizeof(path), "/proc/%d/exe", proc->pid);
+	ssize_t len = readlink(path, proc->executable, PROC_PATH_SIZE - 1);
+	if (len < 0) len = 0;
+	proc->executable[len] = '\0';
 }
