@@ -5,6 +5,9 @@
 #include <ctype.h>
 #include <string.h> 
 #include <stdlib.h>
+#include "../command_option.h"
+
+ssh_session connect_remote_server(const options_prog *options);
 
 bool str_is_numeric(const char *str) {
    	

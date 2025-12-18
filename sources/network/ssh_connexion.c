@@ -1,5 +1,4 @@
 #include "ssh_connexion.h"
-
 #include <libssh/libssh.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +8,7 @@ void ssh_end_session(ssh_session session) {
 	ssh_free(session);
 }
 
+
 ssh_session ssh_connexion_init(const char *host, int port, const char *user, const char *password) {
 	ssh_session session = ssh_new();
 	if (session == nullptr) return nullptr;
@@ -17,10 +17,13 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 	ssh_options_set(session, SSH_OPTIONS_PORT, &port);
 	ssh_options_set(session, SSH_OPTIONS_USER, user);
 
+	
+
 	if (ssh_connect(session) != SSH_OK) {
 		ssh_free(session);
 		return nullptr;
 	}
+
 
 	if (ssh_userauth_password(session, nullptr, password) != SSH_AUTH_SUCCESS) {
 		ssh_end_session(session);

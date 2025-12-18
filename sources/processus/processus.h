@@ -3,7 +3,7 @@
 
 #include <time.h>
 #include <sys/types.h>
-#include "error.h"
+
 
 constexpr size_t PROC_NAME_SIZE = 256;
 constexpr size_t PROC_USERNAME_SIZE = 32;
@@ -32,4 +32,8 @@ typedef struct processus_t {
 [[nodiscard]] error_code_t proc_get_global_stat(long *cpu_total, time_t *boot_time);
 [[nodiscard]] error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc);
 
+int read_processus(char *buffer, processus_t *p);
+int parse_stat(char *buffer, processus_t *p);
+int parse_status(char *buffer, processus_t *p);
+char* ssh_exec_and_read(LIBSSH2_CHANNEL *channel, const char *command);
 #endif //PROCESSUS_H
