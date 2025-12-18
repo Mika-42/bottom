@@ -25,11 +25,11 @@ typedef struct processus_t {
 	double		cpu_usage;			/**< Pourcentage du CPU utilisé */
 } processus_t;
 
-bool		DO_NOT_IGNORE str_is_numeric(const char *str);
-bool		DO_NOT_IGNORE proc_is_valid_pid(const char *pid);
-error_code_t	DO_NOT_IGNORE proc_get_user(processus_t *proc);
-error_code_t	DO_NOT_IGNORE proc_get_stat(processus_t *proc);
-error_code_t	DO_NOT_IGNORE proc_get_global_stat(long *cpu_total, time_t *boot_time);
-error_code_t	DO_NOT_IGNORE proc_get_all_infos(const pid_t pid, processus_t *proc);
+[[nodiscard]] bool str_is_numeric(const char *str);
+[[nodiscard]] bool proc_is_valid_pid(const char *pid);
+[[nodiscard]] error_code_t proc_get_user(processus_t *proc);
+[[nodiscard]] error_code_t proc_get_stat(processus_t *proc);
+[[nodiscard]] error_code_t proc_get_global_stat(long *cpu_total, time_t *boot_time);
+[[nodiscard]] error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc);
 
 #endif //PROCESSUS_H

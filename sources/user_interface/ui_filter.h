@@ -5,6 +5,6 @@
 #include "error.h"
 #include "ui.h"
 
-error_code_t DO_NOT_IGNORE ui_filter_proc(const processus_array_t *array, user_selection_t *s);
+[[nodiscard]] error_code_t ui_filter_proc(const processus_array_t *array, user_selection_t *s);
 
 #endif /* UI_FILTER_H */

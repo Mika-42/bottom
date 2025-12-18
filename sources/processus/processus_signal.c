@@ -163,8 +163,9 @@ int kill_children(processus_t* p) {
         if (pidfd < 0)
             continue;
         processus_t proc = {.pid = child};
-        kill_children(&proc);
+        if(kill_children(&proc) == EXIT_SUCCESS) {
         syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
+		}
         close(pidfd);
     }
     fclose(f);

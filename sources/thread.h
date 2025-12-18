@@ -21,9 +21,9 @@ typedef struct thread_args_t {
 void *proc_task(void *arg);
 void *ui_task(void *arg);
 
-error_code_t DO_NOT_IGNORE init_data(thread_args_t *args);
-error_code_t DO_NOT_IGNORE start_threads(thread_args_t *args);
+[[nodiscard]] error_code_t init_data(thread_args_t *args);
+[[nodiscard]] error_code_t start_threads(thread_args_t *args);
 void release_data(thread_args_t *args);
-error_code_t DO_NOT_IGNORE bottom_ui(thread_args_t *args);
+[[nodiscard]] error_code_t bottom_ui(thread_args_t *args);
 
 #endif /* THREAD_H */
