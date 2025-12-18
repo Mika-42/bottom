@@ -70,12 +70,66 @@ error_code_t proc_term(processus_t* p) {
     return send_signal(p, SIGTERM);
 }
 
-int kill_children(processus_t* p) {
+error_code_t proc_restart(processus_t* p) {
+    
+	if(!p) return NULLPTR_PARAMETER_ERROR;
+
+	if (pid_does_not_exists(p->pid)) return PID_DOES_NOT_EXIST;
+    
+	error_code_t err = kill_children(p);
+
+	if (err != SUCCESS) return err;
+	   
+	err = proc_term(p);
+   
+	if (err != SUCCESS) return err;
+
+    if (p->ppid == getpid()) {
+		if(waitpid(p->pid, nullptr, 0) < 0) return GENERIC_ERROR;
+
+    } else {
+        const int timeout_ms = 5000;
+        int waited = 0;
+        
+		while (pid_exists(p->pid)) {
+            if(waited >= timeout_ms) return TIMEOUT;
+			usleep(10000);
+            waited += 10;
+        }
+    }
+
+    pid_t new_pid = fork();
+    if (new_pid < 0) return FORK_FAILED;
+
+    if (new_pid == 0) {
+	
+		size_t i = 0;
+		
+		char *argv[PROC_CMD_COUNT + 1];	
+		char *env[PROC_CMD_COUNT + 1];
+
+		for (i = 0; i < PROC_CMD_COUNT && p->cmdline[i][0] != '\0'; ++i)
+			argv[i] = p->cmdline[i];
+		argv[i] = nullptr;
+
+		for (i = 0; i < PROC_CMD_COUNT && p->env[i][0] != '\0'; ++i)
+			env[i] = p->env[i];
+		env[i] = nullptr;
+
+		execve(p->executable, argv, env);
+       _exit(EXIT_FAILURE);
+    }
+
+    p->pid = new_pid;
+    return SUCCESS;
+}
+
+error_code_t kill_children(processus_t* p) {
     char path[PROC_PATH_SIZE];
     snprintf(path, sizeof(path), "/proc/%d/task/%d/children", p->pid, p->pid);
     FILE* f = fopen(path, "r");
     if (!f)
-        return EXIT_FAILURE;
+        return OPEN_FILE_FAILED;
 
     pid_t child;
     while (fscanf(f, "%d", &child) == 1) {
@@ -83,66 +137,12 @@ int kill_children(processus_t* p) {
         if (pidfd < 0)
             continue;
         processus_t proc = {.pid = child};
-        if(kill_children(&proc) == EXIT_SUCCESS) {
-        syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
+        if(kill_children(&proc) == SUCCESS) {
+			syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
 		}
         close(pidfd);
     }
     fclose(f);
 
-    return EXIT_SUCCESS;
-}
-
-error_code_t proc_restart(processus_t* p) {
-    if (pid_does_not_exists(p->pid)) {
-        return EXIT_FAILURE;
-    }
-    
-	if (kill_children(p) != EXIT_SUCCESS || proc_term(p) != EXIT_SUCCESS) {
-        return EXIT_FAILURE;
-    }
-
-    if (p->ppid == getpid()) {
-        waitpid(p->pid, NULL, 0);
-    } else {
-        int timeout_ms = 5000;
-        int waited = 0;
-        while (pid_exists(p->pid) && waited < timeout_ms) {
-            usleep(10000);
-            waited += 10;
-        }
-
-        if (pid_exists(p->pid)) {
-            return EXIT_FAILURE;
-        }
-    }
-
-    pid_t new_pid = fork();
-    if (new_pid < 0) {
-        return EXIT_FAILURE;
-    }
-    if (new_pid == 0) {
-	
-		size_t i = 0;
-		
-		char *argv[PROC_CMD_COUNT + 1];
-		for (i = 0; i < PROC_CMD_COUNT && p->cmdline[i][0] != '\0'; ++i)
-			argv[i] = p->cmdline[i];
-		argv[i] = NULL;
-
-		char *env[PROC_CMD_COUNT + 1];
-		for (i = 0; i < PROC_CMD_COUNT && p->env[i][0] != '\0'; ++i)
-			env[i] = p->env[i];
-		env[i] = NULL;
-
-		execve(p->executable, argv, env);
-        exit(EXIT_FAILURE);
-    }
-
-    p->pid = new_pid;
-    usleep(100000);
-    if (pid_does_not_exists(p->pid)) {
-        return EXIT_FAILURE;
-    }
-    return EXIT_SUCCESS;
+    return SUCCESS;
 }
