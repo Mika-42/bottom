@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <string.h> 
 #include <stdlib.h>
+#include <fcntl.h> 
 
 bool str_is_numeric(const char *str) {
    	
@@ -169,6 +170,12 @@ error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 	
 	if (err != SUCCESS) return err;
 
+	err = proc_get_cmdline(proc);
+
+	if (err != SUCCESS) return err;
+	
+	err = proc_get_env(proc);
+	
 	return proc_get_user(proc);
 }
 
@@ -179,3 +186,54 @@ void proc_get_exe(processus_t *proc) {
 	if (len < 0) len = 0;
 	proc->executable[len] = '\0';
 }
+
+error_code_t proc_read_null_separated(pid_t pid, const char *proc_file, char out[][PROC_CMD_LEN]) {
+    if (!proc_file)
+        return NULLPTR_PARAMETER_ERROR;
+
+    char path[PROC_PATH_SIZE];
+    snprintf(path, sizeof(path), "/proc/%d/%s", pid, proc_file);
+
+    int fd = open(path, O_RDONLY);
+    if (fd < 0)
+        return OPEN_FILE_FAILED;
+
+    char buffer[PROC_CMD_COUNT * PROC_CMD_LEN];
+    ssize_t n = read(fd, buffer, sizeof(buffer) - 1);
+    close(fd);
+
+    if (n <= 0)
+        return READ_FAILED;
+
+    buffer[n] = '\0';
+
+    size_t count = 0;
+    char *cur = buffer;
+
+    while (cur < buffer + n && count < PROC_CMD_COUNT) {
+        if (*cur == '\0') {
+            ++cur;
+            continue;
+        }
+
+        strncpy(out[count], cur, PROC_CMD_LEN - 1);
+        out[count][PROC_CMD_LEN - 1] = '\0';
+
+        ++count;
+        cur += strlen(cur) + 1;
+    }
+
+    if (count < PROC_CMD_COUNT)
+        out[count][0] = '\0';
+
+    return SUCCESS;
+}
+
+error_code_t proc_get_cmdline(processus_t* p) {
+	return proc_read_null_separated(p->pid, "cmdline", p->cmdline);
+}
+
+error_code_t proc_get_env(processus_t* p) {
+	return proc_read_null_separated(p->pid, "environ", p->env);
+}
+

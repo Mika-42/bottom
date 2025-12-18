@@ -13,9 +13,9 @@
 [[nodiscard]] error_code_t proc_restart(processus_t *p);
 
 //todo optimize 
-[[nodiscard]] int get_exe(processus_t* p, char* exe_path, int size);
-[[nodiscard]] int get_arg(processus_t* p, char* argv[], int max_arg);
-[[nodiscard]] int get_env(processus_t* p, char* envp[], int max_env);
+[[nodiscard]] int get_exe(processus_t* p);
+[[nodiscard]] int get_arg(processus_t* p);
+[[nodiscard]] int get_env(processus_t* p);
 [[nodiscard]] int kill_children(processus_t* p);
 
 #endif //PROCESSUS_SIGNAL_H
