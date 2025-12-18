@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include "error.h"
 
 static bool is_empty(const char *s) {
     return s[0] == '\0';
@@ -102,7 +103,7 @@ int command_run(int argc, char *argv[], options_prog *options) {
                 options->all = true;
                 break;
             case '?':
-                return -1;
+                return PARSING_FAILED;
                 break;
         }
     }
@@ -115,7 +116,7 @@ int command_run(int argc, char *argv[], options_prog *options) {
         
         if (separator == NULL) {
             fprintf(stderr, "Erreur: Le format de l'option -l doit etre 'username@remote_server'.\n");
-            return -1;
+            return PARSING_FAILED;;
         }
         copy_option_arg(options->remote_server, separator + 1);
         *separator = '\0'; 
@@ -138,7 +139,7 @@ int command_run(int argc, char *argv[], options_prog *options) {
     if (is_empty(options->remote_config) && is_empty(options->remote_server)) {
         if (!is_empty(options->username) || !is_empty(options->password) || !is_empty(options->connexion_type) || options->port != 0) {
             fprintf(stderr, "Erreur: Les options de connexion (-u, -p, -t, -P) ne sont valides qu'avec -s, -l ou -c.\n");
-            return -1;
+            return PARSING_FAILED;
         }
     }
 
@@ -163,7 +164,7 @@ int command_run(int argc, char *argv[], options_prog *options) {
 
     if (!is_empty(options->remote_config) && f == NULL) {
         fprintf(stderr, "Le fichier %s n'a pas pu être ouvert\n", options->remote_config);
-        return EXIT_FAILURE;
+        return OPEN_FILE_FAILED;
     }
 
     
@@ -189,11 +190,11 @@ int command_run(int argc, char *argv[], options_prog *options) {
         if (stat(options->remote_config, &fichier_stat) == -1) {
              fprintf(stderr, "Erreur: Impossible d'acceder au fichier de configuration '%s'. %s\n", 
                     options->remote_config, strerror(errno));
-            return -1;
+            return OPEN_FILE_FAILED;
         }
         if ((fichier_stat.st_mode & 0777) != 0600) {
             fprintf(stderr, "Erreur: Le fichier de configuration '%s' doit avoir les permissions 600 ( rw-------)\n", options->remote_config);
-            return -1;
+            return READ_FAILED;
         }
     }
 
