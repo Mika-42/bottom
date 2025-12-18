@@ -97,15 +97,8 @@ error_code_t proc_restart(processus_t* p) {
     if (pid_does_not_exists(p->pid)) {
         return EXIT_FAILURE;
     }
-/*
-    if (proc_get_arg(p) != SUCCESS) {
-        return EXIT_FAILURE;
-    }
-    if (proc_get_env(p) != SUCCESS) {
-        return EXIT_FAILURE;
-    }
-*/
-    if (kill_children(p) != EXIT_SUCCESS || proc_term(p) != EXIT_SUCCESS) {
+    
+	if (kill_children(p) != EXIT_SUCCESS || proc_term(p) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 

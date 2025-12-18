@@ -39,21 +39,11 @@ void *proc_task(void *arg) {
     processus_array_t *proc_list = &db->buffer[index];
     auto curr_el = &proc_list->data[curr];
 
-    error_code_t err = SUCCESS;
-
     switch (evt) {
-    case PAUSE_CONTINUE:
-      err = (curr_el->state == 'T') ? proc_cont(curr_el) : proc_stop(curr_el);
-      break;
-    case TERMINATE:
-      err = proc_term(curr_el);
-      break;
-    case KILL:
-      err = proc_kill(curr_el);
-      break;
-    case RELOAD:
-      err = proc_restart(curr_el);
-      break;
+    case PAUSE_CONTINUE: (curr_el->state == 'T') ? proc_cont(curr_el) : proc_stop(curr_el); break;
+    case TERMINATE: proc_term(curr_el); break;
+    case KILL: proc_kill(curr_el); break;
+    case RELOAD: proc_restart(curr_el); break;
     default:
       break;
     }
@@ -63,10 +53,6 @@ void *proc_task(void *arg) {
 		s->event = NOTHING;
 		pthread_mutex_unlock(&s->lock);
 	}
-    if (err != SUCCESS) {
-      atomic_store_explicit(&args->running, false, memory_order_release);
-      break;
-    }
 
     if (proc_array_update(proc_list) != SUCCESS) {
       atomic_store_explicit(&args->running, false, memory_order_release);
