@@ -3,7 +3,7 @@
 
 #include <time.h>
 #include <sys/types.h>
-
+#include "error.h"
 
 constexpr size_t PROC_NAME_SIZE = 256;
 constexpr size_t PROC_USERNAME_SIZE = 32;
