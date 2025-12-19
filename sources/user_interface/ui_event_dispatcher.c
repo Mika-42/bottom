@@ -50,6 +50,7 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 	if (ch == KEY_F(1)) {
 		s->mode = NORMAL;
 		ui_utils_reset_input_buffer(s);
+		if (s->indices.size > 0) s->selected = s->indices.data[s->selected];
 		return;
 	} else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
 		if (s->input_length > 0) s->input[--s->input_length] = '\0';
