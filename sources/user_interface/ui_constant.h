@@ -1,6 +1,13 @@
 #ifndef UI_CONSTANT_H
 #define UI_CONSTANT_H
 
+typedef enum user_mode_t {NORMAL, SEARCH, HELP } user_mode_t;
+typedef enum proc_event_t {
+	PAUSE_CONTINUE, TERMINATE, KILL, RELOAD, NOTHING
+} proc_event_t;
+
+typedef enum sort_type_t {DSC = 0, ASC = 1} sort_type_t;
+
 static constexpr size_t one_sec = 1'000'000'000; //nanosec
 
 static constexpr struct timespec proc_thread_time_interval = {

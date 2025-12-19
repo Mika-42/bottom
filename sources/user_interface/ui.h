@@ -7,10 +7,6 @@
 #include "ui_index_array.h"
 #include <pthread.h>
 
-typedef enum user_mode_t {NORMAL, SEARCH, HELP } user_mode_t;
-typedef enum proc_event_t {PAUSE_CONTINUE, TERMINATE, KILL, RELOAD, NOTHING} proc_event_t;
-typedef enum sort_type_t {DSC = 0, ASC = 1} sort_type_t;
-
 typedef struct user_selection_t {
 	size_t		selected;
 	size_t		machine_selected;
