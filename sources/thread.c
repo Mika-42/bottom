@@ -29,7 +29,7 @@ void *proc_task(void *arg) {
 
     pthread_mutex_lock(&s->lock);
     int header = s->header_selected;
-    bool asc = s->asc;
+    sort_type_t sort = s->sort;
     proc_event_t evt = s->event;
     size_t curr = s->selected;
     pthread_mutex_unlock(&s->lock);
@@ -40,19 +40,27 @@ void *proc_task(void *arg) {
     auto curr_el = &proc_list->data[curr];
 
     switch (evt) {
-    case PAUSE_CONTINUE: (curr_el->state == 'T') ? proc_cont(curr_el) : proc_stop(curr_el); break;
-    case TERMINATE: proc_term(curr_el); break;
-    case KILL: proc_kill(curr_el); break;
-    case RELOAD: proc_restart(curr_el); break;
+    case PAUSE_CONTINUE:
+      (curr_el->state == 'T') ? proc_cont(curr_el) : proc_stop(curr_el);
+      break;
+    case TERMINATE:
+      proc_term(curr_el);
+      break;
+    case KILL:
+      proc_kill(curr_el);
+      break;
+    case RELOAD:
+      proc_restart(curr_el);
+      break;
     default:
       break;
     }
 
-	if(evt != NOTHING) {
-		pthread_mutex_lock(&s->lock);
-		s->event = NOTHING;
-		pthread_mutex_unlock(&s->lock);
-	}
+    if (evt != NOTHING) {
+      pthread_mutex_lock(&s->lock);
+      s->event = NOTHING;
+      pthread_mutex_unlock(&s->lock);
+    }
 
     if (proc_array_update(proc_list) != SUCCESS) {
       atomic_store_explicit(&args->running, false, memory_order_release);
@@ -66,7 +74,7 @@ void *proc_task(void *arg) {
     }
 
     if ((size_t)header < header_element_count)
-      proc_array_sort(proc_list, sort_func[asc][header]);
+      proc_array_sort(proc_list, sort_func[sort][header]);
 
     nanosleep(&proc_thread_time_interval, nullptr);
 
@@ -163,9 +171,9 @@ error_code_t init_data(thread_args_t *args) {
   s->selected = 0;
   s->machine_selected = 0;
   s->header_selected = 0;
-  s->asc = true;
+  s->sort = ASC;
   s->mode = NORMAL;
-s->event = NOTHING;
+  s->event = NOTHING;
   s->max_machine = 2;
   s->input[0] = '\0';
   s->input_length = 0;

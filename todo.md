@@ -8,9 +8,4 @@
 + create unit test for processus
 + check memory leak with valgrind
 + add doxygen comment
-+ check get state 
 + check all sscanf
-+ optimize processus_signal.h/.c
-
-**main** 
-+ CPU

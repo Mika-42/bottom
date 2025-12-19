@@ -9,15 +9,17 @@
 
 typedef enum user_mode_t {NORMAL, SEARCH, HELP } user_mode_t;
 typedef enum proc_event_t {PAUSE_CONTINUE, TERMINATE, KILL, RELOAD, NOTHING} proc_event_t;
+typedef enum sort_type_t {DSC = 0, ASC = 1} sort_type_t;
 
 typedef struct user_selection_t {
 	size_t		selected;
 	size_t		machine_selected;
 	size_t		header_selected;
-	bool		asc;
+	
 	//----
-	user_mode_t	mode;	//proc_task read-only
-	proc_event_t event; //proc_task read-write
+	sort_type_t		sort;	// proc_task read-only
+	user_mode_t		mode;	// proc_task read-only
+	proc_event_t	event;	// proc_task read-write
 	//----
 	size_t		max_machine;
 	char		input[256];

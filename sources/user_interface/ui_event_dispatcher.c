@@ -31,7 +31,7 @@ void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui
 
 	ui_event_dispatcher_sort(ch, s);
 	ui_show_array(ui->footer, proc_array_function_command);
-	ui_show_header(s->header_selected, ui, s->asc);
+	ui_show_header(s->header_selected, ui, s->sort);
 }
 
 void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
@@ -71,14 +71,14 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 	ui_show_array(ui->footer, proc_array_search_bar);
 	mvwprintw(ui->footer, 1, 24, "%-96.96s", s->input);
 
-	ui_show_header(s->header_selected, ui, s->asc);
+	ui_show_header(s->header_selected, ui, s->sort);
 }
 
 void ui_event_dispatcher_sort(const int ch, user_selection_t *s) {
 	if(ch == '\t') { 
 		s->header_selected = (s->header_selected + 1) % header_element_count;
 	} else if (ch == '\n') {
-		s->asc = !s->asc;
+		s->sort = s->sort == ASC ? DSC : ASC;
 	}
 }
 
