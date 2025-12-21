@@ -12,14 +12,7 @@ int main(int argc, char *argv[]){
 	   .all = false
 	   };
 
-	   int gerer_options = command_run(argc, argv, &options);
-
-	   if (gerer_options !=0) {
-	   fprintf(stderr, "Erreur lors de l'analyse des options. Utilisez -h pour l'aide.\n");
-	   return EXIT_FAILURE;
-	   }
-
-	   return 0;
+		return command_run(argc, argv, &options);
 //	thread_args_t args;
 //	return (bottom_ui(&args) != SUCCESS) ? EXIT_FAILURE : EXIT_SUCCESS;
 }
