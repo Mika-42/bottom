@@ -2,25 +2,12 @@
 #define CONFIG_FILE_PARSER_H
 
 #include <stddef.h>
-#include <error.h>
+#include "option.h"
+#include "error.h"
 
-constexpr size_t field_size = 256;
 constexpr size_t path_max_size = 4096;
 constexpr char cfg_filename[path_max_size] = ".config";
 constexpr size_t max_port = 65'535;
-
-typedef enum connexion_type_t {
-	SSH, TELNET
-} connexion_type_t;
-
-typedef struct remote_server_t {
-    char server_name[field_size];
-    char server_addr[field_size];
-    char username[field_size];
-    char password[field_size];  
-    unsigned short port;
-	connexion_type_t connexion;
-} remote_server_t;
 
 typedef struct config_file_t {
 	remote_server_t *data;
