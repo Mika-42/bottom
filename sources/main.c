@@ -4,15 +4,7 @@
 #include "thread.h"
 
 int main(int argc, char *argv[]){	
-
-	   options_prog options = {
-	   .help = false,
-	   .dry_run = false,
-	   .port = 0, 
-	   .all = false
-	   };
-
-		return command_run(argc, argv, &options);
+		return command_run(argc, argv);
 //	thread_args_t args;
 //	return (bottom_ui(&args) != SUCCESS) ? EXIT_FAILURE : EXIT_SUCCESS;
 }

@@ -7,40 +7,8 @@
 #include <unistd.h>
 #include <errno.h>
 
-void cfg_init(config_file_t *file) {
-	if(!file) return;
-	file->data = nullptr;
-	file->size = 0;
-	file->capacity = 0;
-}
 
-remote_server_t *cfg_add(config_file_t *file, remote_server_t *server) {
-	
-	if(!file) return nullptr;
-
-	if (file->size >= file->capacity) {
-		const size_t new_capacity = file->capacity ? file->capacity * 2 : 1;
-
-		remote_server_t *temp = realloc(file->data, new_capacity * sizeof(*temp));
-
-		if (!temp) return nullptr;
-
-		file->data = temp;
-		file->capacity = new_capacity;
-	}
-
-	memcpy(&file->data[file->size], server, sizeof(remote_server_t));
-
-	++file->size;
-	return &file->data[file->size - 1];
-}
-
-void cfg_free(config_file_t *file) {
-	if(!file) return;
-	if(file->data) free(file->data);
-	cfg_init(file);
-}
-
+/*
 error_code_t cfg_parse_line(char *line, remote_server_t *server) {
 	
 	if(!line || !server) return NULLPTR_PARAMETER_ERROR;
@@ -78,8 +46,8 @@ error_code_t cfg_parse_line(char *line, remote_server_t *server) {
 	else return INVALID_CONNEXION_TYPE;
 
 	return SUCCESS;
-}
-
+}*/
+/*
 bool is_cfg_file(const char *path) {
 	if (!path) return false;
 	const char *basename = strrchr(path, '/');
@@ -149,4 +117,4 @@ error_code_t cfg_load_file(config_file_t *file, char *path) {
 
 	return SUCCESS;
 }
-
+*/
