@@ -106,6 +106,7 @@ int command_run(int argc, char *argv[]) {
     }
   }
 
+  // -s
   if (!srv_str_is_empty(server.address)) {
     if (srv_str_is_empty(server.username)) {
       err = ask_user("username", server.username);
