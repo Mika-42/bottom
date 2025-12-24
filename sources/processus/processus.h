@@ -40,7 +40,7 @@ typedef struct processus_t {
 void proc_get_exe(processus_t *proc);
 
 [[nodiscard]] error_code_t proc_read_null_separated(pid_t pid, const char *proc_file, char out[][PROC_CMD_LEN]);
-[[nodiscard]] error_code_t proc_get_cmdline(processus_t* p);
-[[nodiscard]] error_code_t proc_get_env(processus_t* p);
+[[nodiscard]] error_code_t proc_get_cmdline(processus_t *p);
+[[nodiscard]] error_code_t proc_get_env(processus_t *p);
 
 #endif //PROCESSUS_H
