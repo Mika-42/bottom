@@ -26,7 +26,6 @@ const char* err_to_str(const error_code_t err) {
     case READ_CFG_PASSWORD_FAILED: return "READ_CFG_PASSWORD_FAILED";
     case READ_CFG_CONNEXION_FAILED: return "READ_CFG_CONNEXION_FAILED";
     case INVALID_ARGUMENT: return "INVALID_ARGUMENT";
-    case FILE_DOES_NOT_EXIST: return "FILE_DOES_NOT_EXIST";
     case UNREGULAR_FILE_ERROR: return "UNREGULAR_FILE_ERROR";
     case BAD_PERMISSIONS_ERROR: return "BAD_PERMISSIONS_ERROR";
 	default: return "UNKNOWN_ERROR";

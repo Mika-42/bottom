@@ -72,3 +72,12 @@ error_code_t srv_str_split_at(char *dest_lhs, char *dest_rhs, char *src) {
 bool srv_str_is_empty(char *str) {
 	return *str == '\0';
 }
+
+bool srv_is_valid(remote_server_t *server) {
+	return !(srv_str_is_empty(server->name) || 
+			srv_str_is_empty(server->address) ||
+			srv_str_is_empty(server->username) ||
+			srv_str_is_empty(server->password) ||
+			server->port == 0);
+}
+

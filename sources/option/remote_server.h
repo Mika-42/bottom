@@ -25,5 +25,6 @@ typedef struct remote_server_t {
 [[nodiscard]] error_code_t srv_str_to_connexion(connexion_type_t *dest, char *src);
 [[nodiscard]] error_code_t srv_str_split_at(char *dest_lhs, char *dest_rhs, char *src);
 [[nodiscard]] bool srv_str_is_empty(char *str);
+[[nodiscard]] bool srv_is_valid(remote_server_t *server);
 
 #endif /* REMOTE_SERVER_H */
