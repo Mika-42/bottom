@@ -1,5 +1,4 @@
 #include "option.h"
-
 #include <string.h>
 
 #define ANSI_RED "\x1b[31m"
@@ -51,33 +50,77 @@ void opt_print_help() {
     pclose(pager);
   }
 }
-/*
-error_code_t opt_remote_cfg(config_file_t *file, char *opt_path) {
 
-	char path[path_max_size] = {0};
-	if(opt_path) {
-		strncpy(path, opt_path, path_max_size - 1);
-		path[path_max_size - 1] = '\0';
-	}
-	error_code_t err = cfg_load_file(file, path);
+error_code_t opt_ask_user(const char *field_name, char *dest) {
 
-	if(err == BAD_PERMISSIONS_ERROR) {
-		fprintf(stderr,
-				"Configuration file must be -rw------- (600).\n"
-				"Tips: chmod 600 path/to/file/.config");
-		return err;
-	}
+  if (!field_name || !dest)
+    return NULLPTR_PARAMETER_ERROR;
 
-	if(err == OPEN_FILE_FAILED) {
-		fprintf(stderr, "You are not the owner of configuration file.\n");
-		return err;
-	}
+  printf("%s: ", field_name);
 
-	if(err == FILE_DOES_NOT_EXIST) {
-		fprintf(stderr, "\"%s\" does not exist and there is no default configuration file.\n", path);
-		return err;
-	}
+  if (scanf("%256s", dest) != 1) {
+    getchar();
+    return BUFFER_OVERFLOW;
+  }
+  getchar();
 
-	return err;
+  return SUCCESS;
 }
-*/
+
+error_code_t opt_dry_run(const config_file_t *file) {
+	
+	if(!file) return NULLPTR_PARAMETER_ERROR;
+
+	for(size_t i = 0; i < file->size; ++i) {
+		ssh_session session = ssh_connexion_init(
+			file->data[i].address,
+			file->data[i].port,
+			file->data[i].username,
+			file->data[i].password);
+   
+		if(!session) {  
+			fprintf(stderr, "Error: SSH_CONNEXION_FAILED [%s](%s@%s).\n",
+				file->data[i].name,
+				file->data[i].username, 
+				file->data[i].address);
+			continue;   
+		}   
+   
+		bool succed = ssh_dry_run(session) == SUCCESS;
+   
+		printf("Testing connexion on [%s](%s@%s) : %s.\n",
+					file->data[i].name,
+					file->data[i].username, 
+					file->data[i].address,
+					succed ? "succed" : "failed"
+					);
+		ssh_end_session(session);
+	}
+
+	return SUCCESS;
+}
+
+error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) {
+	for(size_t i = 0; i < file->size; ++i) {
+		ssh_session session = ssh_connexion_init(
+			file->data[i].address,
+			file->data[i].port,
+			file->data[i].username,
+			file->data[i].password);
+
+		const bool succed = session != nullptr;
+
+		if(succed) {
+			if(!ssh_array_add(array, session)) return MEMORY_ALLOCATION_FAILED;
+		}
+
+		printf("Connexion on [%s](%s@%s) : %s.\n",
+			file->data[i].name,
+			file->data[i].username,
+			file->data[i].address,
+			succed ? "succed" : "failed"
+		);
+
+	}
+	return SUCCESS;
+}

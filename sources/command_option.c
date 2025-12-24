@@ -14,45 +14,23 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-const struct option long_opts[11] = {
-    {.name = "help", .has_arg = 0, .flag = 0, .val = 'h'},
-    {.name = "dry-run", .has_arg = 0, .flag = 0, .val = 129},
-    {.name = "remote-config", .has_arg = 1, .flag = 0, .val = 'c'},
-    {.name = "connexion-type", .has_arg = 1, .flag = 0, .val = 't'},
-    {.name = "port", .has_arg = 1, .flag = 0, .val = 'P'},
-    {.name = "login", .has_arg = 1, .flag = 0, .val = 'l'},
-    {.name = "remote-server", .has_arg = 1, .flag = 0, .val = 's'},
-    {.name = "username", .has_arg = 1, .flag = 0, .val = 'u'},
-    {.name = "password", .has_arg = 1, .flag = 0, .val = 'p'},
-    {.name = "all", .has_arg = 0, .flag = 0, .val = 'a'},
-    {.name = 0, .has_arg = 0, .flag = 0, .val = 0},
+static const struct option long_opts[] = {
+	{ "help",            no_argument,        nullptr, 'h' },
+    { "dry-run",         no_argument,        nullptr, 129 },
+    { "remote-config",   optional_argument,  nullptr, 'c' },
+    { "connexion-type",  required_argument,  nullptr, 't' },
+    { "port",            required_argument,  nullptr, 'P' },
+    { "login",           required_argument,  nullptr, 'l' },
+    { "remote-server",   required_argument,  nullptr, 's' },
+    { "username",        required_argument,  nullptr, 'u' },
+    { "password",        required_argument,  nullptr, 'p' },
+    { "all",             no_argument,        nullptr, 'a' },
+    { 0, 0, 0, 0 }
 };
 
-struct {
-	bool exec_local : 1;
-	bool config : 1;
-	bool server : 1;
-	bool has_opt : 1;
-	bool dry_run : 1;
-} flag = {false, false, false, false, false};
+ssh_session_array_t sessions;
 
-error_code_t ask_user(const char *field_name, char *dest) {
-
-  if (!field_name || !dest)
-    return NULLPTR_PARAMETER_ERROR;
-
-  printf("%s: ", field_name);
-
-  if (scanf("%256s", dest) != 1) {
-    getchar();
-    return BUFFER_OVERFLOW;
-  }
-  getchar();
-
-  return SUCCESS;
-}
-
-int command_run(int argc, char *argv[]) {
+error_code_t command_run(int argc, char *argv[], flag_t *flag) {
   int opt = 0;
   config_file_t cfg_file = {0};
   remote_server_t server = {0};
@@ -62,22 +40,21 @@ int command_run(int argc, char *argv[]) {
 
   while ((opt = getopt_long(argc, argv, "hc::t:P:l:s:u:p:a", long_opts,
                             nullptr)) != -1) {
-    flag.has_opt = true;
+    flag->has_opt = true;
 	switch (opt) {
 
     case 'h': {
       opt_print_help();
       return SPECIAL_EXIT;
-			  }
+	}
 
     case 129: { 
-				  flag.dry_run = true;
-			  }
-      break;
+		flag->dry_run = true;
+	} break;
 
     case 'c': {
       err = cfg_parse(&cfg_file, optarg);
-	  flag.config = true;
+	  flag->config = true;
     } break;
     
 	case 't': {
@@ -94,7 +71,7 @@ int command_run(int argc, char *argv[]) {
 
     case 's': {
       err = srv_str_duplicate(server.address, optarg);
-		flag.server = true;
+		flag->server = true;
 	  } break;
 
     case 'u': {
@@ -106,7 +83,7 @@ int command_run(int argc, char *argv[]) {
     } break;
 
 	case 'a': {
-				  flag.exec_local = true;
+				  flag->exec_local = true;
 			  } break;
     case '?':
       return PARSING_FAILED;
@@ -119,7 +96,7 @@ int command_run(int argc, char *argv[]) {
     }
   }
 
-  if(flag.exec_local && !(flag.server || flag.config)) {
+  if(flag->exec_local && !(flag->server || flag->config)) {
 		  err = INVALID_ARGUMENT;
 			fprintf(stderr, "Error: %s (--all/-a requires --remote-config/-c or -remote-server/-s.).\n", err_to_str(err));		
 		  return err;
@@ -127,12 +104,12 @@ int command_run(int argc, char *argv[]) {
 
   if (!srv_str_is_empty(server.address)) {
     if (srv_str_is_empty(server.username)) {
-      err = ask_user("username", server.username);
+      err = opt_ask_user("username", server.username);
       if (err != SUCCESS)
         return err;
     }
     if (srv_str_is_empty(server.password)) {
-      err = ask_user("password", server.password);
+      err = opt_ask_user("password", server.password);
       if (err != SUCCESS)
         return err;
     }
@@ -140,40 +117,14 @@ int command_run(int argc, char *argv[]) {
 	cfg_add_server(&cfg_file, &server);
   }
  	
-  if (flag.dry_run) {
-	for(size_t i = 0; i < cfg_file.size; ++i) {
-		ssh_session session = ssh_connexion_init(
-				cfg_file.data[i].address,
-				cfg_file.data[i].port,
-				cfg_file.data[i].username,
-				cfg_file.data[i].password
-				);
-		if(!session) {
-			err = SSH_CONNEXION_FAILED;
-			fprintf(stderr, "Error: %s [%s](%s@%s).\n",
-					err_to_str(err),
-					cfg_file.data[i].name,
-					cfg_file.data[i].username, 
-					cfg_file.data[i].address);
-			continue;
-		}
-
-		bool succed = ssh_dry_run(session) == SUCCESS;
-
-		printf("Testing connexion on [%s](%s@%s) : %s.\n",
-					cfg_file.data[i].name,
-					cfg_file.data[i].username, 
-					cfg_file.data[i].address,
-					succed ? "succed" : "failed"
-					);
-		ssh_end_session(session);
-	}
+  if (flag->dry_run) {
+	opt_dry_run(&cfg_file);
 	return SPECIAL_EXIT;
   }
 	  
-if (!flag.has_opt) {
-	flag.exec_local = true;
-  }
+	if (!flag->has_opt) {
+		flag->exec_local = true;
+	}
 
-  return 0;
+	return opt_connect(&cfg_file, &sessions);
 }

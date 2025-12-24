@@ -1,11 +1,16 @@
 #ifndef COMMAND_OPTION_H
 #define COMMAND_OPTION_H
 
-#define MAX_LENGTH 256
-#define MAX_HOSTS 10 
+#include "error.h"
 
-#include <stdbool.h>
+typedef struct flag_t {
+	bool exec_local : 1;
+	bool config : 1;
+	bool server : 1;
+	bool has_opt : 1;
+	bool dry_run : 1;
+} flag_t;
 
-int command_run(int argc, char *argv[]);
+error_code_t command_run(int argc, char *argv[], flag_t *flag);
 
 #endif 
