@@ -27,6 +27,13 @@ const struct option long_opts[11] = {
     {.name = 0, .has_arg = 0, .flag = 0, .val = 0},
 };
 
+struct {
+	bool exec_local : 1;
+	bool config : 1;
+	bool server : 1;
+	bool has_opt : 1;
+} flag = {false, false, false, false};
+
 error_code_t ask_user(const char *field_name, char *dest) {
 
   if (!field_name || !dest)
@@ -49,10 +56,12 @@ int command_run(int argc, char *argv[]) {
   remote_server_t server = {0};
   error_code_t err = SUCCESS;
   optind = 1;
+	
 
   while ((opt = getopt_long(argc, argv, "hc::t:P:l:s:u:p:a", long_opts,
                             nullptr)) != -1) {
-    switch (opt) {
+    flag.has_opt = true;
+	switch (opt) {
 
     case 'h':
       opt_print_help();
@@ -64,6 +73,7 @@ int command_run(int argc, char *argv[]) {
 
     case 'c': {
       err = cfg_parse(&cfg_file, optarg);
+	  flag.config = true;
     } break;
     
 	case 't': {
@@ -80,7 +90,8 @@ int command_run(int argc, char *argv[]) {
 
     case 's': {
       err = srv_str_duplicate(server.address, optarg);
-    } break;
+		flag.server = true;
+	  } break;
 
     case 'u': {
       err = srv_str_duplicate(server.username, optarg);
@@ -89,10 +100,10 @@ int command_run(int argc, char *argv[]) {
     case 'p': {
       err = srv_str_duplicate(server.password, optarg);
     } break;
-      //--------------------------------------------
-    case 'a':
-      // options->all = true;
-      break;
+
+	case 'a': {
+				  flag.exec_local = true;
+			  } break;
     case '?':
       return PARSING_FAILED;
       break;
@@ -103,6 +114,12 @@ int command_run(int argc, char *argv[]) {
       return err;
     }
   }
+
+  if(flag.exec_local && !(flag.server || flag.config)) {
+		  err = INVALID_ARGUMENT;
+			fprintf(stderr, "Error: %s (--all/-a requires --remote-config/-c or -remote-server/-s.).\n", err_to_str(err));		
+		  return err;
+	}
 
   if (!srv_str_is_empty(server.address)) {
     if (srv_str_is_empty(server.username)) {
@@ -115,6 +132,10 @@ int command_run(int argc, char *argv[]) {
       if (err != SUCCESS)
         return err;
     }
+  }
+ 	
+  if (!flag.has_opt) {
+	flag.exec_local = true;
   }
 
   return 0;
