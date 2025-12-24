@@ -8,7 +8,6 @@ void ssh_end_session(ssh_session session) {
 	ssh_free(session);
 }
 
-
 ssh_session ssh_connexion_init(const char *host, int port, const char *user, const char *password) {
 	ssh_session session = ssh_new();
 	if (session == nullptr) return nullptr;
@@ -32,18 +31,18 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 	return session;
 }
 
-int ssh_cmd_exec(ssh_session session, const char *cmd, char *output, size_t len_max) {
+error_code_t ssh_cmd_exec(ssh_session session, const char *cmd, char *output, size_t len_max) {
 	ssh_channel channel = ssh_channel_new(session);
-	if (!channel) return SSH_ERROR;
+	if (!channel) return MEMORY_ALLOCATION_FAILED;
 	if (ssh_channel_open_session(channel) != SSH_OK) {
 		ssh_channel_free(channel);
-		return EXIT_FAILURE;
+		return SSH_OPEN_FAILED;
 	}
 
 	if (ssh_channel_request_exec(channel, cmd) != SSH_OK) {
 		ssh_channel_close(channel);
 		ssh_channel_free(channel);
-		return EXIT_FAILURE;
+		return SSH_REQUEST_FAILED;
 	}
 
 	int nbytes = ssh_channel_read(channel, output, len_max - 1, 0);
@@ -53,33 +52,33 @@ int ssh_cmd_exec(ssh_session session, const char *cmd, char *output, size_t len_
 	ssh_channel_close(channel);
 	ssh_channel_free(channel);
 
-	return (nbytes >= 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+	return (nbytes >= 0) ? SUCCESS : SSH_READ_FAILED;
 }
 
-int ssh_dry_run(ssh_session session) {
+error_code_t ssh_dry_run(ssh_session session) {
 	char output[4096];
 	return ssh_cmd_exec(session, "ps", output, sizeof(output));
 }
 
-int ssh_kill_processus(ssh_session session, int pid) {
+error_code_t ssh_kill_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -KILL %d", pid);
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
-int ssh_term_processus(ssh_session session, int pid) {
+error_code_t ssh_term_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -TERM %d", pid);
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
-int ssh_stop_processus(ssh_session session, int pid) {
+error_code_t ssh_stop_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -STOP %d", pid);
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
-int ssh_cont_processus(ssh_session session, int pid) {
+error_code_t ssh_cont_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -CONT %d", pid);
 	return ssh_cmd_exec(session, cmd, nullptr, 0);

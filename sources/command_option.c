@@ -2,6 +2,7 @@
 #include "config_file.h"
 #include "error.h"
 #include "option.h"
+#include "ssh_connexion.h"
 
 #include <getopt.h>
 #include <stdio.h>
@@ -32,7 +33,8 @@ struct {
 	bool config : 1;
 	bool server : 1;
 	bool has_opt : 1;
-} flag = {false, false, false, false};
+	bool dry_run : 1;
+} flag = {false, false, false, false, false};
 
 error_code_t ask_user(const char *field_name, char *dest) {
 
@@ -63,12 +65,14 @@ int command_run(int argc, char *argv[]) {
     flag.has_opt = true;
 	switch (opt) {
 
-    case 'h':
+    case 'h': {
       opt_print_help();
-      return 0;
+      return SPECIAL_EXIT;
+			  }
 
-    case 129:
-      //      options->dry_run = true;
+    case 129: { 
+				  flag.dry_run = true;
+			  }
       break;
 
     case 'c': {
@@ -132,9 +136,42 @@ int command_run(int argc, char *argv[]) {
       if (err != SUCCESS)
         return err;
     }
+
+	cfg_add_server(&cfg_file, &server);
   }
  	
-  if (!flag.has_opt) {
+  if (flag.dry_run) {
+	for(size_t i = 0; i < cfg_file.size; ++i) {
+		ssh_session session = ssh_connexion_init(
+				cfg_file.data[i].address,
+				cfg_file.data[i].port,
+				cfg_file.data[i].username,
+				cfg_file.data[i].password
+				);
+		if(!session) {
+			err = SSH_CONNEXION_FAILED;
+			fprintf(stderr, "Error: %s [%s](%s@%s).\n",
+					err_to_str(err),
+					cfg_file.data[i].name,
+					cfg_file.data[i].username, 
+					cfg_file.data[i].address);
+			continue;
+		}
+
+		bool succed = ssh_dry_run(session) == SUCCESS;
+
+		printf("Testing connexion on [%s](%s@%s) : %s.\n",
+					cfg_file.data[i].name,
+					cfg_file.data[i].username, 
+					cfg_file.data[i].address,
+					succed ? "succed" : "failed"
+					);
+		ssh_end_session(session);
+	}
+	return SPECIAL_EXIT;
+  }
+	  
+if (!flag.has_opt) {
 	flag.exec_local = true;
   }
 
