@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-const char	*ui_format_state(const char state);
-const char	*ui_format_ram(const unsigned long long rss_bytes, double *value);
-void		ui_format_time(unsigned long ticks, char *buf, const size_t bufsize);
+[[nodiscard]] const char *ui_format_state(const char state);
+[[nodiscard]] const char *ui_format_ram(const unsigned long long rss_bytes, double *value);
+void ui_format_time(unsigned long ticks, char *buf, const size_t bufsize);
 
 #endif //UI_FORMAT_H

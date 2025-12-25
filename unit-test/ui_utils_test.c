@@ -74,6 +74,5 @@ int main() {
 	printf("\n---------- reset input ----------------------\n");
 	ret += reset_input_test(++i);
 
-	printf("\n %d / %d tests passed. (%3.1f%%)\n", ret, i, 100.0f * (float)ret/i);
-	printf("=============================================\n");
+	printf("\n %d / %d tests passed. (%3.1f%%)\n\n", ret, i, 100.0f * (float)ret/i);
 }

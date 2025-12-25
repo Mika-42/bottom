@@ -52,7 +52,7 @@ void proc_array_reset(processus_array_t *array) {
 	array->size = 0;
 }
 
-error_code_t proc_array_update(processus_array_t* array) {
+error_code_t proc_array_update(processus_array_t *array) {
 
 	if (!array) return NULLPTR_PARAMETER_ERROR;
 

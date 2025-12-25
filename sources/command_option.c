@@ -1,208 +1,130 @@
 #include "command_option.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <getopt.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
+#include "config_file.h"
 #include "error.h"
+#include "option.h"
+#include "ssh_connexion.h"
 
-static bool is_empty(const char *s) {
-    return s[0] == '\0';
-}
+#include <getopt.h>
+#include <stdio.h>
 
-static void copy_option_arg(char *dest, const char *src) {
-    size_t len = strnlen(src, MAX_LENGTH - 1);
-    memcpy(dest, src, len);
-    dest[len] = '\0';
-}
+#include <dirent.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-static void print_help() {
-    const char *help_message = "-h ou --help : affiche l'aide du programme ainsi que la syntaxe d'exécution du programme\n"
-     "--dry-run : test l'accès à la liste des processus sur la machine locale et/ou distante sans les afficher\n"
-     "-c ou --remote-config : spécifie le chemin vers le fichier de configuration contenant les informations de connexion sur les machines distantes\n"
-     "-t ou --connexion-type : spécifie le type de connexion à utiliser pour la connexion sur les machines distantes (ssh, telnet)\n"
-     "-P ou --port : spécifie le port à utiliser pour le type de connexion choisi. \
-     Si cette option n'est pas spécifié, alor le port par défaut du type de connexion est choisi\n"
-     "-l ou --login : spécifie l'identifiant de connexion et la machine distante. \
-     Ex : --login user@remote_server. remote_server est soit l'IP ou le nom DNS de la machine distante\n"
-     "-s ou --remote-server : spécifie le nom DNS ou l'IP de la machine distante\n"
-     "-u ou --username : spécifie le nom de l'utilisateur à utiliser pour la connexion\n"
-     "-p ou --password : spécifie le mot de passe à utiliser pour la connexion\n"
-     "-a ou --all : spécifie au programme de collecter à la fois la liste des processus sur la machine local et les machines distantes. \
-     S'utilise uniquement si l'option -c ou -s est utilisé.\n";
+static const struct option long_opts[] = {
+	{ "help",            no_argument,        nullptr, 'h' },
+    { "dry-run",         no_argument,        nullptr, 129 },
+    { "remote-config",   optional_argument,  nullptr, 'c' },
+    { "connexion-type",  required_argument,  nullptr, 't' },
+    { "port",            required_argument,  nullptr, 'P' },
+    { "login",           required_argument,  nullptr, 'l' },
+    { "remote-server",   required_argument,  nullptr, 's' },
+    { "username",        required_argument,  nullptr, 'u' },
+    { "password",        required_argument,  nullptr, 'p' },
+    { "all",             no_argument,        nullptr, 'a' },
+    { 0, 0, 0, 0 }
+};
 
-    printf("%s", help_message);
-}
+ssh_session_array_t sessions;
 
-#define COPY_OPT(dest, src) \
-    do { \
-        strncpy(dest, src, MAX_LENGTH - 1); \
-        dest[MAX_LENGTH - 1] = '\0'; \
-    } while(0)
+error_code_t command_run(int argc, char *argv[], flag_t *flag) {
+  int opt = 0;
+  config_file_t cfg_file = {0};
+  remote_server_t server = {0};
+  error_code_t err = SUCCESS;
+  optind = 1;
+	
 
-int command_run(int argc, char *argv[], options_prog *options) {
-    int opt = 0;
-    struct option long_opts[] = {
-        {.name="help",.has_arg=0,.flag=0,.val='h'},
-        {.name="dry-run",.has_arg=0,.flag=0,.val=129},
-        {.name="remote-config",.has_arg=1,.flag=0,.val='c'},
-        {.name="connexion-type",.has_arg=1,.flag=0,.val='t'},
-        {.name="port",.has_arg=1,.flag=0,.val='P'},
-        {.name="login",.has_arg=1,.flag=0,.val='l'},
-        {.name="remote-server",.has_arg=1,.flag=0,.val='s'},
-        {.name="username",.has_arg=1,.flag=0,.val='u'},
-        {.name="password",.has_arg=1,.flag=0,.val='p'},
-        {.name="all",.has_arg=0,.flag=0,.val='a'},
-        {.name=0,.has_arg=0,.flag=0,.val=0},
-    };
-    optind = 1;
-    while((opt = getopt_long(argc, argv, "hc:t:P:l:s:u:p:a", long_opts, NULL)) != -1) {
-        switch (opt) {
-            case 'h':
-                options->help = true;
-                print_help();
-                exit(0);
-                break;
-                
-            case 129:
-                options->dry_run = true;
-                break;
-                
-            case 'c':
-                copy_option_arg(options->remote_config, optarg);
-                break;
+  while ((opt = getopt_long(argc, argv, "hc::t:P:l:s:u:p:a", long_opts,
+                            nullptr)) != -1) {
+    flag->has_opt = true;
+	switch (opt) {
 
-            case 't':
-                copy_option_arg(options->connexion_type, optarg);
-                break;
+    case 'h': {
+      opt_print_help();
+      return SPECIAL_EXIT;
+	}
 
-            case 'P':
-                options->port = atoi(optarg);
-                break;
+    case 129: { 
+		flag->dry_run = true;
+	} break;
 
-            case 'l':
-                copy_option_arg(options->login, optarg);
-                break;
-
-            case 's':
-                copy_option_arg(options->remote_server, optarg);
-                break;
-            
-            case 'u':
-                copy_option_arg(options->username, optarg);
-                break;
-            
-            case 'p':
-                copy_option_arg(options->password, optarg);
-                break;
-            
-            case 'a':
-                options->all = true;
-                break;
-            case '?':
-                return PARSING_FAILED;
-                break;
-        }
-    }
-
-   if (!is_empty(options->login)) {
-        char login_copy[MAX_LENGTH];
-        copy_option_arg(login_copy, options->login); 
-        
-        char *separator = strchr(login_copy, '@');
-        
-        if (separator == NULL) {
-            fprintf(stderr, "Erreur: Le format de l'option -l doit etre 'username@remote_server'.\n");
-            return PARSING_FAILED;;
-        }
-        copy_option_arg(options->remote_server, separator + 1);
-        *separator = '\0'; 
-        copy_option_arg(options->username, login_copy);
-    }
+    case 'c': {
+      err = cfg_parse(&cfg_file, optarg);
+	  flag->config = true;
+    } break;
     
-    if (options->port == 0 && !is_empty(options->connexion_type)) {
-        if (strcmp(options->connexion_type, "ssh") == 0){
-            options->port = 22;
-        }
-        else if (strcmp(options->connexion_type, "telnet") == 0) {
-            options->port = 23;
-        }
+	case 't': {
+      err = srv_str_to_connexion(&server.connexion, optarg);
+    } break;
+
+    case 'P': {
+      err = srv_str_to_uint16(&server.port, optarg);
+    } break;
+
+    case 'l': {
+      err = srv_str_split_at(server.username, server.address, optarg);
+    } break;
+
+    case 's': {
+      err = srv_str_duplicate(server.address, optarg);
+		flag->server = true;
+	  } break;
+
+    case 'u': {
+      err = srv_str_duplicate(server.username, optarg);
+    } break;
+
+    case 'p': {
+      err = srv_str_duplicate(server.password, optarg);
+    } break;
+
+	case 'a': {
+				  flag->exec_local = true;
+			  } break;
+    case '?':
+      return PARSING_FAILED;
+      break;
     }
 
-    if (is_empty(options->remote_config) && is_empty(options->remote_server)) {
-        options->all=false;
+    if (err != SUCCESS) {
+      fprintf(stderr, "Error: %s (%s).\n", err_to_str(err), optarg);
+      return err;
+    }
+  }
+
+  if(flag->exec_local && !(flag->server || flag->config)) {
+		  err = INVALID_ARGUMENT;
+			fprintf(stderr, "Error: %s (--all/-a requires --remote-config/-c or -remote-server/-s.).\n", err_to_str(err));		
+		  return err;
+	}
+
+  if (!srv_str_is_empty(server.address)) {
+    if (srv_str_is_empty(server.username)) {
+      err = opt_ask_user("username", server.username);
+      if (err != SUCCESS)
+        return err;
+    }
+    if (srv_str_is_empty(server.password)) {
+      err = opt_ask_user("password", server.password);
+      if (err != SUCCESS)
+        return err;
     }
 
-    if (is_empty(options->remote_config) && is_empty(options->remote_server)) {
-        if (!is_empty(options->username) || !is_empty(options->password) || !is_empty(options->connexion_type) || options->port != 0) {
-            fprintf(stderr, "Erreur: Les options de connexion (-u, -p, -t, -P) ne sont valides qu'avec -s, -l ou -c.\n");
-            return PARSING_FAILED;
-        }
-    }
+	cfg_add_server(&cfg_file, &server);
+  }
+ 	
+  if (flag->dry_run) {
+	opt_dry_run(&cfg_file);
+	return SPECIAL_EXIT;
+  }
+	  
+	if (!flag->has_opt) {
+		flag->exec_local = true;
+	}
 
-    if (is_empty(options->remote_config)) {
-        DIR *d = opendir(".");
-        if (d != NULL) { 
-            for (struct dirent *element; (element=readdir(d))!=NULL; ) {
-                if (strcmp(element->d_name, ".config") == 0) {
-                    copy_option_arg(options->remote_config, ".config");
-                    break; 
-                }
-            }
-            closedir(d);
-        }
-    }
-
-    FILE *f = NULL;
-
-    if (!is_empty(options->remote_config)) {
-        f = fopen(options->remote_config, "r");
-    }
-
-    if (!is_empty(options->remote_config) && f == NULL) {
-        fprintf(stderr, "Le fichier %s n'a pas pu être ouvert\n", options->remote_config);
-        return OPEN_FILE_FAILED;
-    }
-
-    
-    if (f != NULL) {
-        options->nb_hosts = 0;
-       
-        while (options->nb_hosts < 10 && 
-               fscanf(f, "%255[^:]:%255[^:]:%d:%255[^:]:%255[^:]:%9[^\n]\n",
-                      options->hosts[options->nb_hosts].name_server,
-                      options->hosts[options->nb_hosts].adress_server,
-                      &options->hosts[options->nb_hosts].port,
-                      options->hosts[options->nb_hosts].username,
-                      options->hosts[options->nb_hosts].password,
-                      options->hosts[options->nb_hosts].type_co) == 6) { 
-            options->nb_hosts++;
-        }
-        fclose(f); 
-    }
-  
-
-    struct stat fichier_stat;
-    if (!is_empty(options->remote_config)) {
-        if (stat(options->remote_config, &fichier_stat) == -1) {
-             fprintf(stderr, "Erreur: Impossible d'acceder au fichier de configuration '%s'. %s\n", 
-                    options->remote_config, strerror(errno));
-            return OPEN_FILE_FAILED;
-        }
-        if ((fichier_stat.st_mode & 0777) != 0600) {
-            fprintf(stderr, "Erreur: Le fichier de configuration '%s' doit avoir les permissions 600 ( rw-------)\n", options->remote_config);
-            return READ_FAILED;
-        }
-    }
-
-    if (is_empty(options->password) && !is_empty(options->username) && (!is_empty(options->remote_server) || !is_empty(options->remote_config))) {
-        if (fgets(options->password, MAX_LENGTH, stdin) != NULL) {
-            options->password[strcspn(options->password, "\n")] = '\0';
-        }
-    }
-
-    return 0;
+	return opt_connect(&cfg_file, &sessions);
 }
