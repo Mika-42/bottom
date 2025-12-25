@@ -21,6 +21,7 @@ error_code_t thread_args_init(thread_args_t *args) {
 	if(!args) return NULLPTR_PARAMETER_ERROR;
 
 	args->array = nullptr;
+	args->exec_local = false;
 	args->selection.selected = 0;
 	args->selection.machine_selected = 0;
 	args->selection.header_selected = 0;
@@ -34,7 +35,7 @@ error_code_t thread_args_init(thread_args_t *args) {
 	args->selection.indices.size = 0;
 	args->selection.indices.capacity = 0;
 	atomic_store_explicit(&args->running, true, memory_order_release);
-
+	ssh_array_init(&args->sessions);
 	if (pthread_mutex_init(&args->selection.lock, nullptr) != 0) {
 		return MEMORY_ALLOCATION_FAILED;
 	}
@@ -70,13 +71,11 @@ int main(int argc, char *argv[]){
 	thread_args_t args;
 	thread_args_init(&args);
 
-	ssh_session_array_t sessions;
-	ssh_array_init(&sessions);
-
-	error_code_t err = command_run(argc, argv, &flag, &sessions);
+	error_code_t err = command_run(argc, argv, &flag, &args.sessions);
 	if(err != SUCCESS) return err;
-
-	args.selection.max_machine = sessions.size + flag.exec_local;
+	
+	args.exec_local = flag.exec_local;
+	args.selection.max_machine = args.sessions.size + flag.exec_local;
 	
 	err = machine_array_init(&args);
 	if(err != SUCCESS) {

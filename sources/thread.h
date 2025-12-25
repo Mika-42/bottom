@@ -16,6 +16,7 @@ typedef struct thread_args_t {
 	double_buffer_t *array;
 	user_selection_t selection;
 	atomic_bool running;
+	bool exec_local;
 } thread_args_t;
 
 void *proc_task(void *arg);
