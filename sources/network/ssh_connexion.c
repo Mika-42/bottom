@@ -10,19 +10,18 @@ void ssh_end_session(ssh_session session) {
 
 ssh_session ssh_connexion_init(const char *host, int port, const char *user, const char *password) {
 	ssh_session session = ssh_new();
-	if (session == nullptr) return nullptr;
+	if (session == nullptr) {
+		return nullptr;
+	}
 
 	ssh_options_set(session, SSH_OPTIONS_HOST, host);
 	ssh_options_set(session, SSH_OPTIONS_PORT, &port);
 	ssh_options_set(session, SSH_OPTIONS_USER, user);
 
-	
-
 	if (ssh_connect(session) != SSH_OK) {
 		ssh_free(session);
 		return nullptr;
 	}
-
 
 	if (ssh_userauth_password(session, nullptr, password) != SSH_AUTH_SUCCESS) {
 		ssh_end_session(session);
@@ -33,7 +32,9 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 
 error_code_t ssh_cmd_exec(ssh_session session, const char *cmd, char *output, size_t len_max) {
 	ssh_channel channel = ssh_channel_new(session);
-	if (!channel) return MEMORY_ALLOCATION_FAILED;
+	if (!channel) {
+		return MEMORY_ALLOCATION_FAILED;
+	}
 	if (ssh_channel_open_session(channel) != SSH_OK) {
 		ssh_channel_free(channel);
 		return SSH_OPEN_FAILED;
@@ -46,8 +47,9 @@ error_code_t ssh_cmd_exec(ssh_session session, const char *cmd, char *output, si
 	}
 
 	int nbytes = ssh_channel_read(channel, output, len_max - 1, 0);
-	if (nbytes >= 0 && output != nullptr)  output[nbytes] = '\0';
-	
+	if (nbytes >= 0 && output != nullptr) {
+		 output[nbytes] = '\0';
+	}
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
 	ssh_channel_free(channel);
@@ -104,24 +106,31 @@ int ssh_get_file(ssh_session session, char **buffer, const char *file) {
 	size_t size = 0, capacity = 8192;
 
 	ssh_channel channel = ssh_channel_new(session);
-	if (!channel) return SSH_ERROR;
-	
-	if (ssh_channel_open_session(channel) != SSH_OK) goto error;
+	if (!channel) {
+		return SSH_ERROR;
+	}
+
+	if (ssh_channel_open_session(channel) != SSH_OK) {
+		goto error;
+	}
 
 	char cmd[128];
 	snprintf(cmd, sizeof(cmd), "cat /proc/%s", file);
 
-	if (ssh_channel_request_exec(channel, cmd) != SSH_OK) goto error;
-	
+	if (ssh_channel_request_exec(channel, cmd) != SSH_OK) {
+		goto error;
+	}
+
 	buf = malloc(capacity + 1);
-	if (!buf) goto error;
-		
-	
+	if (!buf) {
+		goto error;
+	}
+
 	while ((n = ssh_channel_read(channel, buf + size, capacity - size, 0)) > 0) {
 		size += n;
 		if (size == capacity) {
 			capacity *= 2;
-			char *tmp = realloc(buf, capacity +1);
+			char *tmp = realloc(buf, capacity + 1);
 			if (!tmp) goto error;
 			buf = tmp;
 		}

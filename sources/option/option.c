@@ -53,8 +53,9 @@ void opt_print_help() {
 
 error_code_t opt_ask_user(const char *field_name, char *dest) {
 
-  if (!field_name || !dest)
+  if (!field_name || !dest) {
     return NULLPTR_PARAMETER_ERROR;
+  }
 
   printf("%s: ", field_name);
 
@@ -69,16 +70,18 @@ error_code_t opt_ask_user(const char *field_name, char *dest) {
 
 error_code_t opt_dry_run(const config_file_t *file) {
 	
-	if(!file) return NULLPTR_PARAMETER_ERROR;
+	if (!file) {
+    return NULLPTR_PARAMETER_ERROR;
+  }
 
-	for(size_t i = 0; i < file->size; ++i) {
+	for (size_t i=0; i<file->size; ++i) {
 		ssh_session session = ssh_connexion_init(
 			file->data[i].address,
 			file->data[i].port,
 			file->data[i].username,
 			file->data[i].password);
    
-		if(!session) {  
+		if (!session) {  
 			fprintf(stderr, "Error: SSH_CONNEXION_FAILED [%s](%s@%s).\n",
 				file->data[i].name,
 				file->data[i].username, 
@@ -101,10 +104,14 @@ error_code_t opt_dry_run(const config_file_t *file) {
 }
 
 error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) {
+<<<<<<< HEAD
 	
 	printf("\nConnexion...\n");
 	
 	for(size_t i = 0; i < file->size; ++i) {
+=======
+	for (size_t i=0; i<file->size; ++i) {
+>>>>>>> 022771c3bd0e0580751deebbdd3a003cf19c0f04
 		ssh_session session = ssh_connexion_init(
 			file->data[i].address,
 			file->data[i].port,
@@ -113,11 +120,18 @@ error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) 
 
 		const bool succed = session != nullptr;
 
-		if(succed) {
-			if(!ssh_array_add(array, session)) return MEMORY_ALLOCATION_FAILED;
+		if (succed) {
+			if (!ssh_array_add(array, session)) {
+        return MEMORY_ALLOCATION_FAILED;
+			}
 		}
 
+<<<<<<< HEAD
 		printf("[%s](%s@%s) : %s.\n",
+=======
+
+		printf("Connexion on [%s](%s@%s) : %s.\n",
+>>>>>>> 022771c3bd0e0580751deebbdd3a003cf19c0f04
 			file->data[i].name,
 			file->data[i].username,
 			file->data[i].address,

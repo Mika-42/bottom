@@ -17,6 +17,7 @@ typedef struct thread_args_t {
 	user_selection_t selection;
 	atomic_bool running;
 	bool exec_local;
+	ssh_session_array_t sessions;
 } thread_args_t;
 
 void *proc_task(void *arg);

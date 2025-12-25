@@ -2,7 +2,9 @@
 
 void proc_array_sort(processus_array_t *array, proc_compare_t cmp) {
 
-	if (!array || !array->data || !cmp) return;
+	if (!array || !array->data || !cmp) {
+		return;
+	}
 
 	qsort(array->data, array->size, sizeof(processus_t),
 			(int (*)(const void*, const void*))cmp);
@@ -51,6 +53,7 @@ int user_dsc(const processus_t *lhs, const processus_t *rhs) {
 int time_asc(const processus_t *lhs, const processus_t *rhs) {
 	return (lhs->start_time < rhs->start_time) - (lhs->start_time > rhs->start_time);
 }
+
 int time_dsc(const processus_t *lhs, const processus_t *rhs) {
 	return (lhs->start_time > rhs->start_time) - (lhs->start_time < rhs->start_time);
 }

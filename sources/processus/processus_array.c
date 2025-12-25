@@ -20,14 +20,18 @@ processus_t *proc_array_get_last(processus_array_t *array) {
 
 processus_t *proc_array_emplace_back(processus_array_t *array) {
 
-	if (!array) return nullptr;
+	if (!array) {
+		return nullptr;
+	}
 
 	if (array->size >= array->capacity) {
 		const size_t new_capacity = array->capacity ? array->capacity * 2 : 1;
 
 		processus_t *temp = realloc(array->data, new_capacity * sizeof(*temp));
 
-		if (!temp) return nullptr;
+		if (!temp) {
+			return nullptr;
+		}
 
 		array->data = temp;
 		array->capacity = new_capacity;
@@ -40,7 +44,9 @@ processus_t *proc_array_emplace_back(processus_array_t *array) {
 
 void proc_array_free(processus_array_t *array) {
 
-	if (!array) return;
+	if (!array) {
+		return;
+	}
 
 	free(array->data);
 	array->data = nullptr;
@@ -54,10 +60,14 @@ void proc_array_reset(processus_array_t *array) {
 
 error_code_t proc_array_update(processus_array_t *array) {
 
-	if (!array) return NULLPTR_PARAMETER_ERROR;
+	if (!array) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
 	DIR *rep_proc = opendir("/proc");
-	if (!rep_proc) return OPEN_FILE_FAILED;
+	if (!rep_proc) {
+		return OPEN_FILE_FAILED;
+	}
 
 	struct dirent *ent = nullptr;
 	
@@ -67,21 +77,24 @@ error_code_t proc_array_update(processus_array_t *array) {
 
 		char *end = nullptr;
 		const pid_t pid = strtol(ent->d_name, &end, 10);
-		if (*end != '\0' || pid <= 0) continue;
+		if (*end != '\0' || pid <= 0) { 
+			continue;
+		}
 
 		processus_t *proc = proc_array_emplace_back(array);
 
-			if (!proc) {
-				closedir(rep_proc);
-				return MEMORY_ALLOCATION_FAILED;
-			}
+		if (!proc) {
+			closedir(rep_proc);
+			return MEMORY_ALLOCATION_FAILED;
+		}
 
 		if (proc_get_all_infos(pid, proc) != SUCCESS) {
 			processus_t *last = proc_array_get_last(array);
 
 			// on écrase le proc mort avec le dernier proc de la liste
-			if (proc != last) *proc = *last;
-
+			if (proc != last) {
+				*proc = *last;
+			}
 			// on retire le dernier proc
 			array->size--;
 		}
@@ -95,11 +108,15 @@ error_code_t proc_array_update(processus_array_t *array) {
 
 processus_t *proc_array_find_by_pid(const processus_array_t *array, const pid_t pid) {
 
-	if (!array) return nullptr;
+	if (!array) {
+		return nullptr;
+	}
 
 	for (size_t i=0; i<array->size; i++) {
 		processus_t *e = &array->data[i];
-		if (e->pid == pid) return e;
+		if (e->pid == pid) {
+			return e;
+		}
 	}
 
 	return nullptr;
@@ -113,7 +130,9 @@ void proc_array_remove_if(processus_array_t *array, proc_predicate_t pred) {
 	processus_t *end = array->data + array->size;
 
 	for (; read!=end; ++read) {
-		if (!pred(read)) *write++ = *read;
+		if (!pred(read)) {
+			*write++ = *read;
+		}
 	}
 
 	array->size = (size_t)(write - array->data);
@@ -121,17 +140,21 @@ void proc_array_remove_if(processus_array_t *array, proc_predicate_t pred) {
 
 error_code_t proc_array_get_cpu(const processus_array_t *prev_array, processus_array_t *current_array) {
 	
-	if(!prev_array || !current_array) return NULLPTR_PARAMETER_ERROR;
+	if (!prev_array || !current_array) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
 	const long d_machine_time = current_array->cpu_tick - prev_array->cpu_tick;
 	
-	if (d_machine_time <= 0) return SUCCESS;
-	
-	for(size_t i = 0; i < current_array->size; ++i) {
+	if (d_machine_time <= 0) {
+		return SUCCESS;
+	}
+
+	for (size_t i=0; i<current_array->size; ++i) {
 		processus_t *current_proc = &current_array->data[i];
 		const processus_t *prev_proc = proc_array_find_by_pid(prev_array, current_proc->pid);
 		
-		if(!prev_proc) {
+		if (!prev_proc) {
 			current_proc->cpu_usage = 0;
 			continue;
 		}

@@ -1,32 +1,44 @@
 #ifndef UI_CONSTANT_H
 #define UI_CONSTANT_H
 
-typedef enum user_mode_t {NORMAL, SEARCH, HELP } user_mode_t;
+typedef enum user_mode_t {
+	NORMAL,
+	SEARCH,
+	HELP
+} user_mode_t;
+
 typedef enum proc_event_t {
-	PAUSE_CONTINUE, TERMINATE, KILL, RELOAD, NOTHING
+	PAUSE_CONTINUE,
+	TERMINATE,
+	KILL,
+	RELOAD,
+	NOTHING
 } proc_event_t;
 
-typedef enum sort_type_t {DSC = 0, ASC = 1} sort_type_t;
+typedef enum sort_type_t {
+	DSC = 0,
+	ASC = 1
+} sort_type_t;
 
 static constexpr size_t one_sec = 1'000'000'000; //nanosec
 
 static constexpr struct timespec proc_thread_time_interval = {
-		.tv_sec = 0,
-		.tv_nsec = one_sec / 40	
+	.tv_sec = 0,
+	.tv_nsec = one_sec / 40
 };
 
 static constexpr struct timespec ui_thread_time_interval = {
-		.tv_sec = 0,
-		.tv_nsec = one_sec / 40
+	.tv_sec = 0,
+	.tv_nsec = one_sec / 40
 };
 
-static constexpr size_t header_element_count	= 7;
-static constexpr size_t ui_pad_lines		= 8000;
-static constexpr size_t ui_pad_columns		= 134;
-static constexpr size_t ui_footer_lines		= 3;
-static constexpr size_t ui_header_lines		= 3;
-static constexpr size_t ui_help_lines		= 26;
-static constexpr size_t ui_max_width		= 403;
+static constexpr size_t header_element_count = 7;
+static constexpr size_t ui_pad_lines = 8000;
+static constexpr size_t ui_pad_columns = 134;
+static constexpr size_t ui_footer_lines = 3;
+static constexpr size_t ui_header_lines = 3;
+static constexpr size_t ui_help_lines = 26;
+static constexpr size_t ui_max_width = 403;
 
 static const char separator[ui_max_width] = "┃ %-10d ┃ %-24.23s ┃ %-32.31s ┃ %-10s ┃ %-6.1f %s ┃ %-6.1f%% ┃  %-18s ┃";
 
