@@ -101,6 +101,9 @@ error_code_t opt_dry_run(const config_file_t *file) {
 }
 
 error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) {
+	
+	printf("\nConnexion...\n");
+	
 	for(size_t i = 0; i < file->size; ++i) {
 		ssh_session session = ssh_connexion_init(
 			file->data[i].address,
@@ -114,7 +117,7 @@ error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) 
 			if(!ssh_array_add(array, session)) return MEMORY_ALLOCATION_FAILED;
 		}
 
-		printf("Connexion on [%s](%s@%s) : %s.\n",
+		printf("[%s](%s@%s) : %s.\n",
 			file->data[i].name,
 			file->data[i].username,
 			file->data[i].address,

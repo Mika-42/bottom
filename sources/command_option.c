@@ -1,7 +1,6 @@
 #include "command_option.h"
 #include "config_file.h"
 #include "error.h"
-#include "option.h"
 #include "ssh_connexion.h"
 
 #include <getopt.h>
@@ -15,49 +14,46 @@
 #include <unistd.h>
 
 static const struct option long_opts[] = {
-	{ "help",            no_argument,        nullptr, 'h' },
-    { "dry-run",         no_argument,        nullptr, 129 },
-    { "remote-config",   optional_argument,  nullptr, 'c' },
-    { "connexion-type",  required_argument,  nullptr, 't' },
-    { "port",            required_argument,  nullptr, 'P' },
-    { "login",           required_argument,  nullptr, 'l' },
-    { "remote-server",   required_argument,  nullptr, 's' },
-    { "username",        required_argument,  nullptr, 'u' },
-    { "password",        required_argument,  nullptr, 'p' },
-    { "all",             no_argument,        nullptr, 'a' },
-    { 0, 0, 0, 0 }
-};
+    {"help", no_argument, nullptr, 'h'},
+    {"dry-run", no_argument, nullptr, 129},
+    {"remote-config", optional_argument, nullptr, 'c'},
+    {"connexion-type", required_argument, nullptr, 't'},
+    {"port", required_argument, nullptr, 'P'},
+    {"login", required_argument, nullptr, 'l'},
+    {"remote-server", required_argument, nullptr, 's'},
+    {"username", required_argument, nullptr, 'u'},
+    {"password", required_argument, nullptr, 'p'},
+    {"all", no_argument, nullptr, 'a'},
+    {0, 0, 0, 0}};
 
-ssh_session_array_t sessions;
-
-error_code_t command_run(int argc, char *argv[], flag_t *flag) {
+error_code_t command_run(int argc, char *argv[], flag_t *flag,
+                         ssh_session_array_t *sessions) {
   int opt = 0;
   config_file_t cfg_file = {0};
   remote_server_t server = {0};
   error_code_t err = SUCCESS;
   optind = 1;
-	
 
   while ((opt = getopt_long(argc, argv, "hc::t:P:l:s:u:p:a", long_opts,
                             nullptr)) != -1) {
     flag->has_opt = true;
-	switch (opt) {
+    switch (opt) {
 
     case 'h': {
       opt_print_help();
       return SPECIAL_EXIT;
-	}
+    }
 
-    case 129: { 
-		flag->dry_run = true;
-	} break;
+    case 129: {
+      flag->dry_run = true;
+    } break;
 
     case 'c': {
       err = cfg_parse(&cfg_file, optarg);
-	  flag->config = true;
+      flag->config = true;
     } break;
-    
-	case 't': {
+
+    case 't': {
       err = srv_str_to_connexion(&server.connexion, optarg);
     } break;
 
@@ -71,8 +67,8 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag) {
 
     case 's': {
       err = srv_str_duplicate(server.address, optarg);
-		flag->server = true;
-	  } break;
+      flag->server = true;
+    } break;
 
     case 'u': {
       err = srv_str_duplicate(server.username, optarg);
@@ -82,9 +78,9 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag) {
       err = srv_str_duplicate(server.password, optarg);
     } break;
 
-	case 'a': {
-				  flag->exec_local = true;
-			  } break;
+    case 'a': {
+      flag->exec_local = true;
+    } break;
     case '?':
       return PARSING_FAILED;
       break;
@@ -96,11 +92,14 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag) {
     }
   }
 
-  if(flag->exec_local && !(flag->server || flag->config)) {
-		  err = INVALID_ARGUMENT;
-			fprintf(stderr, "Error: %s (--all/-a requires --remote-config/-c or -remote-server/-s.).\n", err_to_str(err));		
-		  return err;
-	}
+  if (flag->exec_local && !(flag->server || flag->config)) {
+    err = INVALID_ARGUMENT;
+    fprintf(stderr,
+            "Error: %s (--all/-a requires --remote-config/-c or "
+            "-remote-server/-s.).\n",
+            err_to_str(err));
+    return err;
+  }
 
   if (!srv_str_is_empty(server.address)) {
     if (srv_str_is_empty(server.username)) {
@@ -114,17 +113,22 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag) {
         return err;
     }
 
-	cfg_add_server(&cfg_file, &server);
+    cfg_add_server(&cfg_file, &server);
   }
- 	
-  if (flag->dry_run) {
-	opt_dry_run(&cfg_file);
-	return SPECIAL_EXIT;
-  }
-	  
-	if (!flag->has_opt) {
-		flag->exec_local = true;
-	}
 
-	return opt_connect(&cfg_file, &sessions);
+  if (flag->dry_run) {
+    opt_dry_run(&cfg_file);
+    return SPECIAL_EXIT;
+  }
+
+  if (!flag->has_opt) {
+    flag->exec_local = true;
+  }
+
+  err = opt_connect(&cfg_file, sessions);
+  if(err != SUCCESS) {
+	fprintf(stderr, "Error: %s.\n", err_to_str(err));
+  }
+
+  return err;
 }

@@ -8,8 +8,12 @@
  *	array[0] is ALWAYS the local machine !
  */
 
-pthread_t proc_thread;
-pthread_t ui_thread;
+//pthread_t proc_thread;
+//pthread_t ui_thread;
+
+void *ssh_task(void *) {
+	return nullptr;
+}
 
 void *proc_task(void *arg) {
 
@@ -161,65 +165,6 @@ void *ui_task(void *arg) {
   return nullptr;
 }
 
-error_code_t init_data(thread_args_t *args) {
-
-  if (!args)
-    return NULLPTR_PARAMETER_ERROR;
-
-  user_selection_t *s = &args->selection;
-
-  s->selected = 0;
-  s->machine_selected = 0;
-  s->header_selected = 0;
-  s->sort = ASC;
-  s->mode = NORMAL;
-  s->event = NOTHING;
-  s->max_machine = 2;
-  s->input[0] = '\0';
-  s->input_length = 0;
-  s->indices.data = nullptr;
-  s->indices.size = 0;
-  s->indices.capacity = 0;
-  atomic_store_explicit(&args->running, true, memory_order_release);
-
-  if (pthread_mutex_init(&s->lock, nullptr) != 0) {
-    return MEMORY_ALLOCATION_FAILED;
-  }
-
-  args->array = calloc(s->max_machine, sizeof(*args->array));
-  if (!args->array)
-    return MEMORY_ALLOCATION_FAILED;
-
-  double_buffer_t *array = args->array;
-
-  for (size_t i = 0; i < s->max_machine; ++i) {
-    proc_array_init(&array[i].buffer[0]);
-    proc_array_init(&array[i].buffer[1]);
-
-    atomic_store_explicit(&array[i].active, 0, memory_order_release);
-  }
-
-  return SUCCESS;
-}
-
-error_code_t start_threads(thread_args_t *args) {
-
-  if (!args)
-    return NULLPTR_PARAMETER_ERROR;
-
-  if (pthread_create(&proc_thread, nullptr, proc_task, args) != 0) {
-    return THREAD_FAILED;
-  }
-
-  if (pthread_create(&ui_thread, nullptr, ui_task, args) != 0) {
-    atomic_store_explicit(&args->running, false, memory_order_release);
-    pthread_join(proc_thread, nullptr);
-    return THREAD_FAILED;
-  }
-
-  return SUCCESS;
-}
-
 void release_data(thread_args_t *args) {
 
   if (!args)
@@ -236,30 +181,4 @@ void release_data(thread_args_t *args) {
 
   pthread_mutex_destroy(&args->selection.lock);
   ui_index_array_free(&args->selection.indices);
-}
-
-error_code_t bottom_ui(thread_args_t *args) {
-
-  if (!args)
-    return NULLPTR_PARAMETER_ERROR;
-
-  error_code_t err = init_data(args);
-
-  if (err != SUCCESS) {
-    release_data(args);
-    return err;
-  }
-  err = start_threads(args);
-
-  if (err != SUCCESS) {
-    release_data(args);
-    return err;
-  }
-
-  pthread_join(proc_thread, nullptr);
-  pthread_join(ui_thread, nullptr);
-
-  release_data(args);
-
-  return SUCCESS;
 }
