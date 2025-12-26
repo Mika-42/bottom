@@ -50,10 +50,14 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 	if (ch == KEY_F(1)) {
 		s->mode = NORMAL;
 		ui_utils_reset_input_buffer(s);
-		if (s->indices.size > 0) s->selected = s->indices.data[s->selected];
+		if (s->indices.size > 0) {
+			s->selected = s->indices.data[s->selected];
+		}
 		return;
 	} else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
-		if (s->input_length > 0) s->input[--s->input_length] = '\0';
+		if (s->input_length > 0) {
+			s->input[--s->input_length] = '\0';
+		}
 	} else if (ch >= 32 && ch <= 126) {
 
 		if (s->input_length < 255) {
@@ -76,7 +80,7 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 }
 
 void ui_event_dispatcher_sort(const int ch, user_selection_t *s) {
-	if(ch == '\t') { 
+	if (ch == '\t') { 
 		s->header_selected = (s->header_selected + 1) % header_element_count;
 	} else if (ch == '\n') {
 		s->sort = s->sort == ASC ? DSC : ASC;
@@ -85,8 +89,12 @@ void ui_event_dispatcher_sort(const int ch, user_selection_t *s) {
 
 int ui_event_dispatcher_global(const int ch) {
 
-	if (ch == KEY_LEFT) return -1;
-	if (ch == KEY_RIGHT) return 1;
+	if (ch == KEY_LEFT) {
+		return -1;
+	}
+	if (ch == KEY_RIGHT) {
+		return 1;
+	}
 
 	return 0;
 }

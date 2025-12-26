@@ -86,6 +86,11 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
+error_code_t ssh_restart_processus(ssh_session /*session*/, int /*pid*/) {
+	//TODO
+	return SUCCESS;
+}
+
 /**
  * @brief Met le contenue du fichier /proc/file dans le buffer
  *
@@ -96,7 +101,7 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
  */
 int ssh_get_file(ssh_session session, char **buffer, const char *file) {
 	for (const char *p = file; *p; ++p) {
-		if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
+    	if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
 			return SSH_ERROR;
 		}
 	}

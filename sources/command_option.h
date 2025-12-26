@@ -1,7 +1,7 @@
 #ifndef COMMAND_OPTION_H
 #define COMMAND_OPTION_H
 
-#include "error.h"
+#include "option.h"
 
 typedef struct flag_t {
 	bool exec_local : 1;
@@ -11,6 +11,6 @@ typedef struct flag_t {
 	bool dry_run : 1;
 } flag_t;
 
-error_code_t command_run(int argc, char *argv[], flag_t *flag);
+error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array_t *sessions);
 
 #endif 
