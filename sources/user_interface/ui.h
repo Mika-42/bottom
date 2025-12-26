@@ -33,10 +33,10 @@ typedef struct ui_t {
 	int ui_scroll_y;
 } ui_t;
 
-void	ui_init(ui_t *ui);
-void	ui_deinit(ui_t *ui);
-void	ui_update(ui_t *ui, const size_t size);
-void	ui_scroll(ui_t *ui, const int dx, const size_t selected);
-void	ui_select(ui_t *ui, user_selection_t *s);
+void ui_init(ui_t *ui);
+void ui_deinit(ui_t *ui);
+void ui_update(ui_t *ui, const size_t size);
+void ui_scroll(ui_t *ui, const int dx, const size_t selected);
+void ui_select(ui_t *ui, user_selection_t *s);
 
-#endif //UI_H
+#endif // UI_H
