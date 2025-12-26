@@ -96,13 +96,13 @@ error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 
 	off += snprintf(cmd + off, sizeof(cmd) - off, "env -i ");
 	
-	for (int i=0; i<PROC_CMD_COUNT && p->env[i][0]; ++i) {
+	for (size_t i=0; i<PROC_CMD_COUNT && p->env[i][0]; ++i) {
 		off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->env[i]);
 	}
 
 	off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->executable);
 
-	for (int i=0; i<PROC_CMD_COUNT && p->cmdline[i][0]; ++i) {
+	for (size_t i=0; i<PROC_CMD_COUNT && p->cmdline[i][0]; ++i) {
 		off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->cmdline[i]);
 	}
 	
