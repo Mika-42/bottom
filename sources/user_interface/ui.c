@@ -56,9 +56,11 @@ void ui_scroll(ui_t *ui, const int dx, const size_t selected) {
 	int terminal_height = 0;
 
 	getmaxyx(stdscr, terminal_height, terminal_width);
-
+	int max_scroll_x = 0;
+	if ((int)ui_pad_columns > terminal_width) max_scroll_x = ui_pad_columns - terminal_width;
 	ui->ui_scroll_x += dx;
-	ui_utils_clamp_int(&ui->ui_scroll_x, 0, ui_pad_columns - terminal_width);
+	
+	ui_utils_clamp_int(&ui->ui_scroll_x, 0, max_scroll_x);
 
 	const int view_height = terminal_height - ui_header_lines - ui_footer_lines;
 	const int hi = ui->ui_scroll_y;

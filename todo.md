@@ -2,6 +2,7 @@
 
 **global**
 + check to remove unused include
++ close correctly ssh
 
 **processus**
 + check code format in .h/.c
