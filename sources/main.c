@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
 	
 	release_data(&args); 
 	ssh_array_free(&args.sessions);
+	
 	return err;
 }
 

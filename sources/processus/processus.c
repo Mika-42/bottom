@@ -1,4 +1,5 @@
 #include "processus.h"
+#include "stat_parser.h"
 #include <unistd.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -6,6 +7,8 @@
 #include <string.h> 
 #include <stdlib.h>
 #include <fcntl.h> 
+
+constexpr size_t buf_max_size = 4096;
 
 bool str_is_numeric(const char *str) {
    	
@@ -56,40 +59,17 @@ error_code_t proc_get_user(processus_t *proc) {
 		return OPEN_FILE_FAILED;
 	}
 
-	char line[512]; 
-	uid_t uid = -1;
-        
-	while (fgets(line, sizeof(line), f)) {
-            
-		if (strncmp(line, "Uid:", 4) != 0) {
-			continue;
-		}
-
-		const int ret = sscanf(line, "%*s %u", &uid);
-        if (ret != 1) {
-			fclose(f);
-			return MALFORMED_STATUS_LINE;
-		}
-        break;	
-	}
+	char line[buf_max_size]; 
+	const size_t n = fread(line, 1, sizeof(line) - 1, f);
 
     fclose(f);  
     	
-	if (uid == (uid_t) - 1) {
-		return UID_NOT_FOUND;
-	}
+	if (n == 0) return UID_NOT_FOUND;
+	line[n] = '\0';
 
-	struct passwd *user_info = getpwuid(uid);  
-
-	if (!user_info) {
-		return USER_NOT_FOUND;
-	}
-
-	strncpy(proc->user, user_info->pw_name, PROC_USERNAME_SIZE);
-	proc->user[PROC_USERNAME_SIZE - 1] = '\0';
-
-	return SUCCESS;
+	return stat_user_parser(proc, line);
 }
+
 
 error_code_t proc_get_stat(processus_t *proc) {
 
@@ -103,7 +83,7 @@ error_code_t proc_get_stat(processus_t *proc) {
 		return OPEN_FILE_FAILED;
 	}
 
-	char line[4096];
+	char line[buf_max_size];
 
 	if (!fgets(line, sizeof(line), f)) {
 		fclose(f);
@@ -111,83 +91,25 @@ error_code_t proc_get_stat(processus_t *proc) {
 	}
 
 	fclose(f);
-	
-	char *lparen = strchr(line, '(');
-	char *rparen = strrchr(line, ')');
-	
-	if (!lparen || !rparen || rparen <= lparen) {
-		return PARSING_FAILED; 
-	}
-
-	size_t namelen = rparen - lparen - 1;
-	
-	if (namelen >= sizeof(proc->name)) {
-		namelen = sizeof(proc->name) - 1;
-	}
-
-	strncpy(proc->name, lparen + 1, namelen);
-	proc->name[namelen] = '\0';
-	
-	long resident = 0;
-	int ret = sscanf(rparen + 2, 
-		"%c "
-		"%d "
-		"%*s %*s %*s %*s %*s %*s %*s %*s %*s "
-		"%lu %lu "
-		"%*s %*s %*s %*s %*s %*s "
-		"%lu "
-		"%*s "
-		"%ld",  
-		&proc->state,
-		&proc->ppid,
-		&proc->utime, 
-		&proc->stime, 
-		&proc->start_time, 
-		&resident);
-	
-	if (ret != 6) {
-		return MALFORMED_STATUS_LINE;
-	}
-
-	const unsigned long long page_size = sysconf(_SC_PAGESIZE);
-	proc->ram = (unsigned long long)resident * page_size;
-
-	return SUCCESS;
+	return stat_stat_parser(proc, line);
 }
 
 error_code_t proc_get_global_stat(long *cpu_total, time_t *boot_time) {
 
 	FILE *f = fopen("/proc/stat", "r");
 
-	if (!f) {
-		return OPEN_FILE_FAILED;
-	}
+	if (!f) return OPEN_FILE_FAILED;
 
-	char line[512];
+	char line[buf_max_size];
 
-	if (!fgets(line, sizeof(line), f)) {
-		fclose(f);
-		return READ_FAILED;
-	}
+	size_t n = fread(line, 1, sizeof(line) - 1, f);
+    fclose(f);
 
-	long user, nice, system, idle, iowait, irq, softirq;
-
-	int n = sscanf(line, "cpu  %ld %ld %ld %ld %ld %ld %ld", &user, &nice, &system, &idle, &iowait, &irq, &softirq);
-	if (n < 7) {
-		return MALFORMED_STATUS_LINE;
-	}
-
-	*cpu_total = user + nice + system + idle + iowait + irq + softirq;
-
-	*boot_time = 0;
-    	while (fgets(line, sizeof(line), f)) {
-        	if (sscanf(line, "btime %ld", boot_time) == 1) {
-				break;
-			}
-    	}
-
-	fclose(f);
-	return SUCCESS;
+    if (n == 0) return READ_FAILED;
+	
+	line[n] = '\0';
+	
+	return stat_global_stat_parser(cpu_total, boot_time, line);
 }
 
 error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
