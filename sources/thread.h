@@ -9,8 +9,8 @@
 #include "ui.h"
 
 typedef struct double_buffer_t {
-	processus_array_t	buffer[2];
-	atomic_int		active;
+	processus_array_t buffer[2];
+	atomic_int active;
 } double_buffer_t;
 
 typedef struct thread_args_t {

@@ -16,8 +16,9 @@ static const proc_compare_t sort_func[2][header_element_count] = {
 
 void *ssh_task(void *arg) {
 
-	if (!arg)
+	if (!arg) {
 		return nullptr;
+	}
 
 	thread_args_t *args = arg;
 	user_selection_t *s = &args->selection;
@@ -74,9 +75,9 @@ void *ssh_task(void *arg) {
 
 		/**/
 
-		if ((size_t)header < header_element_count)
+		if ((size_t)header < header_element_count) {
 			proc_array_sort(proc_list, sort_func[sort][header]);
-
+		}
 		nanosleep(&proc_thread_time_interval, nullptr);
 
 		atomic_store_explicit(&db->active, index, memory_order_release);
@@ -87,8 +88,9 @@ void *ssh_task(void *arg) {
 
 void *proc_task(void *arg) {
 
-	if (!arg)
+	if (!arg) {
 		return nullptr;
+	}
 
 	thread_args_t *args = arg;
 
@@ -143,9 +145,9 @@ void *proc_task(void *arg) {
 			break;
 		}
 
-		if ((size_t)header < header_element_count)
+		if ((size_t)header < header_element_count) {
 			proc_array_sort(proc_list, sort_func[sort][header]);
-
+		}
 		nanosleep(&proc_thread_time_interval, nullptr);
 
 		atomic_store_explicit(&db->active, index, memory_order_release);
@@ -156,8 +158,9 @@ void *proc_task(void *arg) {
 
 void *ui_task(void *arg) {
 
-	if (!arg)
+	if (!arg) {
 		return nullptr;
+	}
 
 	ui_t ui = {0};
 	ui_init(&ui);
@@ -233,11 +236,11 @@ void *ui_task(void *arg) {
 
 void release_data(thread_args_t *args) {
 
-	if (!args)
+	if (!args) {
 		return;
-
+	}
 	if (args->array) {
-		for (size_t i = 0; i < args->selection.max_machine; ++i) {
+		for (size_t i=0; i< args->selection.max_machine; ++i) {
 			proc_array_free(&args->array[i].buffer[0]);
 			proc_array_free(&args->array[i].buffer[1]);
 		}
