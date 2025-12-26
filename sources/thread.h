@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include "processus_array.h"
 #include "ui_constant.h"
+#include "ssh_session_array.h"
 #include "ui.h"
 
 typedef struct double_buffer_t {

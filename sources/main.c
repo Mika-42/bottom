@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
 	//	return (bottom_ui(&args) != SUCCESS) ? EXIT_FAILURE : EXIT_SUCCESS;
 	
 	release_data(&args); 
-	ssh_array_free(&sessions);
+	ssh_array_free(&args.sessions);
 	return err;
 }
 

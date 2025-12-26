@@ -86,6 +86,11 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
+error_code_t ssh_restart_processus(ssh_session /*session*/, int /*pid*/) {
+	//TODO
+	return SUCCESS;
+}
+
 /**
  * @brief Met le contenue du fichier /proc/file dans le buffer
  *

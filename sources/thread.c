@@ -46,7 +46,7 @@ void *ssh_task(void *arg) {
 			1 - atomic_load_explicit(&db->active, memory_order_acquire);
 		processus_array_t *proc_list = &db->buffer[index];
 		auto curr_el = &proc_list->data[curr];
-		auto curr_session = args->sessions[machine_index + start_index];
+		auto curr_session = args->sessions.data[machine_index + start_index];
 
 		switch (evt) {
 			case PAUSE_CONTINUE:

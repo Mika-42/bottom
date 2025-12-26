@@ -104,14 +104,10 @@ error_code_t opt_dry_run(const config_file_t *file) {
 }
 
 error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) {
-<<<<<<< HEAD
 	
 	printf("\nConnexion...\n");
 	
-	for(size_t i = 0; i < file->size; ++i) {
-=======
 	for (size_t i=0; i<file->size; ++i) {
->>>>>>> 022771c3bd0e0580751deebbdd3a003cf19c0f04
 		ssh_session session = ssh_connexion_init(
 			file->data[i].address,
 			file->data[i].port,
@@ -126,12 +122,7 @@ error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) 
 			}
 		}
 
-<<<<<<< HEAD
 		printf("[%s](%s@%s) : %s.\n",
-=======
-
-		printf("Connexion on [%s](%s@%s) : %s.\n",
->>>>>>> 022771c3bd0e0580751deebbdd3a003cf19c0f04
 			file->data[i].name,
 			file->data[i].username,
 			file->data[i].address,
