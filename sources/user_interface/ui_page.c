@@ -16,10 +16,12 @@ void ui_show_header(const size_t header_selected, ui_t *ui, const bool asc) {
 	box(ui->header, 0, 0);
 
 	char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
-	if (header_selected < header_element_count) arrow[header_selected] = asc ? "▲" : "▼";
-        
+	if (header_selected < header_element_count) {
+		arrow[header_selected] = asc ? "▲" : "▼";
+	}
+
 	mvwprintw(ui->header, 0, 0, proc_array_tab_header[0]);
-	mvwprintw(ui->header, 1, 0, proc_array_tab_header[1], arrow[0],arrow[1],arrow[2],arrow[3],arrow[4],arrow[5],arrow[6]);
+	mvwprintw(ui->header, 1, 0, proc_array_tab_header[1], arrow[0], arrow[1], arrow[2], arrow[3], arrow[4], arrow[5], arrow[6]);
 	mvwprintw(ui->header, 2, 0, proc_array_tab_header[2]);
 }
 
@@ -45,14 +47,18 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 
 	werase(ui->pad);
 
-	if (!array) return NULLPTR_PARAMETER_ERROR;
-	
+	if (!array) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
 	size_t i = 0;
 
 	const error_code_t err = ui_filter_proc(array, s);
-	if (err != SUCCESS) return err;
+	if (err != SUCCESS) {
+		return err;
+	}
 
-	for (; i< s->indices.size; ++i) {
+	for (; i<s->indices.size; ++i) {
 		size_t index = s->indices.data[i];
 		
 		double ram;
@@ -60,7 +66,7 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 
 		char buf[16];
 		const long ticks_per_sec = sysconf(_SC_CLK_TCK);
-		const time_t start_time = array->boot_time +  array->data[index].start_time / ticks_per_sec;
+		const time_t start_time = array->boot_time + array->data[index].start_time / ticks_per_sec;
 		const time_t now = time(nullptr);
 		ui_format_time(now - start_time, buf, 16);
 

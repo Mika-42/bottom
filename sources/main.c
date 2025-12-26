@@ -5,7 +5,9 @@
 #include "thread.h"
 
 error_code_t flag_init(flag_t *flag) {
-	if(!flag) return NULLPTR_PARAMETER_ERROR;
+	if (!flag) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
 	flag->exec_local = false;
 	flag->config = false;
@@ -18,7 +20,9 @@ error_code_t flag_init(flag_t *flag) {
 
 error_code_t thread_args_init(thread_args_t *args) {
 
-	if(!args) return NULLPTR_PARAMETER_ERROR;
+	if (!args) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
 	args->array = nullptr;
 	args->exec_local = false;
@@ -45,12 +49,16 @@ error_code_t thread_args_init(thread_args_t *args) {
 
 error_code_t machine_array_init(thread_args_t *args) {
 	
-	if(!args) return NULLPTR_PARAMETER_ERROR;
-	
-	args->array = calloc(args->selection.max_machine, sizeof(*args->array));
-	if (!args->array)return MEMORY_ALLOCATION_FAILED;
+	if (!args) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
-	for (size_t i = 0; i < args->selection.max_machine; ++i) {
+	args->array = calloc(args->selection.max_machine, sizeof(*args->array));
+	if (!args->array) {
+		return MEMORY_ALLOCATION_FAILED;
+	}
+
+	for (size_t i=0; i<args->selection.max_machine; ++i) {
 		proc_array_init(&args->array[i].buffer[0]);
 		proc_array_init(&args->array[i].buffer[1]);
 
@@ -60,7 +68,7 @@ error_code_t machine_array_init(thread_args_t *args) {
 	return SUCCESS;
 }
 
-int main(int argc, char *argv[]){	
+int main(int argc, char *argv[]) {	
 	
 	pthread_t ui_thread;
 	pthread_t proc_thread;
@@ -72,20 +80,22 @@ int main(int argc, char *argv[]){
 	thread_args_init(&args);
 
 	error_code_t err = command_run(argc, argv, &flag, &args.sessions);
-	if(err != SUCCESS) return err;
-	
+	if (err != SUCCESS) {
+		return err;
+	}
+
 	args.exec_local = flag.exec_local;
 	args.selection.max_machine = args.sessions.size + flag.exec_local;
 	
 	err = machine_array_init(&args);
-	if(err != SUCCESS) {
+	if (err != SUCCESS) {
 		release_data(&args);
 		return err;
 	}
 	
-	if(flag.exec_local) {
-	  if (pthread_create(&proc_thread, nullptr, proc_task, &args) != 0) {
-	    return THREAD_FAILED;
+	if (flag.exec_local) {
+	  	if (pthread_create(&proc_thread, nullptr, proc_task, &args) != 0) {
+	    	return THREAD_FAILED;
 		}
 	}
 	//if(sessions.size != 0)	// start ssh thread
@@ -94,14 +104,17 @@ int main(int argc, char *argv[]){
 	if (pthread_create(&ui_thread, nullptr, ui_task, &args) != 0) {
 		atomic_store_explicit(&args.running, false, memory_order_release);
 
-		if(flag.exec_local) pthread_join(proc_thread, nullptr);
+		if (flag.exec_local) {
+			pthread_join(proc_thread, nullptr);
+		}
 
 		return THREAD_FAILED;
 	}
 	
 	pthread_join(ui_thread, nullptr);
-   	if(flag.exec_local) pthread_join(proc_thread, nullptr);
-
+   	if (flag.exec_local) {
+		pthread_join(proc_thread, nullptr);
+	}
 	//	printf("\n\nmax machines: %ld\n", args.selection.max_machine);
 	//	return (bottom_ui(&args) != SUCCESS) ? EXIT_FAILURE : EXIT_SUCCESS;
 	
