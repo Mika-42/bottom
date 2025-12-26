@@ -1,4 +1,6 @@
 #include "ssh_connexion.h"
+#include "processus.h"
+
 #include <libssh/libssh.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,9 +88,49 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
-error_code_t ssh_restart_processus(ssh_session /*session*/, int /*pid*/) {
-	//TODO
+error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
+	char cmd[16384];
+	size_t off = 0;
+
+	off += snprintf(cmd + off, sizeof(cmd) - off, "pkill -TERM -P %d; kill -TERM %d; sleep 1; pkill -KILL -P %d; kill -KILL %d; ", p->pid, p->pid, p->pid, p->pid);
+
+	off += snprintf(cmd + off, sizeof(cmd) - off, "env -i ");
+	
+	for (int i=0; i<PROC_CMD_COUNT && p->env[i][0]; ++i) {
+		off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->env[i]);
+	}
+
+	off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->executable);
+
+	for (int i=0; i<PROC_CMD_COUNT && p->cmdline[i][0]; ++i) {
+		off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->cmdline[i]);
+	}
+	
+	off += snprintf(cmd + off, sizeof(cmd) - off, "&");
+
+	ssh_channel channel = ssh_channel_new(session);
+	if (!channel)
+		return SSH_ERROR;
+
+	if (ssh_channel_open_session(channel) != SSH_OK) 
+		goto error;
+
+	if (ssh_channel_request_exec(channel, cmd) != SSH_OK)
+		goto error;
+
+	ssh_channel_send_eof(channel);
+	ssh_channel_close(channel);
+	ssh_channel_free(channel);
+
 	return SUCCESS;
+
+error:
+	if (channel) {
+		ssh_channel_send_eof(channel);
+		ssh_channel_close(channel);
+		ssh_channel_free(channel);
+	}
+	return SSH_ERROR;
 }
 
 /**
