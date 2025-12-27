@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <fcntl.h> 
 
-constexpr size_t buf_max_size = 4096;
-
 bool str_is_numeric(const char *str) {
    	
 	if (!str || *str == '\0') {
@@ -149,54 +147,45 @@ void proc_get_exe(processus_t *proc) {
 	proc->executable[len] = '\0';
 }
 
-error_code_t proc_read_null_separated(pid_t pid, const char *proc_file, char out[][PROC_CMD_LEN]) {
-    if (!proc_file) {
+error_code_t proc_read_file(pid_t pid, const char *proc_file, char *buffer, size_t buf_size, size_t *out_size) {
+ if (!proc_file || !buffer)
         return NULLPTR_PARAMETER_ERROR;
-    }
 
     char path[PROC_PATH_SIZE];
     snprintf(path, sizeof(path), "/proc/%d/%s", pid, proc_file);
+
     int fd = open(path, O_RDONLY);
-
-    if (fd < 0) {
+    if (fd < 0)
         return OPEN_FILE_FAILED;
-    }
 
-    char buffer[PROC_CMD_COUNT * PROC_CMD_LEN];
-    ssize_t n = read(fd, buffer, sizeof(buffer) - 1);
+    ssize_t n = read(fd, buffer, buf_size - 1);
     close(fd);
 
-    if (n <= 0) {
+    if (n < 0)
         return READ_FAILED;
-	}
 
     buffer[n] = '\0';
-    size_t count = 0;
-    char *cur = buffer;
+    if (out_size)
+        *out_size = n;
 
-    while (cur < buffer + n && count < PROC_CMD_COUNT) {
-        if (*cur == '\0') {
-            ++cur;
-            continue;
-        }
-
-        strncpy(out[count], cur, PROC_CMD_LEN - 1);
-        out[count][PROC_CMD_LEN - 1] = '\0';
-        ++count;
-        cur += strlen(cur) + 1;
-    }
-
-    if (count < PROC_CMD_COUNT) {
-        out[count][0] = '\0';
-	}
     return SUCCESS;
 }
 
 error_code_t proc_get_cmdline(processus_t *p) {
-	return proc_read_null_separated(p->pid, "cmdline", p->cmdline);
+	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN];
+	size_t size = {};
+	error_code_t err = proc_read_file(p->pid, "cmdline", buffer, sizeof(buffer), &size);
+	if(err != SUCCESS) return err;
+
+	return stat_null_separated_parser(buffer, size, p->cmdline);
 }
 
 error_code_t proc_get_env(processus_t *p) {
-	return proc_read_null_separated(p->pid, "environ", p->env);
+	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN];
+	size_t size = {};
+	error_code_t err = proc_read_file(p->pid, "environ", buffer, sizeof(buffer), &size);
+	if(err != SUCCESS) return err;
+
+	return stat_null_separated_parser(buffer, size, p->env);
 }
 

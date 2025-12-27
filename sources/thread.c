@@ -61,7 +61,7 @@ void *ssh_task(void *arg) {
 				ssh_kill_processus(curr_session, curr_el->pid);
 				break;
 			case RELOAD:
-				ssh_restart_processus(curr_session, curr_el->pid);
+				ssh_restart_processus(curr_session, curr_el);
 				break;
 			default:
 				break;
@@ -73,7 +73,16 @@ void *ssh_task(void *arg) {
 			pthread_mutex_unlock(&s->lock);
 		}
 
-		/**/
+		if (ssh_array_update(proc_list) != SUCCESS) {
+			atomic_store_explicit(&args->running, false, memory_order_release);
+			break;
+		}
+
+		if (proc_array_get_cpu(&db->buffer[1 - index], &db->buffer[index]) !=
+				SUCCESS) {
+			atomic_store_explicit(&args->running, false, memory_order_release);
+			break;
+		}
 
 		if ((size_t)header < header_element_count) {
 			proc_array_sort(proc_list, sort_func[sort][header]);

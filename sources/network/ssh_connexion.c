@@ -88,7 +88,7 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
-int ssh_restart_processus(ssh_session session, processus_t *p) {
+error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 	char cmd[16384];
 	size_t off = 0;
 

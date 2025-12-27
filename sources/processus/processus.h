@@ -10,6 +10,7 @@ constexpr size_t PROC_CMD_LEN = 1024;
 constexpr size_t PROC_NAME_SIZE = 256;
 constexpr size_t PROC_USERNAME_SIZE = 32;
 constexpr size_t PROC_PATH_SIZE = 4096;
+constexpr size_t buf_max_size = 4096;
 
 /**
  * @brief Represente un processus avec toutes les informations dont on a besoin.

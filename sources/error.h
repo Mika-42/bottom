@@ -45,6 +45,7 @@ typedef enum error_code_t : int {
   SSH_OPEN_FAILED,
   SSH_REQUEST_FAILED,
   SSH_READ_FAILED,
+  SSH_GET_FILE_FAILED,
 
   SPECIAL_EXIT,
 } error_code_t;
