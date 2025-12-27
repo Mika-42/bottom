@@ -32,11 +32,12 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 	return session;
 }
 
-error_code_t ssh_cmd_exec(ssh_session session, const char *cmd, char *output, size_t len_max) {
+error_code_t ssh_cmd_exec(ssh_session session, const char *cmd, char *buffer, size_t buffer_size) {
 	ssh_channel channel = ssh_channel_new(session);
 	if (!channel) {
 		return MEMORY_ALLOCATION_FAILED;
 	}
+
 	if (ssh_channel_open_session(channel) != SSH_OK) {
 		ssh_channel_free(channel);
 		return SSH_OPEN_FAILED;
@@ -48,20 +49,40 @@ error_code_t ssh_cmd_exec(ssh_session session, const char *cmd, char *output, si
 		return SSH_REQUEST_FAILED;
 	}
 
-	int nbytes = ssh_channel_read(channel, output, len_max - 1, 0);
-	if (nbytes >= 0 && output != nullptr) {
-		 output[nbytes] = '\0';
+	int n = 0;
+	size_t size = 0;
+	
+	if (buffer && buffer_size > 0) {
+	
+		while ((n = ssh_channel_read(channel, buffer + size, buffer_size - size - 1, 0)) > 0) {
+			size += n;
+			if (size >= buffer_size - 1) {
+				buffer[size - 1] = '\0';
+				goto cleanup;
+			}
+		}
+ 
+		if (n < 0) {
+			goto cleanup;
+		}
+ 		
+		if (size > 0 && buffer[size - 1] == '\n')
+			size--;
+		buffer[size] = '\0';
 	}
+
+cleanup:
+
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
 	ssh_channel_free(channel);
 
-	return (nbytes >= 0) ? SUCCESS : SSH_READ_FAILED;
+	return (n < 0 || (buffer && size >= buffer_size - 1)) ? SSH_READ_FAILED : SUCCESS;
 }
 
 error_code_t ssh_dry_run(ssh_session session) {
 	char output[4096];
-	return ssh_cmd_exec(session, "ps", output, sizeof(output));
+	return ssh_cmd_exec(session, "ls", output, sizeof(output));
 }
 
 error_code_t ssh_kill_processus(ssh_session session, int pid) {
