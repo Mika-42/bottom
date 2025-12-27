@@ -14,5 +14,6 @@
 
 //todo optimize 
 [[nodiscard]] error_code_t kill_children(processus_t *p);
+[[nodiscard]] error_code_t wait_for_exit_with_timeout(pid_t pid, int timeout_ms);
 
 #endif //PROCESSUS_SIGNAL_H

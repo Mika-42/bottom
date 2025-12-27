@@ -1,5 +1,6 @@
 #include "ssh_processus.h"
 #include "stat_parser.h"
+
 #include <unistd.h>
 #include <pwd.h>
 #include <stdio.h>
@@ -7,8 +8,6 @@
 #include <string.h> 
 #include <stdlib.h>
 #include <fcntl.h> 
-
-constexpr size_t buf_max_size = 4096;
 
 error_code_t ssh_get_user(processus_t *proc, ssh_session session) {
     
@@ -20,42 +19,35 @@ error_code_t ssh_get_user(processus_t *proc, ssh_session session) {
 	char line[buf_max_size];
 	snprintf(path, sizeof(path), "%d/status", proc->pid);
 	
-	if(ssh_get_file(session, line, path) != SSH_OK) {
+	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
 		return SSH_GET_FILE_FAILED;
 	}
 
-	error_code_t err = stat_user_parser(proc, line);
-	free(line);
-
-	return err;
+	return stat_user_parser(proc, line);
 }
 
 
 error_code_t ssh_get_stat(processus_t *proc, ssh_session session) {
 
 	char path[64];
-	char *line;
+	char line[buf_max_size];
 	snprintf(path, sizeof(path), "%d/stat", proc->pid);
 	
-	if(ssh_get_file(session, &line, path) != SSH_OK) {
+	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
 		return SSH_GET_FILE_FAILED;
 	}
 
-	error_code_t err = stat_stat_parser(proc, line);
-	free(line);
-	return err;
+	return stat_stat_parser(proc, line);
 }
 
 error_code_t ssh_get_global_stat(long *cpu_total, time_t *boot_time, ssh_session session) {
 
-	char *line;
+	char line[buf_max_size];
 	
-	if(ssh_get_file(session, &line, "stat") != SSH_OK) {
+	if(ssh_get_file(session, line, buf_max_size, "stat") != SSH_OK) {
 		return SSH_GET_FILE_FAILED;
 	}
-	error_code_t err = stat_global_stat_parser(cpu_total, boot_time, line);
-	free(line);
-	return err;
+	return stat_global_stat_parser(cpu_total, boot_time, line);
 }
 
 error_code_t ssh_get_all_infos(const pid_t pid, processus_t *proc, ssh_session session
@@ -82,42 +74,43 @@ error_code_t ssh_get_cmdline(processus_t *proc, ssh_session session) {
 	char line[buf_max_size];
 	snprintf(path, sizeof(path), "%d/cmdline", proc->pid);
 	
-	if(ssh_get_file(session, &line, path) != SSH_OK) {
+	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
 		return SSH_GET_FILE_FAILED;
 	}
+	memset(proc->cmdline, 0, sizeof(proc->cmdline));
 
-	error_code_t err = stat_null_separated_parser(line, sizeof(proc->cmdline), proc->cmdline);
+	return stat_null_separated_parser(line, sizeof(proc->cmdline), proc->cmdline);
 }
 
-error_code_t ssh_get_env(processus_t *proc, ssh_session) {
+error_code_t ssh_get_env(processus_t *proc, ssh_session session) {
 	char path[64];
-	char *line;
+	char line[buf_max_size];
 	snprintf(path, sizeof(path), "%d/environ", proc->pid);
 	
-	if(ssh_get_file(session, &line, path) != SSH_OK) {
+	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
 		return SSH_GET_FILE_FAILED;
 	}
+	memset(proc->env, 0, sizeof(proc->env));
 
-	return stat_null_separated_parser(buffer, sizeof(p->env), p->env);
+	return stat_null_separated_parser(line, sizeof(proc->env), proc->env);
 }
-
+/*
 error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 
 	if (!array) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
-
-	/*
+	
 	DIR *rep_proc = opendir("/proc");
 	if (!rep_proc) {
 		return OPEN_FILE_FAILED;
 	}
 
 	struct dirent *ent = nullptr;
-	*/
+	
 	proc_array_reset(array);
 
-	while (/*(ent = readdir(rep_proc)) != nullptr*/) {
+	while ((ent = readdir(rep_proc)) != nullptr) {
 
 		char *end = nullptr;
 		const pid_t pid = strtol(ent->d_name, &end, 10);
@@ -148,4 +141,4 @@ error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 
 	return ssh_get_global_stat(&array->cpu_tick, &array->boot_time);
 }
-
+*/

@@ -161,31 +161,33 @@ error_code_t proc_read_file(pid_t pid, const char *proc_file, char *buffer, size
     ssize_t n = read(fd, buffer, buf_size - 1);
     close(fd);
 
-    if (n < 0)
+    if (n < 0) {
         return READ_FAILED;
+	}
 
-    buffer[n] = '\0';
-    if (out_size)
-        *out_size = n;
+	buffer[n] = '\0';
+    if (out_size) *out_size = (size_t)n;
 
     return SUCCESS;
 }
 
 error_code_t proc_get_cmdline(processus_t *p) {
-	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN];
+	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN] = {0};
 	size_t size = {};
 	error_code_t err = proc_read_file(p->pid, "cmdline", buffer, sizeof(buffer), &size);
 	if(err != SUCCESS) return err;
 
+	memset(p->cmdline, 0, sizeof(p->cmdline));
 	return stat_null_separated_parser(buffer, size, p->cmdline);
 }
 
 error_code_t proc_get_env(processus_t *p) {
-	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN];
+	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN] = {0};
 	size_t size = {};
 	error_code_t err = proc_read_file(p->pid, "environ", buffer, sizeof(buffer), &size);
 	if(err != SUCCESS) return err;
 
+	memset(p->env, 0, sizeof(p->env));
 	return stat_null_separated_parser(buffer, size, p->env);
 }
 

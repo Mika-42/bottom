@@ -105,28 +105,36 @@ error_code_t stat_user_parser(processus_t *proc, char *line) {
 	return SUCCESS;
 }
 
-error_code_t stat_null_separated_parser(const char *buffer, size_t size, char out[][PROC_CMD_LEN]) {
-    if (!buffer || !out) {
-        return NULLPTR_PARAMETER_ERROR;
-    }
-
-    size_t count = 0;
-    char *cur = buffer;
-
-    while (cur < buffer + size && count < PROC_CMD_COUNT) {
-        if (*cur == '\0') {
-            ++cur;
-            continue;
-        }
-
-        strncpy(out[count], cur, PROC_CMD_LEN - 1);
-        out[count][PROC_CMD_LEN - 1] = '\0';
-        ++count;
-        cur += strlen(cur) + 1;
-    }
-
-    if (count < PROC_CMD_COUNT) {
-        out[count][0] = '\0';
+error_code_t stat_null_separated_parser(char *buffer, size_t size, char out[][PROC_CMD_LEN]) {
+	if (!buffer || !out) {
+		return NULLPTR_PARAMETER_ERROR;
 	}
-    return SUCCESS;
+
+	size_t count = 0;
+	size_t i = 0;
+	while (i < size && count < PROC_CMD_COUNT) {
+		if (buffer[i] == '\0') {
+			++i;
+			continue;
+		}
+		
+		size_t start = i;
+		while (i < size && buffer[i] != '\0')
+            ++i;
+
+		size_t len = i - start;
+
+		if (len >= PROC_CMD_LEN)
+			len = PROC_CMD_LEN - 1;
+
+		memcpy(out[count], buffer + start, len);
+		out[count][len] = '\0';
+
+		++count;
+	}
+
+	if (count < PROC_CMD_COUNT) {
+		out[count][0] = '\0';
+	}
+	return SUCCESS;
 }

@@ -3,6 +3,9 @@
 #include "thread.h"
 #include "ui_event_dispatcher.h"
 #include "ui_page.h"
+#include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
 
 /* Notes:
  *	array[0] is ALWAYS the local machine !
@@ -73,10 +76,10 @@ void *ssh_task(void *arg) {
 			pthread_mutex_unlock(&s->lock);
 		}
 
-		if (ssh_array_update(proc_list) != SUCCESS) {
+/*		if (ssh_array_update(proc_list) != SUCCESS) {
 			atomic_store_explicit(&args->running, false, memory_order_release);
 			break;
-		}
+		} */
 
 		if (proc_array_get_cpu(&db->buffer[1 - index], &db->buffer[index]) !=
 				SUCCESS) {
@@ -131,7 +134,14 @@ void *proc_task(void *arg) {
 				proc_kill(curr_el);
 				break;
 			case RELOAD:
-				proc_restart(curr_el);
+				int fd = open("/dev/pts/3", O_WRONLY);
+				if (fd < 0) {
+				   perror("open");
+				}
+
+				dprintf(fd,"%s\n", err_to_str(proc_restart(curr_el)));
+
+				close(fd);
 				break;
 			default:
 				break;

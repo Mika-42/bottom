@@ -74,51 +74,53 @@ error_code_t proc_term(processus_t *p) {
 
 error_code_t proc_restart(processus_t *p) {
 	if (!p) {
-        return NULLPTR_PARAMETER_ERROR;
+		return NULLPTR_PARAMETER_ERROR;
 	}
 
 	if (pid_does_not_exists(p->pid)) {
-        return PID_DOES_NOT_EXIST;
-    }
+		return PID_DOES_NOT_EXIST;
+	}
 
 	error_code_t err = kill_children(p);
 
 	if (err != SUCCESS) {
-        return err;
-    }
+		return err;
+	}
 
 	err = proc_term(p);
-   
+
 	if (err != SUCCESS) {
-        return err;
-    }
+		return err;
+	}
 
-    if (p->ppid == getpid()) {
+	if (p->ppid == getpid()) {
 		if (waitpid(p->pid, nullptr, 0) < 0) {
-            return GENERIC_ERROR;
-        }
-    } else {
-        const int timeout_ms = 5000;
-        int waited = 0;
-        
-		while (pid_exists(p->pid)) {
-            if (waited >= timeout_ms) {
-                return TIMEOUT;
-            }
-			usleep(10000);
-            waited += 10;
-        }
-    }
+			if(errno == ECHILD) {
+				err = wait_for_exit_with_timeout(p->pid, 5'000);
 
-    pid_t new_pid = fork();
-    if (new_pid < 0) {
-        return FORK_FAILED;
-    }
+				if (err != SUCCESS) {
+					return err;
+				}
+			}
+			else return GENERIC_ERROR;
+		}
+	} else {
+				err = wait_for_exit_with_timeout(p->pid, 5'000);
 
-    if (new_pid == 0) {
-	
+				if (err != SUCCESS) {
+					return err;
+				}
+	}
+
+	pid_t new_pid = fork();
+	if (new_pid < 0) {
+		return FORK_FAILED;
+	}
+
+	if (new_pid == 0) {
+
 		size_t i = 0;
-		
+
 		char *argv[PROC_CMD_COUNT + 1];	
 		char *env[PROC_CMD_COUNT + 1];
 
@@ -133,33 +135,50 @@ error_code_t proc_restart(processus_t *p) {
 		env[i] = nullptr;
 
 		execve(p->executable, argv, env);
-       _exit(EXIT_FAILURE);
+
+		_exit(EXIT_FAILURE);
+	}
+
+	p->pid = new_pid;
+	p->ppid = getpid();
+
+	return SUCCESS;
+}
+
+error_code_t wait_for_exit_with_timeout(pid_t pid, int timeout_ms) {
+    int waited = 0;
+
+    while (pid_exists(pid)) {
+        if (waited >= timeout_ms) {
+            return TIMEOUT;
+        }
+        usleep(10000);
+        waited += 10;
     }
 
-    p->pid = new_pid;
     return SUCCESS;
 }
 
 error_code_t kill_children(processus_t *p) {
-    char path[PROC_PATH_SIZE];
-    snprintf(path, sizeof(path), "/proc/%d/task/%d/children", p->pid, p->pid);
-    FILE *f = fopen(path, "r");
-    if (!f) {
-        return OPEN_FILE_FAILED;
-    }
-    pid_t child;
-    while (fscanf(f, "%d", &child) == 1) {
-        int pidfd = syscall(SYS_pidfd_open, child, 0);
-        if (pidfd < 0) {
-            continue;
-        }
-        processus_t proc = {.pid = child};
-        if (kill_children(&proc) == SUCCESS) {
+	char path[PROC_PATH_SIZE];
+	snprintf(path, sizeof(path), "/proc/%d/task/%d/children", p->pid, p->pid);
+	FILE *f = fopen(path, "r");
+	if (!f) {
+		return OPEN_FILE_FAILED;
+	}
+	pid_t child;
+	while (fscanf(f, "%d", &child) == 1) {
+		int pidfd = syscall(SYS_pidfd_open, child, 0);
+		if (pidfd < 0) {
+			continue;
+		}
+		processus_t proc = {.pid = child};
+		if (kill_children(&proc) == SUCCESS) {
 			syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
 		}
-        close(pidfd);
-    }
-    fclose(f);
+		close(pidfd);
+	}
+	fclose(f);
 
-    return SUCCESS;
+	return SUCCESS;
 }
