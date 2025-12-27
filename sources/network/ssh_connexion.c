@@ -192,3 +192,52 @@ error:
 	}
 	return SSH_ERROR;
 }
+
+int ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, processus_t *p) {
+	
+	ssh_channel channel = ssh_channel_new(session);
+	if (!channel) {
+		return SSH_ERROR;
+	}
+	
+	if (ssh_channel_open_session(channel) != SSH_OK) {
+		goto error;
+	}
+	
+	char cmd[128];
+	snprintf(cmd, sizeof(cmd), "readlink /proc/%d/exe", p->pid);
+
+	if (ssh_channel_request_exec(channel, cmd) != SSH_OK) {
+		goto error;
+	}
+
+	int n;
+	size_t size = 0;
+
+	while ((n = ssh_channel_read(channel, buffer + size, buffer_size - size - 1, 0)) > 0) {
+		size += n;
+		if (size >= buffer_size - 1) {
+			goto error;
+		}
+	}
+ 
+	if (n < 0) goto error;
+	if (size > 0 && buffer[size - 1] == '\n')
+		size--; 	
+	
+	buffer[size] = '\0';
+	
+	ssh_channel_send_eof(channel);
+	ssh_channel_close(channel);
+	ssh_channel_free(channel);
+ 
+	return SSH_OK;
+	
+error:
+	if (channel) {
+		ssh_channel_send_eof(channel);
+		ssh_channel_close(channel);
+		ssh_channel_free(channel);
+	}
+	return SSH_ERROR;
+}
