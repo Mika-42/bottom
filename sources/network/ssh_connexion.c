@@ -4,6 +4,7 @@
 #include <libssh/libssh.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 void ssh_end_session(ssh_session session) {
 	ssh_disconnect(session);
@@ -143,7 +144,7 @@ error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 error_code_t ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file) {
 	for (const char *p = file; *p; ++p) {
     		if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
-			return SSH_ERROR;
+			return INVALID_ARGUMENT;
 		}
 	}
 
@@ -158,4 +159,44 @@ error_code_t ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, 
 	snprintf(cmd, sizeof(cmd), "readlink /proc/%d/exe", p->pid);
 	
 	return ssh_cmd_exec(session, buffer, buffer_size, cmd);
+}
+
+error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_list, size_t *count) {
+	if (!pid_list || ! count) return INVALID_ARGUMENT;
+	char ls_output[8192];
+
+	error_code_t error = ssh_cmd_exec(session, ls_output, sizeof(ls_output), "ls /proc/");
+	if (error != SUCCESS) {
+		return error;
+	}
+
+	*count = 0;
+	char *ptr = ls_output;
+	while (*ptr && *count < size_list) {
+		char *end = ptr;
+		while (*end && !isspace((unsigned char)*end)) 
+			end++;
+		if (end > ptr) {
+			int is_number = 1;
+			for (char *p=ptr; p<end; ++p) {
+				if (!isdigit((unsigned char)*p)) {
+					is_number = 0;
+					break;
+				}
+			}
+
+			if (is_number) {
+				long val = strtol(ptr, nullptr, 10);
+				if (val > 0) {
+					pid_list[*count] = (pid_t)val;
+					(*count)++;
+				}
+			}
+		}
+		ptr = end;
+		while (*ptr && isspace((unsigned char)*ptr))
+			ptr ++;
+	}
+
+	return SUCCESS;
 }
