@@ -32,7 +32,7 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 	return session;
 }
 
-error_code_t ssh_cmd_exec(ssh_session session, const char *cmd, char *buffer, size_t buffer_size) {
+error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd) {
 	ssh_channel channel = ssh_channel_new(session);
 	if (!channel) {
 		return MEMORY_ALLOCATION_FAILED;
@@ -82,34 +82,34 @@ cleanup:
 
 error_code_t ssh_dry_run(ssh_session session) {
 	char output[4096];
-	return ssh_cmd_exec(session, "ls", output, sizeof(output));
+	return ssh_cmd_exec(session, output, sizeof(output), "ls");
 }
 
 error_code_t ssh_kill_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -KILL %d", pid);
-	return ssh_cmd_exec(session, cmd, nullptr, 0);
+	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
 
 error_code_t ssh_term_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -TERM %d", pid);
-	return ssh_cmd_exec(session, cmd, nullptr, 0);
+	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
 
 error_code_t ssh_stop_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -STOP %d", pid);
-	return ssh_cmd_exec(session, cmd, nullptr, 0);
+	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
 
 error_code_t ssh_cont_processus(ssh_session session, int pid) {
 	char cmd[64];
 	snprintf(cmd, sizeof(cmd), "kill -CONT %d", pid);
-	return ssh_cmd_exec(session, cmd, nullptr, 0);
+	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
 
-int ssh_restart_processus(ssh_session session, processus_t *p) {
+error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 	char cmd[16384];
 	size_t off = 0;
 
@@ -129,29 +129,7 @@ int ssh_restart_processus(ssh_session session, processus_t *p) {
 	
 	off += snprintf(cmd + off, sizeof(cmd) - off, "&");
 
-	ssh_channel channel = ssh_channel_new(session);
-	if (!channel)
-		goto error;
-
-	if (ssh_channel_open_session(channel) != SSH_OK) 
-		goto error;
-
-	if (ssh_channel_request_exec(channel, cmd) != SSH_OK)
-		goto error;
-
-	ssh_channel_send_eof(channel);
-	ssh_channel_close(channel);
-	ssh_channel_free(channel);
-
-	return SSH_OK;
-
-error:
-	if (channel) {
-		ssh_channel_send_eof(channel);
-		ssh_channel_close(channel);
-		ssh_channel_free(channel);
-	}
-	return SSH_ERROR;
+	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
 
 /**
@@ -162,103 +140,22 @@ error:
  * @param file Fichier du dossier /proc/ qui sera lu
  * @return Code d'erreur correspondant de libssh
  */
-int ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file) {
+error_code_t ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file) {
 	for (const char *p = file; *p; ++p) {
-    	if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
+    		if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
 			return SSH_ERROR;
 		}
 	}
 
-	ssh_channel channel = ssh_channel_new(session);
-	if (!channel) {
-		return SSH_ERROR;
-	}
-
-	if (ssh_channel_open_session(channel) != SSH_OK) {
-		goto error;
-	}
-
 	char cmd[128];
 	snprintf(cmd, sizeof(cmd), "cat /proc/%s", file);
-
-	if (ssh_channel_request_exec(channel, cmd) != SSH_OK) {
-		goto error;
-	}
-
-	int n;
-	size_t size = 0;
-
-	while ((n = ssh_channel_read(channel, buffer + size, buffer_size - size - 1, 0)) > 0) {
-		size += n;
-		if (size >= buffer_size - 1) {
-			goto error;
-		}
-	}
- 
-	if (n < 0) goto error;
- 	
-	buffer[size] = '\0';
 	
-	ssh_channel_send_eof(channel);
-	ssh_channel_close(channel);
-	ssh_channel_free(channel);
- 
-	return SSH_OK;
-
-error:
-	if (channel) {
-		ssh_channel_send_eof(channel);
-		ssh_channel_close(channel);
-		ssh_channel_free(channel);
-	}
-	return SSH_ERROR;
+	return ssh_cmd_exec(session, buffer, buffer_size, cmd);
 }
 
-int ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, processus_t *p) {
-	
-	ssh_channel channel = ssh_channel_new(session);
-	if (!channel) {
-		return SSH_ERROR;
-	}
-	
-	if (ssh_channel_open_session(channel) != SSH_OK) {
-		goto error;
-	}
-	
+error_code_t ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, processus_t *p) {
 	char cmd[128];
 	snprintf(cmd, sizeof(cmd), "readlink /proc/%d/exe", p->pid);
-
-	if (ssh_channel_request_exec(channel, cmd) != SSH_OK) {
-		goto error;
-	}
-
-	int n;
-	size_t size = 0;
-
-	while ((n = ssh_channel_read(channel, buffer + size, buffer_size - size - 1, 0)) > 0) {
-		size += n;
-		if (size >= buffer_size - 1) {
-			goto error;
-		}
-	}
- 
-	if (n < 0) goto error;
-	if (size > 0 && buffer[size - 1] == '\n')
-		size--; 	
 	
-	buffer[size] = '\0';
-	
-	ssh_channel_send_eof(channel);
-	ssh_channel_close(channel);
-	ssh_channel_free(channel);
- 
-	return SSH_OK;
-	
-error:
-	if (channel) {
-		ssh_channel_send_eof(channel);
-		ssh_channel_close(channel);
-		ssh_channel_free(channel);
-	}
-	return SSH_ERROR;
+	return ssh_cmd_exec(session, buffer, buffer_size, cmd);
 }

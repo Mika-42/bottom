@@ -14,8 +14,8 @@ error_code_t ssh_kill_processus(ssh_session session, int pid);
 error_code_t ssh_term_processus(ssh_session session, int pid);
 error_code_t ssh_stop_processus(ssh_session session, int pid);
 error_code_t ssh_cont_processus(ssh_session session, int pid);
-int ssh_restart_processus(ssh_session session, processus_t *p);
+error_code_t ssh_restart_processus(ssh_session session, processus_t *p);
 
-int ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file);
-int ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, processus_t *p);
+error_code_t ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file);
+error_code_t ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, processus_t *p);
 #endif //SSH_CONNEXION
