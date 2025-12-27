@@ -88,7 +88,7 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
 	return ssh_cmd_exec(session, cmd, nullptr, 0);
 }
 
-error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
+int ssh_restart_processus(ssh_session session, processus_t *p) {
 	char cmd[16384];
 	size_t off = 0;
 
@@ -110,7 +110,7 @@ error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 
 	ssh_channel channel = ssh_channel_new(session);
 	if (!channel)
-		return SSH_ERROR;
+		goto error;
 
 	if (ssh_channel_open_session(channel) != SSH_OK) 
 		goto error;
@@ -122,7 +122,7 @@ error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 	ssh_channel_close(channel);
 	ssh_channel_free(channel);
 
-	return SUCCESS;
+	return SSH_OK;
 
 error:
 	if (channel) {
@@ -141,16 +141,12 @@ error:
  * @param file Fichier du dossier /proc/ qui sera lu
  * @return Code d'erreur correspondant de libssh
  */
-int ssh_get_file(ssh_session session, char **buffer, const char *file) {
+int ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file) {
 	for (const char *p = file; *p; ++p) {
     	if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
 			return SSH_ERROR;
 		}
 	}
-	
-	int n;
-	char *buf = nullptr;
-	size_t size = 0, capacity = 8192;
 
 	ssh_channel channel = ssh_channel_new(session);
 	if (!channel) {
@@ -168,25 +164,19 @@ int ssh_get_file(ssh_session session, char **buffer, const char *file) {
 		goto error;
 	}
 
-	buf = malloc(capacity + 1);
-	if (!buf) {
-		goto error;
-	}
+	int n;
+	size_t size = 0;
 
-	while ((n = ssh_channel_read(channel, buf + size, capacity - size, 0)) > 0) {
+	while ((n = ssh_channel_read(channel, buffer + size, buffer_size - size - 1, 0)) > 0) {
 		size += n;
-		if (size == capacity) {
-			capacity *= 2;
-			char *tmp = realloc(buf, capacity + 1);
-			if (!tmp) goto error;
-			buf = tmp;
+		if (size >= buffer_size - 1) {
+			goto error;
 		}
 	}
  
 	if (n < 0) goto error;
  	
-	buf[size] = '\0';
-	*buffer = buf;
+	buffer[size] = '\0';
 	
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
@@ -195,7 +185,6 @@ int ssh_get_file(ssh_session session, char **buffer, const char *file) {
 	return SSH_OK;
 
 error:
-	free(buf);
 	if (channel) {
 		ssh_channel_send_eof(channel);
 		ssh_channel_close(channel);
