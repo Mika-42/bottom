@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <fcntl.h> 
 
+constexpr size_t max_proc = 8192;
 error_code_t ssh_get_user(processus_t *proc, ssh_session session) {
     
 	if (!proc) {
@@ -94,38 +95,35 @@ error_code_t ssh_get_env(processus_t *proc, ssh_session session) {
 
 	return stat_null_separated_parser(line, sizeof(proc->env), proc->env);
 }
-/*
+
 error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 
 	if (!array) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 	
-	DIR *rep_proc = opendir("/proc");
-	if (!rep_proc) {
-		return OPEN_FILE_FAILED;
+	pid_t pid_list[max_proc];
+	size_t count;
+	
+   error_code_t err	= ssh_get_pid_list(session, pid_list, max_proc, &count);
+
+	if (err != SUCCESS) {
+		return err;
 	}
 
-	struct dirent *ent = nullptr;
-	
+	const size_t limit = count < max_proc ? count : max_proc;
+
 	proc_array_reset(array);
 
-	while ((ent = readdir(rep_proc)) != nullptr) {
-
-		char *end = nullptr;
-		const pid_t pid = strtol(ent->d_name, &end, 10);
-		if (*end != '\0' || pid <= 0) { 
-			continue;
-		}
+	for(size_t i=0; i<limit; ++i) {
 
 		processus_t *proc = proc_array_emplace_back(array);
 
 		if (!proc) {
-			closedir(rep_proc);
 			return MEMORY_ALLOCATION_FAILED;
 		}
 
-		if (ssh_get_all_infos(pid, proc, session) != SUCCESS) {
+		if (ssh_get_all_infos(pid_list[i], proc, session) != SUCCESS) {
 			processus_t *last = proc_array_get_last(array);
 
 			// on écrase le proc mort avec le dernier proc de la liste
@@ -137,8 +135,6 @@ error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 		}
 	}
 
-//	closedir(rep_proc);
-
-	return ssh_get_global_stat(&array->cpu_tick, &array->boot_time);
+	return ssh_get_global_stat(&array->cpu_tick, &array->boot_time, session);
 }
-*/
+

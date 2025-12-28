@@ -1,5 +1,4 @@
 #include "command_option.h"
-#include "config_file.h"
 #include "error.h"
 #include "ssh_connexion.h"
 
@@ -26,9 +25,8 @@ static const struct option long_opts[] = {
     {"all", no_argument, nullptr, 'a'},
     {0, 0, 0, 0}};
 
-error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array_t *sessions) {
+error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array_t *sessions, config_file_t *cfg_file) {
     int opt = 0;
-    config_file_t cfg_file = {0};
     remote_server_t server = {0};
     error_code_t err = SUCCESS;
     optind = 1;
@@ -48,7 +46,7 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array
 			} break;
 
 			case 'c': {
-				err = cfg_parse(&cfg_file, optarg);
+				err = cfg_parse(cfg_file, optarg);
 				flag->config = true;
 			} break;
 
@@ -115,11 +113,11 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array
 			}
 		}
 
-		cfg_add_server(&cfg_file, &server);
+		cfg_add_server(cfg_file, &server);
 	}
 
 	if (flag->dry_run) {
-		opt_dry_run(&cfg_file);
+		opt_dry_run(cfg_file);
 		return SPECIAL_EXIT;
 	}
 
@@ -127,7 +125,7 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array
 		flag->exec_local = true;
 	}
 
-	err = opt_connect(&cfg_file, sessions);
+	err = opt_connect(cfg_file, sessions);
 	if (err != SUCCESS) {
 		fprintf(stderr, "Error: %s.\n", err_to_str(err));
 	}

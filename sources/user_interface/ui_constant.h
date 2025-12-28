@@ -36,7 +36,7 @@ static constexpr size_t header_element_count = 7;
 static constexpr size_t ui_pad_lines = 8000;
 static constexpr size_t ui_pad_columns = 134;
 static constexpr size_t ui_footer_lines = 3;
-static constexpr size_t ui_header_lines = 3;
+static constexpr size_t ui_header_lines = 5;
 static constexpr size_t ui_help_lines = 26;
 static constexpr size_t ui_max_width = 403;
 
@@ -63,8 +63,10 @@ static constexpr char proc_array_help_footer[ui_footer_lines][ui_max_width] = {
 };
 
 static constexpr char proc_array_tab_header[ui_header_lines][ui_max_width] = {
-        "┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓",
-        "┃ PID      %s ┃ User                   %s ┃ Name                           %s ┃ State    %s ┃ RAM      %s ┃ CPU   %s ┃ Time(dd:hh:mm:ss) %s ┃",
+        "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
+		"┃ Machine name                                                                                                                       ┃",
+        "┣━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┫",
+	   	"┃ PID      %s ┃ User                   %s ┃ Name                           %s ┃ State    %s ┃ RAM      %s ┃ CPU   %s ┃ Time(dd:hh:mm:ss) %s ┃",
         "┣━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━┫",
 };
 

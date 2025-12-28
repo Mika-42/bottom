@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 	
 	pthread_t ui_thread;
 	pthread_t proc_thread;
+	pthread_t ssh_thread;
 	
 	flag_t flag;
 	flag_init(&flag);
@@ -79,7 +80,8 @@ int main(int argc, char *argv[]) {
 	thread_args_t args;
 	thread_args_init(&args);
 
-	error_code_t err = command_run(argc, argv, &flag, &args.sessions);
+    config_file_t cfg_file = {0};
+	error_code_t err = command_run(argc, argv, &flag, &args.sessions, &cfg_file);
 	if (err != SUCCESS) {
 		return err;
 	}
@@ -94,11 +96,22 @@ int main(int argc, char *argv[]) {
 	}
 	
 	if (flag.exec_local) {
-	  	if (pthread_create(&proc_thread, nullptr, proc_task, &args) != 0) {
+	  	if (pthread_create(&proc_thread, nullptr, ssh_task, &args) != 0) {
 	    	return THREAD_FAILED;
 		}
 	}
-	//if(sessions.size != 0)	// start ssh thread
+
+	if(args.sessions.size != 0){	
+	  	if (pthread_create(&ssh_thread, nullptr, proc_task, &args) != 0) {
+		atomic_store_explicit(&args.running, false, memory_order_release);
+	    
+				if (flag.exec_local) {
+			pthread_join(proc_thread, nullptr);
+		}
+
+			return THREAD_FAILED;
+		}
+	}
 	
 	//	run ui task
 	if (pthread_create(&ui_thread, nullptr, ui_task, &args) != 0) {
@@ -107,7 +120,10 @@ int main(int argc, char *argv[]) {
 		if (flag.exec_local) {
 			pthread_join(proc_thread, nullptr);
 		}
-
+	
+		if(args.sessions.size != 0){	
+			pthread_join(ssh_thread, nullptr);	
+		}
 		return THREAD_FAILED;
 	}
 	
@@ -115,10 +131,10 @@ int main(int argc, char *argv[]) {
    	if (flag.exec_local) {
 		pthread_join(proc_thread, nullptr);
 	}
-	//	printf("\n\nmax machines: %ld\n", args.selection.max_machine);
-	//	return (bottom_ui(&args) != SUCCESS) ? EXIT_FAILURE : EXIT_SUCCESS;
-	
-	release_data(&args); 
+			if(args.sessions.size != 0){	
+			pthread_join(ssh_thread, nullptr);	
+		}
+release_data(&args); 
 	ssh_array_free(&args.sessions);
 	
 	return err;

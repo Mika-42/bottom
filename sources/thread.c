@@ -1,5 +1,6 @@
 #include "processus_signal.h"
 #include "processus_sort.h"
+#include "ssh_processus.h"
 #include "thread.h"
 #include "ui_event_dispatcher.h"
 #include "ui_page.h"
@@ -28,7 +29,7 @@ void *ssh_task(void *arg) {
 
 	// 1 if SSH + Local
 	// 0 if SSH only
-	const size_t start_index = args->exec_local;
+//	const size_t start_index = args->exec_local;
 
 	while (atomic_load_explicit(&args->running, memory_order_acquire)) {
 		pthread_mutex_lock(&s->lock);
@@ -50,7 +51,7 @@ void *ssh_task(void *arg) {
 			1 - atomic_load_explicit(&db->active, memory_order_acquire);
 		processus_array_t *proc_list = &db->buffer[index];
 		auto curr_el = &proc_list->data[curr];
-		auto curr_session = args->sessions.data[machine_index + start_index];
+		auto curr_session = args->sessions.data[machine_index];
 
 		switch (evt) {
 			case PAUSE_CONTINUE:
@@ -75,11 +76,14 @@ void *ssh_task(void *arg) {
 			s->event = NOTHING;
 			pthread_mutex_unlock(&s->lock);
 		}
-
-/*		if (ssh_array_update(proc_list) != SUCCESS) {
+		
+		error_code_t err = ssh_array_update(proc_list, curr_session);
+	   
+		if(err != SUCCESS) {
+			printf(err_to_str(err));
 			atomic_store_explicit(&args->running, false, memory_order_release);
 			break;
-		} */
+		}
 
 		if (proc_array_get_cpu(&db->buffer[1 - index], &db->buffer[index]) !=
 				SUCCESS) {
@@ -116,7 +120,13 @@ void *proc_task(void *arg) {
 		const sort_type_t sort = s->sort;
 		const proc_event_t evt = s->event;
 		const size_t curr = s->selected;
+		const size_t machine_index = s->machine_selected; 
 		pthread_mutex_unlock(&s->lock);
+	
+		if (machine_index != 0) {
+			nanosleep(&proc_thread_time_interval, nullptr);
+			continue;
+		}
 
 		const int index =
 			1 - atomic_load_explicit(&db->active, memory_order_acquire);
@@ -134,14 +144,7 @@ void *proc_task(void *arg) {
 				proc_kill(curr_el);
 				break;
 			case RELOAD:
-				int fd = open("/dev/pts/3", O_WRONLY);
-				if (fd < 0) {
-				   perror("open");
-				}
-
-				dprintf(fd,"%s\n", err_to_str(proc_restart(curr_el)));
-
-				close(fd);
+				proc_restart(curr_el);
 				break;
 			default:
 				break;
