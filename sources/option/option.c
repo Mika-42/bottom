@@ -121,8 +121,7 @@ error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) 
         return MEMORY_ALLOCATION_FAILED;
 			}
 		}
-		printf("[%s](%s@%s) : %s.\n",
-			file->data[i].name,
+		printf("(%s@%s) : %s.\n",
 			file->data[i].username,
 			file->data[i].address,
 			succed ? "succed" : "failed"

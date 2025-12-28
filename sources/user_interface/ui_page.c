@@ -29,11 +29,14 @@ void ui_show_header(const size_t header_selected, ui_t *ui, const bool asc) {
 void show_help_page(ui_t *ui) {
 
 	werase(ui->pad);	
-
-	ui_show_array(ui->header, proc_array_help_header);
-
+	
 	size_t i = 0;
-	for (; i<ui_help_lines; ++i) {
+
+	for (size_t i=0; i<ui_header_lines; ++i) {
+		mvwprintw(ui->header, i, 0, proc_array_help_header[i]);
+	}
+
+	for (i=0; i<ui_help_lines; ++i) {
 		mvwprintw(ui->pad, i, 0, proc_array_help[i]);
 	}
 

@@ -74,6 +74,8 @@ static constexpr char proc_array_help_header[ui_header_lines][ui_max_width] = {
         "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
 	"┃                                                                                                                                    ┃",
 	"┃                                                                                                                                    ┃",
+	"┃                                                                                                                                    ┃",
+	"┃                                                                                                                                    ┃",
 };
 
 static constexpr char proc_array_help[ui_help_lines][ui_max_width] = {

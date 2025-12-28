@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
 	  	if (pthread_create(&ssh_thread, nullptr, ssh_task, &args) != 0) {
 		atomic_store_explicit(&args.running, false, memory_order_release);
 	    
-				if (flag.exec_local) {
+		if (flag.exec_local) {
 			pthread_join(proc_thread, nullptr);
 		}
 
@@ -128,14 +128,17 @@ int main(int argc, char *argv[]) {
 		}
 		return THREAD_FAILED;
 	}
-	
+
 	pthread_join(ui_thread, nullptr);
-   	if (flag.exec_local) {
+
+	if (flag.exec_local) {
 		pthread_join(proc_thread, nullptr);
 	}
-			if(args.sessions.size != 0){	
-			pthread_join(ssh_thread, nullptr);	
-		}
+	
+	if(args.sessions.size != 0){	
+		pthread_join(ssh_thread, nullptr);	
+	}
+
 release_data(&args); 
 	ssh_array_free(&args.sessions);
 	

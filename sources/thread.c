@@ -18,6 +18,8 @@ static const proc_compare_t sort_func[2][header_element_count] = {
 	{pid_dsc, user_dsc, name_dsc, state_dsc, ram_dsc, cpu_dsc, time_dsc},
 	{pid_asc, user_asc, name_asc, state_asc, ram_asc, cpu_asc, time_asc}};
 
+void doning() {}
+
 void *ssh_task(void *arg) {
 
 	if (!arg) {
@@ -26,10 +28,6 @@ void *ssh_task(void *arg) {
 
 	thread_args_t *args = arg;
 	user_selection_t *s = &args->selection;
-
-	// 1 if SSH + Local
-	// 0 if SSH only
-//	const size_t start_index = args->exec_local;
 
 	while (atomic_load_explicit(&args->running, memory_order_acquire)) {
 		pthread_mutex_lock(&s->lock);
@@ -45,7 +43,7 @@ void *ssh_task(void *arg) {
 			continue;
 		}
 
-		double_buffer_t *db = &args->array[machine_index];
+		double_buffer_t *db = &args->array[/*machine_index*/1];
 
 		const int index =
 			1 - atomic_load_explicit(&db->active, memory_order_acquire);
@@ -97,9 +95,11 @@ void *ssh_task(void *arg) {
 		}
 		
 		error_code_t err = ssh_array_update(proc_list, curr_session);
-	   
+
+		doning();		
+//		printf(err_to_str(err)); /*TODO Remove*/
+		
 		if(err != SUCCESS) {
-			printf(err_to_str(err)); /*TODO Remove*/
 			atomic_store_explicit(&args->running, false, memory_order_release);
 			break;
 		}
@@ -113,7 +113,7 @@ void *ssh_task(void *arg) {
 		if ((size_t)header < header_element_count) {
 			proc_array_sort(proc_list, sort_func[sort][header]);
 		}
-		nanosleep(&proc_thread_time_interval, nullptr);
+		//nanosleep(&proc_thread_time_interval, nullptr);
 
 		atomic_store_explicit(&db->active, index, memory_order_release);
 
@@ -271,6 +271,7 @@ void *ui_task(void *arg) {
 	}
 
 	ui_deinit(&ui);
+	atomic_store_explicit(&args->running, false, memory_order_release);
 
 	return nullptr;
 }

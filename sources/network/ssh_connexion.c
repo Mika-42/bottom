@@ -34,7 +34,7 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 }
 
 error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd) {
-	if(!session || !buffer || !cmd) return NULLPTR_PARAMETER_ERROR;
+	if(!session || !cmd) return NULLPTR_PARAMETER_ERROR;
 
 	ssh_channel channel = ssh_channel_new(session);
 	if (!channel) {
@@ -169,7 +169,7 @@ error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_
 	
 	char ls_output[8192];
 
-	error_code_t err = ssh_cmd_exec(session, ls_output, sizeof(ls_output), "ls /proc/");
+	error_code_t err = ssh_cmd_exec(session, ls_output, sizeof(ls_output), "ls /proc/ | grep -E '^[0-9]+$'");
 	
 	if (err != SUCCESS) {
 		return err;
@@ -178,31 +178,21 @@ error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_
 	*count = 0;
 	char *ptr = ls_output;
 	
-	while (*ptr && *count < size_list) {
-		
-		while (*ptr && isspace((unsigned char)*ptr)) 
-			ptr++;
+    while (*ptr && *count < size_list) {
+        // Passer les espaces et retours à la ligne
+        while (*ptr && isspace((unsigned char)*ptr)) ptr++;
+        if (!*ptr) break;
 
-		if (!*ptr) {
-			break;
-		}
-		
-		char *start = ptr;
+        char *end;
+        long val = strtol(ptr, &end, 10);
 
-		while (*ptr && !isspace((unsigned char)*ptr))
-			ptr++;
-
-		char saved = *ptr;
-		*ptr = '\0';
-
-		if(proc_is_valid_pid(start)) {
-			long val = strtol(start, nullptr, 10);
-			pid_list[*count] = (pid_t)val;
+        if (end != ptr) {  // Si un nombre a été trouvé
+            pid_list[*count] = (pid_t)val;
             (*count)++;
-		}
-		*ptr = saved;
-		if (*ptr) ptr++;
-	}
+        }
+
+        ptr = end;  // avancer le pointeur après le nombre
+    }
 
 	return SUCCESS;
 }

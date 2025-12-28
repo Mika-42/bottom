@@ -123,7 +123,9 @@ error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 			return MEMORY_ALLOCATION_FAILED;
 		}
 
-		if (ssh_get_all_infos(pid_list[i], proc, session) != SUCCESS) {
+		err = ssh_get_all_infos(pid_list[i], proc, session);
+	   
+		if(err != SUCCESS) {
 			processus_t *last = proc_array_get_last(array);
 
 			// on écrase le proc mort avec le dernier proc de la liste
