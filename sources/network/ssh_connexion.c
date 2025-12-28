@@ -135,14 +135,6 @@ error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
 
-/**
- * @brief Met le contenue du fichier /proc/file dans le buffer
- *
- * @param session Session ssh
- * @param buffer Adresse de la chaine de caractère dans laquel sera écrit le contenue du fichier, à liberer par l'appelant
- * @param file Fichier du dossier /proc/ qui sera lu
- * @return Code d'erreur correspondant de libssh
- */
 error_code_t ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file) {
 	for (const char *p = file; *p; ++p) {
     		if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
