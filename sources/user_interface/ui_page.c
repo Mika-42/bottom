@@ -21,7 +21,6 @@ void ui_show_header(const size_t header_selected, ui_t *ui, const bool asc) {
 	}
 
 	mvwprintw(ui->header, 0, 0, proc_array_tab_header[0]);
-	mvwprintw(ui->header, 1, 0, proc_array_tab_header[1]);
 	mvwprintw(ui->header, 2, 0, proc_array_tab_header[2]);
 	mvwprintw(ui->header, 3, 0, proc_array_tab_header[3], arrow[0], arrow[1], arrow[2], arrow[3], arrow[4], arrow[5], arrow[6]);
 	mvwprintw(ui->header, 4, 0, proc_array_tab_header[4]);

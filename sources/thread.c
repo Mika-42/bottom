@@ -51,7 +51,26 @@ void *ssh_task(void *arg) {
 			1 - atomic_load_explicit(&db->active, memory_order_acquire);
 		processus_array_t *proc_list = &db->buffer[index];
 		auto curr_el = &proc_list->data[curr];
-		auto curr_session = args->sessions.data[machine_index];
+	
+		ssh_session curr_session = nullptr;
+		if (args->exec_local) {
+			const size_t idx = machine_index == 0 ? (size_t)-1 : machine_index - 1;
+			if(idx >= args->sessions.size) {
+			   	nanosleep(&proc_thread_time_interval, nullptr);
+				continue;
+			}
+
+			curr_session = args->sessions.data[idx];
+		} else {
+			const size_t idx = machine_index;
+
+			if(idx >= args->sessions.size) {
+			   	nanosleep(&proc_thread_time_interval, nullptr);
+				continue;
+			}
+
+			curr_session = args->sessions.data[idx];
+		}
 
 		switch (evt) {
 			case PAUSE_CONTINUE:
@@ -80,7 +99,7 @@ void *ssh_task(void *arg) {
 		error_code_t err = ssh_array_update(proc_list, curr_session);
 	   
 		if(err != SUCCESS) {
-			printf(err_to_str(err));
+			printf(err_to_str(err)); /*TODO Remove*/
 			atomic_store_explicit(&args->running, false, memory_order_release);
 			break;
 		}
@@ -244,7 +263,7 @@ void *ui_task(void *arg) {
 
 		ui_scroll(&ui, scroll_factor, select);
 
-		ui_update(&ui, proc_list->size);
+		ui_update(&ui, proc_list->size, s->machine_selected == 0 ? "local" : "distant");
 
 		pthread_mutex_unlock(&s->lock);
 

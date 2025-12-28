@@ -96,13 +96,15 @@ int main(int argc, char *argv[]) {
 	}
 	
 	if (flag.exec_local) {
-	  	if (pthread_create(&proc_thread, nullptr, ssh_task, &args) != 0) {
-	    	return THREAD_FAILED;
+	  	if (pthread_create(&proc_thread, nullptr, proc_task, &args) != 0) {
+	    		atomic_store_explicit(&args.running, false, memory_order_release);
+
+			return THREAD_FAILED;
 		}
 	}
 
 	if(args.sessions.size != 0){	
-	  	if (pthread_create(&ssh_thread, nullptr, proc_task, &args) != 0) {
+	  	if (pthread_create(&ssh_thread, nullptr, ssh_task, &args) != 0) {
 		atomic_store_explicit(&args.running, false, memory_order_release);
 	    
 				if (flag.exec_local) {

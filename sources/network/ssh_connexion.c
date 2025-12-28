@@ -34,7 +34,7 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 }
 
 error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd) {
-	if(!session || !buffer || cmd) return NULLPTR_PARAMETER_ERROR;
+	if(!session || !buffer || !cmd) return NULLPTR_PARAMETER_ERROR;
 
 	ssh_channel channel = ssh_channel_new(session);
 	if (!channel) {
@@ -169,10 +169,10 @@ error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_
 	
 	char ls_output[8192];
 
-	error_code_t error = ssh_cmd_exec(session, ls_output, sizeof(ls_output), "ls /proc/");
+	error_code_t err = ssh_cmd_exec(session, ls_output, sizeof(ls_output), "ls /proc/");
 	
-	if (error != SUCCESS) {
-		return error;
+	if (err != SUCCESS) {
+		return err;
 	}
 
 	*count = 0;
@@ -180,7 +180,7 @@ error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_
 	
 	while (*ptr && *count < size_list) {
 		
-		while (*ptr && !isspace((unsigned char)*ptr)) 
+		while (*ptr && isspace((unsigned char)*ptr)) 
 			ptr++;
 
 		if (!*ptr) {
@@ -189,7 +189,7 @@ error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_
 		
 		char *start = ptr;
 
-		while (*ptr && isspace((unsigned char)*ptr))
+		while (*ptr && !isspace((unsigned char)*ptr))
 			ptr++;
 
 		char saved = *ptr;
@@ -201,6 +201,7 @@ error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_
             (*count)++;
 		}
 		*ptr = saved;
+		if (*ptr) ptr++;
 	}
 
 	return SUCCESS;
