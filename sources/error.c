@@ -28,6 +28,20 @@ const char* err_to_str(const error_code_t err) {
     case INVALID_ARGUMENT: return "INVALID_ARGUMENT";
     case UNREGULAR_FILE_ERROR: return "UNREGULAR_FILE_ERROR";
     case BAD_PERMISSIONS_ERROR: return "BAD_PERMISSIONS_ERROR";
+    case CPU_NOT_FOUND: return "CPU_NOT_FOUND";
+    case BTIME_NOT_FOUND: return "BTIME_NOT_FOUND";
+    case DOT_CONFIG_NOT_FOUND: return "DOT_CONFIG_NOT_FOUND";
+    case FILE_DOES_NOT_EXIST: return "FILE_DOES_NOT_EXIST";
+    case PATH_TOO_LONG_ERROR: return "PATH_TOO_LONG_ERROR";
+    case BUFFER_TOO_LONG: return "BUFFER_TOO_LONG";
+    case INVALID_PATH: return "INVALID_PATH";
+    case BUFFER_OVERFLOW: return "BUFFER_OVERFLOW";
+    case SSH_CONNEXION_FAILED: return "SSH_CONNEXION_FAILED";
+    case SSH_OPEN_FAILED: return "SSH_OPEN_FAILED";
+    case SSH_REQUEST_FAILED: return "SSH_REQUEST_FAILED";
+    case SSH_READ_FAILED: return "SSH_READ_FAILED";
+    case SSH_GET_FILE_FAILED: return "SSH_GET_FILE_FAILED";
+    case SPECIAL_EXIT: return "SPECIAL_EXIT";
 	default: return "UNKNOWN_ERROR";
     }
 }
