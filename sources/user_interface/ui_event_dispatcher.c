@@ -10,8 +10,10 @@ void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui
 		s->mode = HELP;
 	} else if (ch == KEY_F(2) && s->machine_selected != 0) {
 		--s->machine_selected;
+		s->selected = 0;
 	} else if (ch == KEY_F(3) && s->machine_selected < s->max_machine - 1) {
 		++s->machine_selected;
+		s->selected = 0;
 	} else if (ch == KEY_F(4)) { 
 		s->mode = SEARCH;
 		ui_utils_reset_input_buffer(s);

@@ -110,9 +110,6 @@ void *proc_task(void *arg) {
 		}
 		err = proc_array_update(proc_list);
 
-		}
-//------------------
-
 		if (err != SUCCESS) {
 			break;
 		}
@@ -120,6 +117,8 @@ void *proc_task(void *arg) {
 				SUCCESS) {
 			break;
 		}
+		}
+//------------------
 
 		if ((size_t)header < header_element_count) {
 			proc_array_sort(proc_list, sort_func[sort][header]);

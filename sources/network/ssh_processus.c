@@ -9,130 +9,60 @@
 #include <stdlib.h>
 #include <fcntl.h> 
 
-constexpr size_t max_proc = 8192;
-error_code_t ssh_get_user(processus_t *proc, ssh_session session) {
-    
-	if (!proc) {
-		return NULLPTR_PARAMETER_ERROR;
-	}
-
-	char cmd[64];
-	snprintf(cmd, sizeof(cmd), "ps -p %d -o user=", proc->pid);
-
-	return ssh_cmd_exec(session, proc->user, PROC_USERNAME_SIZE, cmd);
-}
-
-
-error_code_t ssh_get_stat(processus_t *proc, ssh_session session) {
-
-	char path[64];
-	char line[buf_max_size];
-	snprintf(path, sizeof(path), "%d/stat", proc->pid);
-	
-	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
-		return SSH_GET_FILE_FAILED;
-	}
-
-	return stat_stat_parser(proc, line);
-}
-
-error_code_t ssh_get_global_stat(long *cpu_total, time_t *boot_time, ssh_session session) {
-
-	char line[buf_max_size];
-	
-	if(ssh_get_file(session, line, buf_max_size, "stat") != SSH_OK) {
-		return SSH_GET_FILE_FAILED;
-	}
-	return stat_global_stat_parser(cpu_total, boot_time, line);
-}
-
-error_code_t ssh_get_all_infos(const pid_t pid, processus_t *proc, ssh_session session
-) {
-
-	if (!proc) {
-		return NULLPTR_PARAMETER_ERROR;
-	}
-
-	proc->pid = pid;
-
-	error_code_t err = ssh_get_stat(proc, session);
-	
-	if (err != SUCCESS) {
-		return err;
-	}
-
-	return ssh_get_user(proc, session);
-}
-
-error_code_t ssh_get_cmdline(processus_t *proc, ssh_session session) {
-	
-	char path[64];
-	char line[buf_max_size];
-	snprintf(path, sizeof(path), "%d/cmdline", proc->pid);
-	
-	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
-		return SSH_GET_FILE_FAILED;
-	}
-	memset(proc->cmdline, 0, sizeof(proc->cmdline));
-
-	return stat_null_separated_parser(line, sizeof(proc->cmdline), proc->cmdline);
-}
-
-error_code_t ssh_get_env(processus_t *proc, ssh_session session) {
-	char path[64];
-	char line[buf_max_size];
-	snprintf(path, sizeof(path), "%d/environ", proc->pid);
-	
-	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
-		return SSH_GET_FILE_FAILED;
-	}
-	memset(proc->env, 0, sizeof(proc->env));
-
-	return stat_null_separated_parser(line, sizeof(proc->env), proc->env);
-}
-
 error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 
 	if (!array) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 	
-	pid_t pid_list[max_proc];
-	size_t count;
+	const char *cmd = "ps -e -o pid,ppid,stat,rss,user:32,etimes,pcpu,comm:256 --no-headers";
+	constexpr size_t buffer_size = 524'288; // 512 KB
+	char *buffer = malloc(buffer_size);
+	if (!buffer) return MEMORY_ALLOCATION_FAILED;
+	memset(buffer, 0, buffer_size);
 	
-   error_code_t err	= ssh_get_pid_list(session, pid_list, max_proc, &count);
+	error_code_t err = ssh_cmd_exec(session, buffer, buffer_size, cmd);
 
-	if (err != SUCCESS) {
+	if(err != SUCCESS) {
 		return err;
 	}
 
-	const size_t limit = count < max_proc ? count : max_proc;
-
+	buffer[buffer_size - 1] = '\0';
 	proc_array_reset(array);
+	
+	char *line = strtok(buffer, "\n");	
+	while(line) {
+		processus_t *p = proc_array_emplace_back(array);
+		char tmp_state[8];
+		char tmp_user[64];
+		int n = sscanf(line, " %d %d %7s %llu %63s %lu %lf %255[^\n]", 
+				&p->pid,
+				&p->ppid,
+				tmp_state,
+				&p->ram,
+				tmp_user,
+				&p->start_time,
+				&p->cpu_usage,
+				p->name
+		);
+		
+		p->state = tmp_state[0];
+		strncpy(p->user, tmp_user, sizeof(p->user));
+		p->user[sizeof(p->user)-1] = '\0';
 
-	for(size_t i=0; i<limit; ++i) {
-
-		processus_t *proc = proc_array_emplace_back(array);
-
-		if (!proc) {
-			return MEMORY_ALLOCATION_FAILED;
+		if(strcmp(p->name, "ps") == 0) {	
+			--array->size;
 		}
 
-		err = ssh_get_all_infos(pid_list[i], proc, session);
-	   
-		if(err != SUCCESS) {
-			processus_t *last = proc_array_get_last(array);
-
-			// on écrase le proc mort avec le dernier proc de la liste
-			if (proc != last) {
-				*proc = *last;
-			}
-			// on retire le dernier proc
-			array->size--;
+		if(n < 8) {
+			--array->size;
+			return MALFORMED_STATUS_LINE;
 		}
+
+		line = strtok(NULL, "\n");
 	}
 
-	return ssh_get_global_stat(&array->cpu_tick, &array->boot_time, session);
-	
+	free(buffer);
+	return SUCCESS;
 }
 

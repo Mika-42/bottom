@@ -60,13 +60,16 @@ error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size,
 		while ((n = ssh_channel_read(channel, buffer + size, buffer_size - size - 1, 0)) > 0) {
 			size += n;
 			if (size >= buffer_size - 1) {
-				buffer[size - 1] = '\0';
-				goto cleanup;
+				size = buffer_size - 1;
+				break;
 			}
 		}
  
 		if (n < 0) {
-			goto cleanup;
+			ssh_channel_send_eof(channel);
+			ssh_channel_close(channel);
+			ssh_channel_free(channel);
+			return SSH_READ_FAILED;
 		}
  		
 		if (size > 0 && buffer[size - 1] == '\n')
@@ -74,13 +77,11 @@ error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size,
 		buffer[size] = '\0';
 	}
 
-cleanup:
-
 	ssh_channel_send_eof(channel);
 	ssh_channel_close(channel);
 	ssh_channel_free(channel);
 
-	return (n < 0 || (buffer && size >= buffer_size - 1)) ? SSH_READ_FAILED : SUCCESS;
+	return SUCCESS;
 }
 
 error_code_t ssh_dry_run(ssh_session session) {
