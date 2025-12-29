@@ -16,15 +16,10 @@ error_code_t ssh_get_user(processus_t *proc, ssh_session session) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 
-	char path[64];
-	char line[buf_max_size];
-	snprintf(path, sizeof(path), "%d/status", proc->pid);
-	
-	if(ssh_get_file(session, line, buf_max_size, path) != SSH_OK) {
-		return SSH_GET_FILE_FAILED;
-	}
+	char cmd[64];
+	snprintf(cmd, sizeof(cmd), "ps -p %d -o user=", proc->pid);
 
-	return stat_user_parser(proc, line);
+	return ssh_cmd_exec(session, proc->user, PROC_USERNAME_SIZE, cmd);
 }
 
 
@@ -138,5 +133,6 @@ error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 	}
 
 	return ssh_get_global_stat(&array->cpu_tick, &array->boot_time, session);
+	
 }
 

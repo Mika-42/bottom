@@ -14,11 +14,13 @@ typedef struct double_buffer_t {
 } double_buffer_t;
 
 typedef struct thread_args_t {
+	//unique
+	user_selection_t *selection;
+
+	//shared
 	double_buffer_t *array;
-	user_selection_t selection;
-	atomic_bool running;
-	bool exec_local;
-	ssh_session_array_t sessions;
+	ssh_session session;
+
 } thread_args_t;
 
 void *proc_task(void *arg);

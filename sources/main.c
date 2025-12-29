@@ -18,130 +18,100 @@ error_code_t flag_init(flag_t *flag) {
 	return SUCCESS;
 }
 
-error_code_t thread_args_init(thread_args_t *args) {
-
-	if (!args) {
-		return NULLPTR_PARAMETER_ERROR;
-	}
-
-	args->array = nullptr;
-	args->exec_local = false;
-	args->selection.selected = 0;
-	args->selection.machine_selected = 0;
-	args->selection.header_selected = 0;
-	args->selection.sort = ASC;
-	args->selection.mode = NORMAL;
-	args->selection.event = NOTHING;
-	args->selection.input[0] = '\0';
-	args->selection.input_length = 0;	
-	args->selection.max_machine = 0;	
-	args->selection.indices.data = nullptr;
-	args->selection.indices.size = 0;
-	args->selection.indices.capacity = 0;
-	atomic_store_explicit(&args->running, true, memory_order_release);
-	ssh_array_init(&args->sessions);
-	if (pthread_mutex_init(&args->selection.lock, nullptr) != 0) {
-		return MEMORY_ALLOCATION_FAILED;
-	}
-
-	return SUCCESS;
-}
-
-error_code_t machine_array_init(thread_args_t *args) {
+int main(int argc, char **argv) {
 	
-	if (!args) {
-		return NULLPTR_PARAMETER_ERROR;
-	}
-
-	args->array = calloc(args->selection.max_machine, sizeof(*args->array));
-	if (!args->array) {
-		return MEMORY_ALLOCATION_FAILED;
-	}
-
-	for (size_t i=0; i<args->selection.max_machine; ++i) {
-		proc_array_init(&args->array[i].buffer[0]);
-		proc_array_init(&args->array[i].buffer[1]);
-
-		atomic_store_explicit(&args->array[i].active, 0, memory_order_release);
-	}
-
-	return SUCCESS;
-}
-
-int main(int argc, char *argv[]) {	
+	user_selection_t selection = {
 	
+		.selected = 0,
+		.machine_selected = 0,
+		.header_selected = 0,
+		.sort = ASC,
+		.mode = NORMAL,
+		.event = NOTHING,
+		.input[0] = '\0',
+		.input_length = 0,
+		.indices = { 
+			.data = nullptr,
+			.size = 0,
+			.capacity = 0
+		}
+	};
+
 	pthread_t ui_thread;
-	pthread_t proc_thread;
-	pthread_t ssh_thread;
 	
-	flag_t flag;
-	flag_init(&flag);
+	thread_args_t *args;
+	double_buffer_t *array;   
 
-	thread_args_t args;
-	thread_args_init(&args);
+	pthread_t *worker_threads;
 
+	flag_t flag = {0};
     config_file_t cfg_file = {0};
-	error_code_t err = command_run(argc, argv, &flag, &args.sessions, &cfg_file);
+	
+	ssh_session_array_t sessions;
+	ssh_array_init(&sessions);
+	error_code_t err = command_run(argc, argv, &flag, &sessions, &cfg_file);
+	
 	if (err != SUCCESS) {
 		return err;
 	}
+	
+//	atomic_store_explicit(&args.running, true, memory_order_release);
 
-	args.exec_local = flag.exec_local;
-	args.selection.max_machine = args.sessions.size + flag.exec_local;
-	
-	err = machine_array_init(&args);
-	if (err != SUCCESS) {
-		release_data(&args);
-		return err;
+	if (pthread_mutex_init(&selection.lock, nullptr) != 0) {
+		return MEMORY_ALLOCATION_FAILED;
 	}
 	
-	if (flag.exec_local) {
-	  	if (pthread_create(&proc_thread, nullptr, proc_task, &args) != 0) {
-	    		atomic_store_explicit(&args.running, false, memory_order_release);
+	const size_t max_machine = sessions.size + (flag.exec_local ? 1 : 0);
+	selection.max_machine = max_machine;
+
+	args = calloc(max_machine, sizeof(thread_args_t));
+	worker_threads = calloc(max_machine, sizeof(pthread_t));
+	array = calloc(max_machine, sizeof(double_buffer_t));
+
+	for(size_t i = 0; i < max_machine; ++i) {
+		args[i].selection = &selection;
+		args[i].array = &array[i];
+//		args[i].session = i < sessions.size ? sessions.data[i] : nullptr;
+if (flag.exec_local) {
+    if (i == 0) {
+        args[i].session = nullptr; // machine locale
+    } else {
+        args[i].session = sessions.data[i - 1]; // SSH
+    }
+} else {
+    args[i].session = sessions.data[i];
+}
+	
+		if (pthread_create(&worker_threads[i], nullptr, proc_task, &args[i]) != 0) {
+//			atomic_store_explicit(&args.running, false, memory_order_release);
+			
+			for(size_t j=0; j<i; ++j) pthread_join(worker_threads[j], nullptr);
 
 			return THREAD_FAILED;
 		}
 	}
 
-	if(args.sessions.size != 0){	
-	  	if (pthread_create(&ssh_thread, nullptr, ssh_task, &args) != 0) {
-		atomic_store_explicit(&args.running, false, memory_order_release);
-	    
-		if (flag.exec_local) {
-			pthread_join(proc_thread, nullptr);
-		}
-
-			return THREAD_FAILED;
-		}
-	}
-	
 	//	run ui task
-	if (pthread_create(&ui_thread, nullptr, ui_task, &args) != 0) {
-		atomic_store_explicit(&args.running, false, memory_order_release);
-
-		if (flag.exec_local) {
-			pthread_join(proc_thread, nullptr);
-		}
+	if (pthread_create(&ui_thread, nullptr, ui_task, &args[0]) != 0) {
+//		atomic_store_explicit(&args.running, false, memory_order_release);
 	
-		if(args.sessions.size != 0){	
-			pthread_join(ssh_thread, nullptr);	
+		for(size_t i=0; i<max_machine; ++i){	
+			pthread_join(worker_threads[i], nullptr);	
 		}
 		return THREAD_FAILED;
 	}
 
 	pthread_join(ui_thread, nullptr);
-
-	if (flag.exec_local) {
-		pthread_join(proc_thread, nullptr);
-	}
 	
-	if(args.sessions.size != 0){	
-		pthread_join(ssh_thread, nullptr);	
+	for(size_t i=0; i<max_machine; ++i) {
+		pthread_join(worker_threads[i], nullptr);		
 	}
 
-release_data(&args); 
-	ssh_array_free(&args.sessions);
+	if (array) free(array);
 	
-	return err;
+	pthread_mutex_destroy(&selection.lock);
+	ui_index_array_free(&selection.indices);
+	ssh_array_free(&sessions);
+
+	return 0;
 }
-

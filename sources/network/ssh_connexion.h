@@ -6,7 +6,7 @@
 #include "processus.h"
 
 /**
- * @brief Permet de see déconnecter, fermer et liberer une session ssh
+ * @brief Permet de se déconnecter, fermer et liberer une session ssh
  *
  * @param session La session à finir
  */
@@ -82,6 +82,8 @@ error_code_t ssh_cont_processus(ssh_session session, int pid);
  * @return Un code d'erreur défini dans error.h
  */
 error_code_t ssh_restart_processus(ssh_session session, processus_t *p);
+
+error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd);
 
 /**
  * @brief Récupère dans un buffer de taille fixe le contenue d'un fichier de /proc/ d'une machine distante

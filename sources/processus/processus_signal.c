@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 
 #include "processus_signal.h"
 

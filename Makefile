@@ -18,8 +18,7 @@ C_FILES := $(SOURCES_WITH_HEADER:.h=.c)
 
 DEBUG_FLAG := -g -Og
 RELEASE_FLAG := -DNDEBUG -O2
-FLAGS := -Wall -Wextra -Werror -Wpedantic -Werror=unused-result -lncursesw -lssh -std=gnu23
-
+FLAGS := -Wall -Wextra -Werror -Wpedantic -Werror=unused-result -lncursesw -lssh -std=gnu23 -D_GNU_SOURCE -lpthread
 
 MAKEFLAGS += --no-print-directory
 

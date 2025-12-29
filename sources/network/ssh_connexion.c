@@ -184,7 +184,10 @@ error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_
         }
 
         ptr = end;  // avancer le pointeur après le nombre
-    }
+		
+		while (*ptr && *ptr != '\n') ptr++;
+			if (*ptr == '\n') ptr++;
+		}
 
 	return SUCCESS;
 }
