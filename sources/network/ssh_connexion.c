@@ -115,25 +115,9 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
 }
 
 error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
-	char cmd[16384];
-	size_t off = 0;
+	char cmd[256];
 
-	off += snprintf(cmd + off, sizeof(cmd) - off, "pkill -TERM -P %d; kill -TERM %d; sleep 1; pkill -KILL -P %d; kill -KILL %d; ", p->pid, p->pid, p->pid, p->pid);
-
-	off += snprintf(cmd + off, sizeof(cmd) - off, "env -i ");
-	
-	for (size_t i=0; i<PROC_CMD_COUNT && p->env[i][0]; ++i) {
-		off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->env[i]);
-	}
-
-	off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->executable);
-
-	for (size_t i=0; i<PROC_CMD_COUNT && p->cmdline[i][0]; ++i) {
-		off += snprintf(cmd + off, sizeof(cmd) - off, "%s ", p->cmdline[i]);
-	}
-	
-	off += snprintf(cmd + off, sizeof(cmd) - off, "&");
-
+	snprintf(cmd, sizeof(cmd),"PID=%d; CMDLINE=\"$(tr '\\0' ' ' </proc/$PID/cmdline)\"; CWD=\"$(readlink /proc/$PID/cwd)\"; kill -TERM \"$PID\"; (cd \"$CWD\" || exit 1; exec $CMDLINE) &", p->pid);
 	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
 
