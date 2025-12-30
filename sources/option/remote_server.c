@@ -8,7 +8,7 @@ error_code_t srv_str_duplicate(char *dest, char *src) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 
-    size_t len = strnlen(src, field_size);
+    size_t len = strnlen(src, field_size - 1);
 
 	if (len >= field_size) {
 		return BUFFER_TOO_LONG;

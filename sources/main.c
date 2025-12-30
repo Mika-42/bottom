@@ -90,8 +90,11 @@ int main(int argc, char **argv) {
 			const int shift = flag.exec_local ? 1 : 0;
 
 			if(cfg_file.data[i - shift].name[0] != '\0') {
-				strncpy(machine_name, cfg_file.data[i - shift].name, 32);
-				machine_name[31] = '\0';
+				char tmp[32];
+				strncpy(tmp, cfg_file.data[i - shift].name, sizeof(tmp) - 1);
+				tmp[sizeof(tmp) - 1] = '\0';
+
+				snprintf(machine_name, 32, "%s", tmp);
 
 			} else {
 
