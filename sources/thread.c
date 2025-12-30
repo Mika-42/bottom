@@ -46,7 +46,7 @@ void *manager_task(void *arg) {
 
     if (curr >= proc_list->size) {
       pthread_mutex_unlock(&s->lock);
-  //    nanosleep(&proc_thread_time_interval, nullptr);
+      nanosleep(&proc_thread_time_interval, nullptr);
       continue;
     }
     processus_t *curr_el = &proc_list->data[curr];
