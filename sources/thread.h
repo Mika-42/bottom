@@ -20,7 +20,7 @@ typedef struct thread_args_t {
 	//shared
 	double_buffer_t *array;
 	ssh_session session;
-
+	char machine_name[32];
 } thread_args_t;
 
 void *proc_task(void *arg);

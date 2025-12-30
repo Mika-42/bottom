@@ -10,10 +10,16 @@ void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui
 		s->mode = HELP;
 	} else if (ch == KEY_F(2) && s->machine_selected != 0) {
 		--s->machine_selected;
-		s->selected = 0;
+		if (s->selected>array[s->machine_selected].size) {
+			s->selected = array[s->machine_selected].size - 1;
+		}
+
 	} else if (ch == KEY_F(3) && s->machine_selected < s->max_machine - 1) {
 		++s->machine_selected;
-		s->selected = 0;
+		if (s->selected>array[s->machine_selected].size) {
+			s->selected = array[s->machine_selected].size - 1;
+		}
+
 	} else if (ch == KEY_F(4)) { 
 		s->mode = SEARCH;
 		ui_utils_reset_input_buffer(s);
@@ -30,7 +36,7 @@ void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui
 	} else if (ch == KEY_DOWN && s->selected < array[s->machine_selected].size - 1) {
 		++s->selected;
 	}
-
+	
 	ui_event_dispatcher_sort(ch, s);
 	ui_show_array(ui->footer, proc_array_function_command);
 	ui_show_header(s->header_selected, ui, s->sort);

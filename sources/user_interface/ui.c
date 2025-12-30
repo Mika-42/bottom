@@ -34,13 +34,11 @@ void ui_deinit(ui_t *ui) {
 	delwin(ui->header);
 }
 
-void ui_update(ui_t *ui, const size_t size, const char *machine_name) {
+void ui_update(ui_t *ui, const size_t size) {
 	int terminal_width = 0;
 	int terminal_height = 0;
 
 	getmaxyx(stdscr, terminal_height, terminal_width);
-
-	mvwprintw(ui->header, 1, 0, proc_array_tab_header[1], machine_name);
 
 	const int view_height = terminal_height - ui_header_lines - ui_footer_lines;
 

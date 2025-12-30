@@ -181,6 +181,9 @@ void *ui_task(void *arg) {
 				ui_event_dispatcher_normal(proc_list, ch, &ui, s);
 			}
 
+			//update header
+			mvwprintw(ui.header, 1, 0, proc_array_tab_header[1], args[s->machine_selected].machine_name, proc_list->size);
+
 			// non-bloking delay 200ms
 			struct timespec now;
 			clock_gettime(CLOCK_MONOTONIC, &now);
@@ -201,13 +204,13 @@ void *ui_task(void *arg) {
 			select = s->selected;
 		}
 
-		pthread_mutex_unlock(&s->lock);
 		
 		const int scroll_factor = ui_event_dispatcher_global(ch);
 
 		ui_scroll(&ui, scroll_factor, select);
 
-		ui_update(&ui, proc_list->size, s->machine_selected == 0 ? "local" : "distant");
+		ui_update(&ui, proc_list->size);
+		pthread_mutex_unlock(&s->lock);
 
 
 		nanosleep(&ui_thread_time_interval, nullptr);
