@@ -78,6 +78,7 @@ error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size,
 	}
 
 	ssh_channel_send_eof(channel);
+
 	ssh_channel_close(channel);
 	ssh_channel_free(channel);
 

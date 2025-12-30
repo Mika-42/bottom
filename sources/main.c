@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
 	};
 
 	pthread_t ui_thread;
+	pthread_t manager_thread;
 
 	thread_args_t *args;
 	double_buffer_t *array;   
@@ -55,8 +56,6 @@ int main(int argc, char **argv) {
 	if (err != SUCCESS) {
 		return err;
 	}
-
-	//	atomic_store_explicit(&args.running, true, memory_order_release);
 
 	if (pthread_mutex_init(&selection.lock, nullptr) != 0) {
 		return MEMORY_ALLOCATION_FAILED;
@@ -117,8 +116,8 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	//	run ui task
-	if (pthread_create(&ui_thread, nullptr, ui_task, &args[0]) != 0) {
+	//	manager ui task
+	if (pthread_create(&manager_thread, nullptr, manager_task, &args[0]) != 0) {
 
 		for(size_t i=0; i<max_machine; ++i){	
 			pthread_join(worker_threads[i], nullptr);	
@@ -126,8 +125,21 @@ int main(int argc, char **argv) {
 		return THREAD_FAILED;
 	}
 
+	//	run ui task
+	if (pthread_create(&ui_thread, nullptr, ui_task, &args[0]) != 0) {
+
+		for(size_t i=0; i<max_machine; ++i){	
+			pthread_join(worker_threads[i], nullptr);	
+		}
+
+		pthread_join(manager_thread, nullptr);
+
+		return THREAD_FAILED;
+	}
+	
 	pthread_join(ui_thread, nullptr);
 
+	pthread_join(manager_thread, nullptr);
 	for(size_t i=0; i<max_machine; ++i) {
 		pthread_join(worker_threads[i], nullptr);		
 	}
