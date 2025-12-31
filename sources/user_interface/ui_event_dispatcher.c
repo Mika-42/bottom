@@ -6,6 +6,10 @@
 
 void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui_t *ui, user_selection_t *s) {
 
+	if (!array || !ui || !s) {
+		return;
+	}
+
 	if (array->size != 0 && s->selected>=array->size) {
 		s->selected = array->size - 1;
 	}
@@ -39,15 +43,21 @@ void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui
 }
 
 void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
-
+	
+	if (ui) {
 	if (ch == KEY_F(1)) {
 		s->mode = NORMAL;
 	}
 
 	show_help_page(ui);
+	}
 }
 
 void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
+
+	if (!ui || !s) {
+		return;
+	}
 
 	ui_utils_clamp_size_t(&s->selected, 0, s->indices.size > 0 ? s->indices.size - 1 : 0);
 
@@ -84,6 +94,11 @@ void ui_event_dispatcher_search(const int ch, ui_t *ui, user_selection_t *s) {
 }
 
 void ui_event_dispatcher_sort(const int ch, user_selection_t *s) {
+	
+	if (!s) {
+		return;
+	}
+
 	if (ch == '\t') { 
 		s->header_selected = (s->header_selected + 1) % header_element_count;
 	} else if (ch == '\n') {
