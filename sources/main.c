@@ -147,6 +147,7 @@ int main(int argc, char **argv) {
 		pthread_join(worker_threads[i], nullptr);		
 	}
 
+	// free datas
 	if (array) free(array);
 	if (args) free(args);
 	if (worker_threads) free(worker_threads);

@@ -27,6 +27,4 @@ void *proc_task(void *arg);
 void *ui_task(void *arg);
 void *manager_task(void *arg);
 
-void release_data(thread_args_t *args);
-
 #endif /* THREAD_H */

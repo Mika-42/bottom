@@ -45,4 +45,3 @@ const char* err_to_str(const error_code_t err) {
 	default: return "UNKNOWN_ERROR";
     }
 }
-
