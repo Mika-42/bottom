@@ -65,7 +65,7 @@ bool cfg_is_dot_config(const char *path) {
 
 error_code_t cfg_is_600(const char *path) {
 	
-	if(!path) {
+	if (!path) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 
@@ -81,7 +81,7 @@ error_code_t cfg_is_600(const char *path) {
 
 error_code_t cfg_parse(config_file_t *file, const char *path) {
   
-	if(!file || !path) {
+	if (!file || !path) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 

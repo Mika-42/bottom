@@ -39,7 +39,9 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 }
 
 error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd) {
-	if(!session || !cmd) return NULLPTR_PARAMETER_ERROR;
+	if (!session || !cmd) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
 	ssh_channel channel = ssh_channel_new(session);
 	if (!channel) {
@@ -76,9 +78,10 @@ error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size,
 			ssh_channel_free(channel);
 			return SSH_READ_FAILED;
 		}
- 		
-		if (size > 0 && buffer[size - 1] == '\n')
+
+		if (size > 0 && buffer[size - 1] == '\n') {
 			size--;
+		}
 		buffer[size] = '\0';
 	}
 
@@ -122,6 +125,6 @@ error_code_t ssh_cont_processus(ssh_session session, int pid) {
 error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 	char cmd[256];
 
-	snprintf(cmd, sizeof(cmd),"PID=%d; CMDLINE=\"$(tr '\\0' ' ' </proc/$PID/cmdline)\"; CWD=\"$(readlink /proc/$PID/cwd)\"; kill -TERM \"$PID\"; (cd \"$CWD\" || exit 1; exec $CMDLINE) &", p->pid);
+	snprintf(cmd, sizeof(cmd), "PID=%d; CMDLINE=\"$(tr '\\0' ' ' </proc/$PID/cmdline)\"; CWD=\"$(readlink /proc/$PID/cwd)\"; kill -TERM \"$PID\"; (cd \"$CWD\" || exit 1; exec $CMDLINE) &", p->pid);
 	return ssh_cmd_exec(session, nullptr, 0, cmd);
 }
