@@ -13,6 +13,10 @@ void ssh_end_session(ssh_session session) {
 
 ssh_session ssh_connexion_init(const char *host, int port, const char *user, const char *password) {
 
+	if (!host || !user || !password) {
+		return nullptr;
+	}
+
 	ssh_session session = ssh_new();
 	if (session == nullptr) {
 		return nullptr;
@@ -120,61 +124,4 @@ error_code_t ssh_restart_processus(ssh_session session, processus_t *p) {
 
 	snprintf(cmd, sizeof(cmd),"PID=%d; CMDLINE=\"$(tr '\\0' ' ' </proc/$PID/cmdline)\"; CWD=\"$(readlink /proc/$PID/cwd)\"; kill -TERM \"$PID\"; (cd \"$CWD\" || exit 1; exec $CMDLINE) &", p->pid);
 	return ssh_cmd_exec(session, nullptr, 0, cmd);
-}
-
-error_code_t ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file) {
-	for (const char *p = file; *p; ++p) {
-    		if (!((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || *p == '/' || *p == '_')) {
-			return INVALID_ARGUMENT;
-		}
-	}
-
-	char cmd[128];
-	snprintf(cmd, sizeof(cmd), "cat /proc/%s", file);
-	
-	return ssh_cmd_exec(session, buffer, buffer_size, cmd);
-}
-
-error_code_t ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, processus_t *p) {
-	char cmd[128];
-	snprintf(cmd, sizeof(cmd), "readlink /proc/%d/exe", p->pid);
-	
-	return ssh_cmd_exec(session, buffer, buffer_size, cmd);
-}
-
-error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_list, size_t *count) {
-	
-	if (!pid_list || !count) return NULLPTR_PARAMETER_ERROR;
-	
-	char ls_output[8192];
-
-	error_code_t err = ssh_cmd_exec(session, ls_output, sizeof(ls_output), "ls /proc/ | grep -E '^[0-9]+$'");
-	
-	if (err != SUCCESS) {
-		return err;
-	}
-
-	*count = 0;
-	char *ptr = ls_output;
-	
-    while (*ptr && *count < size_list) {
-        // Passer les espaces et retours à la ligne
-        while (*ptr && isspace((unsigned char)*ptr)) ptr++;
-        if (!*ptr) break;
-
-        char *end;
-        long val = strtol(ptr, &end, 10);
-
-        if (end != ptr) {  // Si un nombre a été trouvé
-            pid_list[*count] = (pid_t)val;
-            (*count)++;
-        }
-
-        ptr = end;  // avancer le pointeur après le nombre
-		
-		while (*ptr && *ptr != '\n') ptr++;
-			if (*ptr == '\n') ptr++;
-		}
-
-	return SUCCESS;
 }

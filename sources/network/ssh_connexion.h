@@ -83,42 +83,7 @@ error_code_t ssh_cont_processus(ssh_session session, int pid);
  */
 error_code_t ssh_restart_processus(ssh_session session, processus_t *p);
 
+/*TODO : doc */
 error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd);
-
-/**
- * @brief Récupère dans un buffer de taille fixe le contenue d'un fichier de /proc/ d'une machine distante
- *
- * @param session La session ssh utilisé pour la communication
- * @param buffer Le buffer de taille fixe dans lequel sera écrit le contenue du fichier
- * @param buffer_size La taille fixe maximum du buffer
- * @param file Le fichier qui contient ce que le buffer doit contenir en sortie
- * 
- * @return Un code d'erreur défini dans error.h
- */
-error_code_t ssh_get_file(ssh_session session, char *buffer, size_t buffer_size, const char *file);
-
-/**
- * @brief Récupère dans un buffer de taille fixe l'executable d'un processus
- *
- * @param session La session ssh utilisé pour la communication
- * @param buffer Le buffer de taille fixe dans lequel sera écrit l'executable du processus donné
- * @param buffer_size La taille fixe maximum du buffer
- * @param p La structure processus_t du processus pour qui on cherche l'executable
- *
- * @return Un code d'erreur défini dans error.h
- */
-error_code_t ssh_get_exe(ssh_session session, char *buffer, size_t buffer_size, processus_t *p);
-
-/**
- * @brief Met dans une liste de pid_t, tous les pids d'une machine distant et dans count, le nombre de pid entré dans la liste
- *
- * @param session La session ssh utilisé pour la communication
- * @param pid_list La liste de type pid_t de taille fixe dans laquelle sera entré tout les pid de la machine distant (si la taille est suffisante)
- * @param size_list La taille fixe maximum de la liste de pid
- * @param count Un entier dans lequel sera écrit le nombre de pid qui ont été entré dans la liste de pid
- *
- * @return Un code d'erreur défini dans error.h
- */
-error_code_t ssh_get_pid_list(ssh_session session, pid_t *pid_list, size_t size_list, size_t *count);
 
 #endif //SSH_CONNEXION
