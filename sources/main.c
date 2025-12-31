@@ -68,28 +68,28 @@ int main(int argc, char **argv) {
 	worker_threads = calloc(max_machine, sizeof(pthread_t));
 	array = calloc(max_machine, sizeof(double_buffer_t));
 
-	for(size_t i = 0; i < max_machine; ++i) {
+	for (size_t i=0; i < max_machine; ++i) {
 		args[i].selection = &selection;
 		args[i].array = &array[i];
 
 		char *machine_name = args[i].machine_name;
-			if (flag.exec_local) {
-				if (i == 0) {
-					args[i].session = nullptr; // machine locale
-					strncpy(machine_name, "localhost", 32);
-					machine_name[31] = '\0';
+		if (flag.exec_local) {
+			if (i == 0) {
+				args[i].session = nullptr; // machine locale
+				strncpy(machine_name, "localhost", 32);
+				machine_name[31] = '\0';
 
-				} else {
-					args[i].session = sessions.data[i - 1]; // SSH
-				}
 			} else {
-				args[i].session = sessions.data[i];
+				args[i].session = sessions.data[i - 1]; // SSH
 			}
+		} else {
+			args[i].session = sessions.data[i];
+		}
 
-		if(args[i].session) {
+		if (args[i].session) {
 			const int shift = flag.exec_local ? 1 : 0;
 
-			if(cfg_file.data[i - shift].name[0] != '\0') {
+			if (cfg_file.data[i - shift].name[0] != '\0') {
 				char tmp[32];
 				strncpy(tmp, cfg_file.data[i - shift].name, sizeof(tmp) - 1);
 				tmp[sizeof(tmp) - 1] = '\0';
@@ -113,8 +113,9 @@ int main(int argc, char **argv) {
 
 		if (pthread_create(&worker_threads[i], nullptr, proc_task, &args[i]) != 0) {
 
-			for(size_t j=0; j<i; ++j) pthread_join(worker_threads[j], nullptr);
-
+			for (size_t j=0; j<i; ++j) {
+				pthread_join(worker_threads[j], nullptr);
+			}
 			return THREAD_FAILED;
 		}
 	}
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
 	//	manager ui task
 	if (pthread_create(&manager_thread, nullptr, manager_task, &args[0]) != 0) {
 
-		for(size_t i=0; i<max_machine; ++i){	
+		for (size_t i=0; i<max_machine; ++i){	
 			pthread_join(worker_threads[i], nullptr);	
 		}
 		return THREAD_FAILED;
@@ -131,7 +132,7 @@ int main(int argc, char **argv) {
 	//	run ui task
 	if (pthread_create(&ui_thread, nullptr, ui_task, &args[0]) != 0) {
 
-		for(size_t i=0; i<max_machine; ++i){	
+		for (size_t i=0; i<max_machine; ++i){	
 			pthread_join(worker_threads[i], nullptr);	
 		}
 
@@ -143,14 +144,20 @@ int main(int argc, char **argv) {
 	pthread_join(ui_thread, nullptr);
 
 	pthread_join(manager_thread, nullptr);
-	for(size_t i=0; i<max_machine; ++i) {
+	for (size_t i=0; i<max_machine; ++i) {
 		pthread_join(worker_threads[i], nullptr);		
 	}
 
 	// free datas
-	if (array) free(array);
-	if (args) free(args);
-	if (worker_threads) free(worker_threads);
+	if (array) {
+		free(array);
+	}
+	if (args) {
+		free(args);
+	}
+	if (worker_threads) {
+		free(worker_threads);
+	}
 
 	pthread_mutex_destroy(&selection.lock);
 	ui_index_array_free(&selection.indices);
