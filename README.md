@@ -22,6 +22,24 @@ arch-linux
 | clean              | Supprime build/                                                                                |
 | clean-debug        | Supprime build-unit-test/                                                                      |
 
+## Options du programme
+
+Le programme dispose de plusieurs options :
+| Options courtes | Options longues | Description |
+|:-----|:-------------------|---------------------------------------------------------------------------|
+| `-h` | `--help`           | affiche l'aide du programme ainsi que la syntaxe d'exécution du programme |
+|      | `--dry-run`        | test l'accès à la liste des processus sur la machine locale et/ou distante sans les afficher |
+| `-c` | `--remote-config`  | spécifie le chemin vers le fichier de configuration contenant les informations de connexion sur les machines distantes |
+| `-t` | `--connexion-type` | spécifie le type de connexion à utiliser pour la connexion sur les machines distantes (ssh, telnet) |
+| `-P` | `--port`           | spécifie le port à utiliser pour le type de connexion choisi. Si cette option n'est pas spécifié, alor le port par défaut du type de connexion est choisi |
+| `-l` | `--login`          | spécifie l'identifiant de connexion et la machine distante. Ex : `--login user@remote_server`. `remote_server` est soit l'IP ou le nom DNS de la machine distante |
+| `-s` | `--remote-server`  | spécifie le nom DNS ou l'IP de la machine distante |
+| `-u` | `--username`       | spécifie le nom de l'utilisateur à utiliser pour la connexion |
+| `-p` | `--password`       | spécifie le mot de passe à utiliser pour la connexion |
+| `-a` | `--all`            | spécifie au programme de collecter à la fois la liste des processus sur la machine local et les machines distantes. S'utilise uniquement si l'option `-c` ou `-s` est utilisé. |
+
+**NB** : Lorsqu'aucune option n'est spécifiée, alors le programme affiche uniquement les processus de la machine locale (*la machine sur laquelle le programme est exécuté*).
+
 ## Contexte
 
 le projet consiste à concevoir un **programme de gestion de processus pour systèmes Linux**, capable de fonctionner aussi bien **en local que sur des hôtes distants**. L’objectif est de fournir une interface interactive, inspirée de l’outil `htop`, permettant : 
@@ -29,30 +47,6 @@ le projet consiste à concevoir un **programme de gestion de processus pour syst
 - de visualiser des informations détaillées (PID, utilisateur, consommation CPU/mémoire, temps d’exécution, etc.), 
 - et d’interagir directement avec les processus (mise en pause, arrêt, reprise, redémarrage).
 L’outil reposera sur des mécanismes standards de communication et d’administration à distance (SSH, etc.), compatibilité avec les principales distributions Linux.
-
-
-## Architecture
-
-- **manager** : Implémente les fonctionnalités pour orchestration de tous les modules
-- **process** : Implémente les fonctionnalités de gestion de processus sur une machine linux
-- **network** : Implémente les fonctionnalités de communication réseau en permettant l'envoi de données à un serveur distant et la réception de données à partir d'un port spécifié. Les protocoles ssh et telnet sont implémentés pour la communication
-- **ui** : Implémente les fonctionnalités de gestion de l'affichage pour l'utilisateur (affichage des processus, gestion des événements claviers, etc.). 
-
-## Options du programme
-
-Le programme dispose de plusieurs options :
-- `-h` ou `--help` : affiche l'aide du programme ainsi que la syntaxe d'exécution du programme
-- `--dry-run` : test l'accès à la liste des processus sur la machine locale et/ou distante sans les afficher
-- `-c` ou `--remote-config` : spécifie le chemin vers le fichier de configuration contenant les informations de connexion sur les machines distantes
-- `-t` ou `--connexion-type` : spécifie le type de connexion à utiliser pour la connexion sur les machines distantes (ssh, telnet)
-- `-P` ou `--port` : spécifie le port à utiliser pour le type de connexion choisi. Si cette option n'est pas spécifié, alor le port par défaut du type de connexion est choisi
-- `-l` ou `--login` : spécifie l'identifiant de connexion et la machine distante. Ex : `--login user@remote_server`. `remote_server` est soit l'IP ou le nom DNS de la machine distante
-- `-s` ou `--remote-server` : spécifie le nom DNS ou l'IP de la machine distante
-- `-u` ou `--username` : spécifie le nom de l'utilisateur à utiliser pour la connexion
-- `-p` ou `--password` : spécifie le mot de passe à utiliser pour la connexion
-- `-a` ou `--all` : spécifie au programme de collecter à la fois la liste des processus sur la machine local et les machines distantes. S'utilise uniquement si l'option `-c` ou `-s` est utilisé.
-
-**NB** : Lorsqu'aucune option n'est spécifiée, alors le programme affiche uniquement les processus de la machine locale (*la machine sur laquelle le programme est exécuté*).
 
 ### L'option `-c` ou `--remote-config` 
 
