@@ -86,6 +86,9 @@ error_code_t srv_str_split_at(char *dest_lhs, char *dest_rhs, char *src) {
 }
 
 bool srv_str_is_empty(char *str) {
+	if (!str) { 
+		return false;
+	}
 	return *str == '\0';
 }
 
