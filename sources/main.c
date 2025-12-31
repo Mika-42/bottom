@@ -148,6 +148,8 @@ int main(int argc, char **argv) {
 	}
 
 	if (array) free(array);
+	if (args) free(args);
+	if (worker_threads) free(worker_threads);
 
 	pthread_mutex_destroy(&selection.lock);
 	ui_index_array_free(&selection.indices);

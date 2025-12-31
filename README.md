@@ -24,7 +24,6 @@ arch-linux
 
 ## Options du programme
 
-Le programme dispose de plusieurs options :
 | Options courtes | Options longues | Description |
 |:-----|:-------------------|---------------------------------------------------------------------------|
 | `-h` | `--help`           | affiche l'aide du programme ainsi que la syntaxe d'exécution du programme |
@@ -39,6 +38,24 @@ Le programme dispose de plusieurs options :
 | `-a` | `--all`            | spécifie au programme de collecter à la fois la liste des processus sur la machine local et les machines distantes. S'utilise uniquement si l'option `-c` ou `-s` est utilisé. |
 
 **NB** : Lorsqu'aucune option n'est spécifiée, alors le programme affiche uniquement les processus de la machine locale (*la machine sur laquelle le programme est exécuté*).
+
+## Vérification de la mémoire
+```bash
+make debug && valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --fair-sched=yes --suppressions=/usr/lib/valgrind/default.supp ./build/bottom
+```
+
+**Sortie**
+
+```
+==38990== LEAK SUMMARY:
+==38990==    definitely lost: 0 bytes in 0 blocks
+==38990==    indirectly lost: 0 bytes in 0 blocks
+==38990==      possibly lost: 603 bytes in 9 blocks
+==38990==    still reachable: 647,581 bytes in 443 blocks
+==38990==         suppressed: 0 bytes in 0 blocks
+==38990== 
+==38990== ERROR SUMMARY: 9 errors from 9 contexts (suppressed: 0 from 0)
+```
 
 ## Contexte
 
