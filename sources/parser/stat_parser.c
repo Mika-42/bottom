@@ -6,7 +6,9 @@
 
 error_code_t stat_stat_parser(processus_t *proc, char *line) {
 	
-	if(!proc || !line) return NULLPTR_PARAMETER_ERROR;
+	if (!proc || !line) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
 	char *lparen = strchr(line, '(');
 	char *rparen = strrchr(line, ')');
@@ -53,10 +55,14 @@ error_code_t stat_stat_parser(processus_t *proc, char *line) {
 
 error_code_t stat_global_stat_parser(long *cpu_total, time_t *boot_time, char *line) {
 	
-	if(!cpu_total || !boot_time || !line) return NULLPTR_PARAMETER_ERROR;
+	if (!cpu_total || !boot_time || !line) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
 
 	const char *cpu_line = strstr(line, "cpu ");
-    if (!cpu_line) return CPU_NOT_FOUND;
+    if (!cpu_line) {
+		return CPU_NOT_FOUND;
+	}
 
 	long user, nice, system, idle, iowait, irq, softirq;
 
@@ -66,12 +72,16 @@ error_code_t stat_global_stat_parser(long *cpu_total, time_t *boot_time, char *l
 			&user, &nice, &system, &idle, &iowait, &irq, &softirq
 	);
 
-	if (n < 7) return MALFORMED_STATUS_LINE;
+	if (n < 7) {
+		return MALFORMED_STATUS_LINE;
+	}
 
 	*cpu_total = user + nice + system + idle + iowait + irq + softirq;
 
 	const char *btime_line = strstr(line, "btime ");
-    if (!btime_line) return BTIME_NOT_FOUND;
+    if (!btime_line) {
+		return BTIME_NOT_FOUND;
+	}
 
 	long bt;
 	if (sscanf(btime_line, "btime %ld", &bt) != 1) {
@@ -85,13 +95,19 @@ error_code_t stat_global_stat_parser(long *cpu_total, time_t *boot_time, char *l
 
 error_code_t stat_user_parser(processus_t *proc, char *line) {
 	
-	if(!proc || !line) return NULLPTR_PARAMETER_ERROR;
-	
+	if (!proc || !line) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
 	char *p = strstr(line, "Uid:");
-    if (!p) return UID_NOT_FOUND;
-	
+    if (!p) {
+		return UID_NOT_FOUND;
+	}
+
 	uid_t uid = -1;
-     if (sscanf(p, "Uid:%u", &uid) != 1) return MALFORMED_STATUS_LINE;
+    if (sscanf(p, "Uid:%u", &uid) != 1) {
+		return MALFORMED_STATUS_LINE;
+	}
 
 	struct passwd *user_info = getpwuid(uid);  
 
@@ -119,14 +135,14 @@ error_code_t stat_null_separated_parser(char *buffer, size_t size, char out[][PR
 		}
 		
 		size_t start = i;
-		while (i < size && buffer[i] != '\0')
+		while (i < size && buffer[i] != '\0') {
             ++i;
-
+        }
 		size_t len = i - start;
 
-		if (len >= PROC_CMD_LEN)
+		if (len >= PROC_CMD_LEN) {
 			len = PROC_CMD_LEN - 1;
-
+		}
 		memcpy(out[count], buffer + start, len);
 		out[count][len] = '\0';
 
