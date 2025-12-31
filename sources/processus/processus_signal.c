@@ -1,6 +1,4 @@
-
 #include "processus_signal.h"
-
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -94,14 +92,15 @@ error_code_t proc_restart(processus_t *p) {
 
 	if (p->ppid == getpid()) {
 		if (waitpid(p->pid, nullptr, 0) < 0) {
-			if(errno == ECHILD) {
+			if (errno == ECHILD) {
 				err = wait_for_exit_with_timeout(p->pid, 5'000);
 
 				if (err != SUCCESS) {
 					return err;
 				}
+			} else {
+				return GENERIC_ERROR;
 			}
-			else return GENERIC_ERROR;
 		}
 	} else {
 				err = wait_for_exit_with_timeout(p->pid, 5'000);

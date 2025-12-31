@@ -55,7 +55,7 @@ void proc_array_free(processus_array_t *array) {
 }
 
 void proc_array_reset(processus_array_t *array) {
-	if(array) {
+	if (array) {
 		array->size = 0;
 	}
 }
