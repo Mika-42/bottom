@@ -59,7 +59,7 @@ error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 			return MALFORMED_STATUS_LINE;
 		}
 
-		line = strtok(NULL, "\n");
+		line = strtok(nullptr, "\n");
 	}
 
 	free(buffer);

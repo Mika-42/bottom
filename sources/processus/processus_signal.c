@@ -37,7 +37,7 @@ error_code_t send_signal(processus_t *p, int sig) {
     if (pidfd < 0) {
         return SEND_SIGNAL_PIDFD_OPEN_FAILED;
     }
-    int ret = syscall(SYS_pidfd_send_signal, pidfd, sig, NULL, 0);
+    int ret = syscall(SYS_pidfd_send_signal, pidfd, sig, nullptr, 0);
     close(pidfd);
 
     if (ret < 0) {
@@ -178,7 +178,7 @@ error_code_t kill_children(processus_t *p) {
 		}
 		processus_t proc = {.pid = child};
 		if (kill_children(&proc) == SUCCESS) {
-			syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, NULL, 0);
+			syscall(SYS_pidfd_send_signal, pidfd, SIGKILL, nullptr, 0);
 		}
 		close(pidfd);
 	}
