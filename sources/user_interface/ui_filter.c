@@ -2,6 +2,11 @@
 #include <string.h>
 
 error_code_t ui_filter_proc(const processus_array_t *array, user_selection_t *s) {
+	
+	if(!array || !s) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
 	ui_index_array_reset(&s->indices);
 
 	for (size_t i=0; i<array->size; ++i) {
