@@ -8,8 +8,8 @@
 #include "ssh_session_array.h"
 
 void opt_print_help();
-error_code_t opt_ask_user(const char *field_name, char *dest);
-error_code_t opt_dry_run(const config_file_t *file);
-error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array);
+[[nodiscard]] error_code_t opt_ask_user(const char *field_name, char *dest);
+[[nodiscard]] error_code_t opt_dry_run(const config_file_t *file);
+[[nodiscard]] error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array);
 
 #endif /* OPTION_H */
