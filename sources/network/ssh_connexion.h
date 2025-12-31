@@ -84,6 +84,6 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
 [[maybe_unused]] error_code_t ssh_restart_processus(ssh_session session, processus_t *p);
 
 /*TODO : doc */
-error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd);
+[[maybe_unused]] error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd);
 
 #endif //SSH_CONNEXION

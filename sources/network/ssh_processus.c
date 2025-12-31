@@ -11,7 +11,7 @@
 
 error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 
-	if (!array) {
+	if (!array || !session) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 	
@@ -65,4 +65,3 @@ error_code_t ssh_array_update(processus_array_t *array, ssh_session session) {
 	free(buffer);
 	return SUCCESS;
 }
-
