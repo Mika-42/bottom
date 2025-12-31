@@ -64,7 +64,12 @@ bool cfg_is_dot_config(const char *path) {
 }
 
 error_code_t cfg_is_600(const char *path) {
-  struct stat st;
+	
+	if(!path) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
+	struct stat st;
   if (stat(path, &st) != 0) {
     return FILE_DOES_NOT_EXIST;
   }
@@ -75,7 +80,12 @@ error_code_t cfg_is_600(const char *path) {
 }
 
 error_code_t cfg_parse(config_file_t *file, const char *path) {
-  // open
+  
+	if(!file || !path) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
+	// open
   if (!cfg_is_dot_config(path)) {
     return DOT_CONFIG_NOT_FOUND;
   }

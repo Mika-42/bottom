@@ -15,11 +15,11 @@ typedef struct config_file_t {
 
 void cfg_init(config_file_t *file);
 void cfg_free(config_file_t *file);
-remote_server_t *cfg_add_server(config_file_t *file, remote_server_t *server);
+[[maybe_unused]] remote_server_t *cfg_add_server(config_file_t *file, remote_server_t *server);
 
-bool cfg_is_dot_config(const char *path);
-error_code_t cfg_is_600(const char *path);
+[[nodiscard]] bool cfg_is_dot_config(const char *path);
+[[nodiscard]] error_code_t cfg_is_600(const char *path);
 
-error_code_t cfg_parse(config_file_t *file, const char *path);
+[[nodiscard]] error_code_t cfg_parse(config_file_t *file, const char *path);
 
 #endif /* CONFIG_FILE_H */
