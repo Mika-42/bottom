@@ -13,6 +13,10 @@
 
 
 void ui_init(ui_t *ui) {
+	if(!ui) {
+		return;
+	}
+
 	setlocale(LC_ALL, "");
 	initscr();
 	noecho();
@@ -28,6 +32,9 @@ void ui_init(ui_t *ui) {
 }
 
 void ui_deinit(ui_t *ui) {
+	if(!ui) {
+		return;
+	}
 	endwin();
 	delwin(ui->pad);
 	delwin(ui->footer);
@@ -35,6 +42,11 @@ void ui_deinit(ui_t *ui) {
 }
 
 void ui_update(ui_t *ui, const size_t size) {
+	
+	if (!ui) {
+		return;
+	}
+
 	int terminal_width = 0;
 	int terminal_height = 0;
 
@@ -52,6 +64,11 @@ void ui_update(ui_t *ui, const size_t size) {
 }
 
 void ui_scroll(ui_t *ui, const int dx, const size_t selected) {
+
+	if (!ui) {
+		return;
+	}
+
 	int terminal_width = 0;
 	int terminal_height = 0;
 
@@ -78,6 +95,10 @@ void ui_scroll(ui_t *ui, const int dx, const size_t selected) {
 }
 
 void ui_select(ui_t *ui, user_selection_t *s) {
+	
+	if(!ui || !s) {
+		return;
+	}
 
 	if (s->indices.size != 0) {
 		if (s->selected > 0) {

@@ -12,11 +12,10 @@ typedef struct user_selection_t {
 	size_t		machine_selected;
 	size_t		header_selected;
 	
-	//----
 	sort_type_t		sort;	// proc_task read-only
 	user_mode_t		mode;	// proc_task read-only
 	proc_event_t	event;	// proc_task read-write
-	//----
+	
 	size_t		max_machine;
 	char		input[256];
 	size_t		input_length;
