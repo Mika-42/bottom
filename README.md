@@ -5,11 +5,22 @@ arch-linux
 ```bash
     sudo pacman -S ncurses
 ```
-## Pour compiler et exécuter le projet 
+## Pour compiler  
 
 ```bash
-    make build-debug run
+    make
 ```
+*Par défaut make lance la cible* `release`.
+
+| cibles disponibles | Description                                                                                    |
+|:-------------------|------------------------------------------------------------------------------------------------|
+| debug              | Compile en mode débug, inclue des données pour faciliter l'affichage des instruction dans gdb. |
+| release            | Compile en mode release, optimise le programme afin de réduire la taille du binaire.           |
+| run-all-unit-tests | Compile et exécute tout les tests unitaires.                                                   |
+| run                | Compile et exécute le binaire en mode release.                                                 |
+| run-debug          | Compile et exécute le binaire en mode debug.                                                   |
+| clean              | Supprime build/                                                                                |
+| clean-debug        | Supprime build-unit-test/                                                                      |
 
 ## Contexte
 

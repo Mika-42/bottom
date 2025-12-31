@@ -104,9 +104,13 @@ error_code_t opt_dry_run(const config_file_t *file) {
 }
 
 error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) {
-	
-	printf("\nConnexion...\n");
-	
+
+	if (!file || !array) return NULLPTR_PARAMETER_ERROR;
+
+	if (file->size != 0) {	
+		printf("\nConnexion...\n");
+	}
+
 	for (size_t i=0; i<file->size; ++i) {
 		ssh_session session = ssh_connexion_init(
 			file->data[i].address,

@@ -35,7 +35,7 @@ MAKEFLAGS += --no-print-directory
 # ------------------------
 # Cible par défaut
 # ------------------------
-all: debug
+all: release
 
 # ------------------------
 # Debug / Release
