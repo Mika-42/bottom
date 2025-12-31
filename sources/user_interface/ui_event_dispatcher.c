@@ -10,7 +10,7 @@ void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui
 		return;
 	}
 
-	if (array->size != 0 && s->selected>=array->size) {
+	if (array->size != 0 && s->selected >= array->size) {
 		s->selected = array->size - 1;
 	}
 
@@ -45,11 +45,11 @@ void ui_event_dispatcher_normal(const processus_array_t *array, const int ch, ui
 void ui_event_dispatcher_help(const int ch, ui_t *ui, user_selection_t *s) {
 	
 	if (ui) {
-	if (ch == KEY_F(1)) {
-		s->mode = NORMAL;
-	}
+		if (ch == KEY_F(1)) {
+			s->mode = NORMAL;
+		}
 
-	show_help_page(ui);
+		show_help_page(ui);
 	}
 }
 
