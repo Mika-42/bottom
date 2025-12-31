@@ -5,6 +5,11 @@
 #include "ui_filter.h"
 
 void ui_show_array(WINDOW *win, const char (*array)[ui_max_width]) {	
+	
+	if(!win || !array) {
+		return;
+	}
+
 	box(win, 0, 0);
 
 	for (size_t i=0; i<ui_footer_lines; ++i) {
@@ -13,6 +18,11 @@ void ui_show_array(WINDOW *win, const char (*array)[ui_max_width]) {
 }
 
 void ui_show_header(const size_t header_selected, ui_t *ui, const bool asc) {
+	
+	if (!ui) {
+		return;
+	}
+
 	box(ui->header, 0, 0);
 
 	char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
@@ -27,6 +37,10 @@ void ui_show_header(const size_t header_selected, ui_t *ui, const bool asc) {
 }
 
 void show_help_page(ui_t *ui) {
+
+	if (!ui) {
+		return;
+	}
 
 	werase(ui->pad);	
 	
@@ -49,11 +63,11 @@ void show_help_page(ui_t *ui) {
 
 error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selection_t *s) {
 
-	werase(ui->pad);
-
-	if (!array) {
+	if (!array || !ui || !s) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
+
+	werase(ui->pad);
 
 	size_t i = 0;
 
