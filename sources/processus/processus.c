@@ -29,6 +29,10 @@ bool str_is_numeric(const char *str) {
 }
 
 bool proc_is_valid_pid(const char *pid) {
+	if (!pid) {
+		return false;
+	}
+
 	return str_is_numeric(pid) && *pid != '0';
 }
 
@@ -94,6 +98,10 @@ error_code_t proc_get_stat(processus_t *proc) {
 
 error_code_t proc_get_global_stat(long *cpu_total, time_t *boot_time) {
 
+	if(!cpu_total || !boot_time) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
 	FILE *f = fopen("/proc/stat", "r");
 
 	if (!f) return OPEN_FILE_FAILED;
@@ -138,6 +146,11 @@ error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 }
 
 void proc_get_exe(processus_t *proc) {
+	
+	if(!proc) {
+		return;
+	}
+
 	char path[64];
 	snprintf(path, sizeof(path), "/proc/%d/exe", proc->pid);
 	ssize_t len = readlink(path, proc->executable, PROC_PATH_SIZE - 1);
@@ -148,9 +161,9 @@ void proc_get_exe(processus_t *proc) {
 }
 
 error_code_t proc_read_file(pid_t pid, const char *proc_file, char *buffer, size_t buf_size, size_t *out_size) {
- if (!proc_file || !buffer)
+ if (!proc_file || !buffer || !out_size) {
         return NULLPTR_PARAMETER_ERROR;
-
+ }
     char path[PROC_PATH_SIZE];
     snprintf(path, sizeof(path), "/proc/%d/%s", pid, proc_file);
 
@@ -172,6 +185,11 @@ error_code_t proc_read_file(pid_t pid, const char *proc_file, char *buffer, size
 }
 
 error_code_t proc_get_cmdline(processus_t *p) {
+	
+	if (!p) {
+		return NULLPTR_PARAMETER_ERROR; 
+	}
+
 	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN] = {0};
 	size_t size = {};
 	error_code_t err = proc_read_file(p->pid, "cmdline", buffer, sizeof(buffer), &size);
@@ -182,6 +200,11 @@ error_code_t proc_get_cmdline(processus_t *p) {
 }
 
 error_code_t proc_get_env(processus_t *p) {
+
+	if (!p) {
+		return NULLPTR_PARAMETER_ERROR; 
+	}
+
 	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN] = {0};
 	size_t size = {};
 	error_code_t err = proc_read_file(p->pid, "environ", buffer, sizeof(buffer), &size);
