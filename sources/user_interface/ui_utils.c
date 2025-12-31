@@ -3,6 +3,10 @@
 
 void ui_utils_clamp_int(int *value, const int min_value, const int max_value) {
 	
+	if (!value) {
+		return;
+	}
+
 	if (min_value > max_value) {
 		return;
 	}
@@ -16,6 +20,10 @@ void ui_utils_clamp_int(int *value, const int min_value, const int max_value) {
 
 void ui_utils_clamp_size_t(size_t *value, const size_t min_value, const size_t max_value) {
 
+	if (!value) {
+		return;
+	}
+
 	if (min_value > max_value) {
 		return;
 	}
@@ -28,6 +36,9 @@ void ui_utils_clamp_size_t(size_t *value, const size_t min_value, const size_t m
 }
 
 void ui_utils_reset_input_buffer(user_selection_t *s) {
-	memset(s->input, 0, sizeof(s->input));
-	s->input_length = 0;
+	
+	if(s) {
+		memset(s->input, 0, sizeof(s->input));
+		s->input_length = 0;
+	}
 }
