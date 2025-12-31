@@ -3,7 +3,9 @@
 #include <stdlib.h>
 
 void ui_index_array_reset(index_array_t *array) {
-	array->size = 0;
+	if (array) {
+		array->size = 0;
+	}
 }
 
 size_t *ui_index_array_emplace_back(index_array_t *array, size_t value) {
