@@ -1,6 +1,6 @@
 #include "error.h"
 
-const char* err_to_str(const error_code_t err) {
+const char *err_to_str(const error_code_t err) {
     switch (err) {
     case SUCCESS: return "SUCCESS";
     case GENERIC_ERROR: return "GENERIC_ERROR";
