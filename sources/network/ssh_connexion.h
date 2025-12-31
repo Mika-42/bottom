@@ -31,7 +31,7 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
  *
  * @return Un code d'erreur défini dans error.h
  */
-error_code_t ssh_dry_run(ssh_session session);
+[[nodiscard]] error_code_t ssh_dry_run(ssh_session session);
 
 /**
  * @brief Tue un processus à distance grace à son pid
@@ -41,7 +41,7 @@ error_code_t ssh_dry_run(ssh_session session);
  *
  * @return Un code d'erreur défini dans error.h
  */
-error_code_t ssh_kill_processus(ssh_session session, int pid);
+[[maybe_unused]] error_code_t ssh_kill_processus(ssh_session session, int pid);
 
 /**
  * @brief Termine proprement un processus à distance grace à son pid
@@ -51,7 +51,7 @@ error_code_t ssh_kill_processus(ssh_session session, int pid);
  *
  * @return Un code d'erreur défini dans error.h
  */
-error_code_t ssh_term_processus(ssh_session session, int pid);
+[[maybe_unused]] error_code_t ssh_term_processus(ssh_session session, int pid);
 
 /**
  * @brief Arrête un processus à distance grace à son pid
@@ -61,7 +61,7 @@ error_code_t ssh_term_processus(ssh_session session, int pid);
  *
  * @return Un code d'erreur défini dans error.h
  */
-error_code_t ssh_stop_processus(ssh_session session, int pid);
+[[maybe_unused]] error_code_t ssh_stop_processus(ssh_session session, int pid);
 
 /**
  * @brief Remet un processus arrêté en marche à distance grace à son pid
@@ -71,7 +71,7 @@ error_code_t ssh_stop_processus(ssh_session session, int pid);
  *
  * @return Un code d'erreur défini dans error.h
  */
-error_code_t ssh_cont_processus(ssh_session session, int pid);
+[[maybe_unused]] error_code_t ssh_cont_processus(ssh_session session, int pid);
 
 /**
  * @brief Redémarre un processus à distance grace à la stucture processus_t lié au processus
@@ -81,7 +81,7 @@ error_code_t ssh_cont_processus(ssh_session session, int pid);
  *
  * @return Un code d'erreur défini dans error.h
  */
-error_code_t ssh_restart_processus(ssh_session session, processus_t *p);
+[[maybe_unused]] error_code_t ssh_restart_processus(ssh_session session, processus_t *p);
 
 /*TODO : doc */
 error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd);
