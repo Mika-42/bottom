@@ -43,36 +43,36 @@ const char *help_message_opt = ANSI_GREEN
     "utilisé.\n";
 
 void opt_print_help() {
-  FILE *pager = popen("less -R +g", "w");
-  if (pager) {
-    fprintf(pager, help_message_opt);
-    fflush(pager);
-    pclose(pager);
-  }
+    FILE *pager = popen("less -R +g", "w");
+    if (pager) {
+        fprintf(pager, help_message_opt);
+        fflush(pager);
+        pclose(pager);
+    }
 }
 
 error_code_t opt_ask_user(const char *field_name, char *dest) {
 
-  if (!field_name || !dest) {
-    return NULLPTR_PARAMETER_ERROR;
-  }
+    if (!field_name || !dest) {
+        return NULLPTR_PARAMETER_ERROR;
+    }
 
-  printf("%s: ", field_name);
+    printf("%s: ", field_name);
 
-  if (scanf("%256s", dest) != 1) {
+    if (scanf("%256s", dest) != 1) {
+        getchar();
+        return BUFFER_OVERFLOW;
+    }
     getchar();
-    return BUFFER_OVERFLOW;
-  }
-  getchar();
 
-  return SUCCESS;
+    return SUCCESS;
 }
 
 error_code_t opt_dry_run(const config_file_t *file) {
 	
 	if (!file) {
-    return NULLPTR_PARAMETER_ERROR;
-  }
+        return NULLPTR_PARAMETER_ERROR;
+    }
 
 	for (size_t i=0; i<file->size; ++i) {
 		ssh_session session = ssh_connexion_init(
@@ -89,13 +89,13 @@ error_code_t opt_dry_run(const config_file_t *file) {
 			continue;   
 		}   
    
-		bool succed = ssh_dry_run(session) == SUCCESS;
+		bool succeed = ssh_dry_run(session) == SUCCESS;
    
 		printf("Testing connexion on [%s](%s@%s) : %s.\n",
 					file->data[i].name,
 					file->data[i].username, 
 					file->data[i].address,
-					succed ? "succed" : "failed"
+					succeed ? "succeed" : "failed"
 					);
 		ssh_end_session(session);
 	}
@@ -118,17 +118,17 @@ error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) 
 			file->data[i].username,
 			file->data[i].password);
 
-		const bool succed = session != nullptr;
+		const bool succeed = session != nullptr;
 
-		if (succed) {
+		if (succeed) {
 			if (!ssh_array_add(array, session)) {
-        return MEMORY_ALLOCATION_FAILED;
-			}
+            return MEMORY_ALLOCATION_FAILED;
+		    }
 		}
 		printf("(%s@%s) : %s.\n",
 			file->data[i].username,
 			file->data[i].address,
-			succed ? "succed" : "failed"
+			succeed ? "succeed" : "failed"
 		);
 
 	}
