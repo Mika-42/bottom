@@ -66,7 +66,9 @@ error_code_t proc_get_user(processus_t *proc) {
 
     fclose(f);  
     	
-	if (n == 0) return UID_NOT_FOUND;
+	if (n == 0) {
+		return UID_NOT_FOUND;
+	}
 	line[n] = '\0';
 
 	return stat_user_parser(proc, line);
@@ -98,21 +100,25 @@ error_code_t proc_get_stat(processus_t *proc) {
 
 error_code_t proc_get_global_stat(long *cpu_total, time_t *boot_time) {
 
-	if(!cpu_total || !boot_time) {
+	if (!cpu_total || !boot_time) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 
 	FILE *f = fopen("/proc/stat", "r");
 
-	if (!f) return OPEN_FILE_FAILED;
+	if (!f) {
+		return OPEN_FILE_FAILED;
+	}
 
 	char line[buf_max_size];
 
 	size_t n = fread(line, 1, sizeof(line) - 1, f);
     fclose(f);
 
-    if (n == 0) return READ_FAILED;
-	
+    if (n == 0) {
+		return READ_FAILED;
+	}
+
 	line[n] = '\0';
 	
 	return stat_global_stat_parser(cpu_total, boot_time, line);
@@ -147,7 +153,7 @@ error_code_t proc_get_all_infos(const pid_t pid, processus_t *proc) {
 
 void proc_get_exe(processus_t *proc) {
 	
-	if(!proc) {
+	if (!proc) {
 		return;
 	}
 
@@ -161,15 +167,16 @@ void proc_get_exe(processus_t *proc) {
 }
 
 error_code_t proc_read_file(pid_t pid, const char *proc_file, char *buffer, size_t buf_size, size_t *out_size) {
- if (!proc_file || !buffer || !out_size) {
-        return NULLPTR_PARAMETER_ERROR;
- }
+	if (!proc_file || !buffer || !out_size) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
     char path[PROC_PATH_SIZE];
     snprintf(path, sizeof(path), "/proc/%d/%s", pid, proc_file);
 
     int fd = open(path, O_RDONLY);
-    if (fd < 0)
+    if (fd < 0) {
         return OPEN_FILE_FAILED;
+    }
 
     ssize_t n = read(fd, buffer, buf_size - 1);
     close(fd);
@@ -179,7 +186,9 @@ error_code_t proc_read_file(pid_t pid, const char *proc_file, char *buffer, size
 	}
 
 	buffer[n] = '\0';
-    if (out_size) *out_size = (size_t)n;
+    if (out_size) {
+		*out_size = (size_t)n;
+	}
 
     return SUCCESS;
 }
@@ -193,7 +202,9 @@ error_code_t proc_get_cmdline(processus_t *p) {
 	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN] = {0};
 	size_t size = {};
 	error_code_t err = proc_read_file(p->pid, "cmdline", buffer, sizeof(buffer), &size);
-	if(err != SUCCESS) return err;
+	if (err != SUCCESS) {
+		return err;
+	}
 
 	memset(p->cmdline, 0, sizeof(p->cmdline));
 	return stat_null_separated_parser(buffer, size, p->cmdline);
@@ -208,7 +219,9 @@ error_code_t proc_get_env(processus_t *p) {
 	char buffer[PROC_CMD_COUNT * PROC_CMD_LEN] = {0};
 	size_t size = {};
 	error_code_t err = proc_read_file(p->pid, "environ", buffer, sizeof(buffer), &size);
-	if(err != SUCCESS) return err;
+	if (err != SUCCESS) {
+		return err;
+	}
 
 	memset(p->env, 0, sizeof(p->env));
 	return stat_null_separated_parser(buffer, size, p->env);
