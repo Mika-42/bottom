@@ -26,7 +26,12 @@ static const struct option long_opts[] = {
     {0, 0, 0, 0}};
 
 error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array_t *sessions, config_file_t *cfg_file) {
-    int opt = 0;
+	
+	if(!argv || !flag || !sessions || !cfg_file) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
+	int opt = 0;
     remote_server_t server = {0};
     error_code_t err = SUCCESS;
     optind = 1;

@@ -12,6 +12,6 @@ typedef struct flag_t {
 	bool dry_run : 1;
 } flag_t;
 
-error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array_t *sessions, config_file_t *cfg_file);
+[[nodiscard]] error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array_t *sessions, config_file_t *cfg_file);
 
 #endif 
