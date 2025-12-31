@@ -3,7 +3,7 @@
 
 error_code_t ui_filter_proc(const processus_array_t *array, user_selection_t *s) {
 	
-	if(!array || !s) {
+	if (!array || !s) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 
