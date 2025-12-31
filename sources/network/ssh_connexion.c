@@ -12,6 +12,7 @@ void ssh_end_session(ssh_session session) {
 }
 
 ssh_session ssh_connexion_init(const char *host, int port, const char *user, const char *password) {
+
 	ssh_session session = ssh_new();
 	if (session == nullptr) {
 		return nullptr;

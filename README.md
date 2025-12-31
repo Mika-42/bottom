@@ -47,14 +47,14 @@ make debug && valgrind --leak-check=full --show-leak-kinds=all --track-origins=y
 **Sortie**
 
 ```
-==38990== LEAK SUMMARY:
-==38990==    definitely lost: 0 bytes in 0 blocks
-==38990==    indirectly lost: 0 bytes in 0 blocks
-==38990==      possibly lost: 603 bytes in 9 blocks
-==38990==    still reachable: 647,581 bytes in 443 blocks
-==38990==         suppressed: 0 bytes in 0 blocks
-==38990== 
-==38990== ERROR SUMMARY: 9 errors from 9 contexts (suppressed: 0 from 0)
+==40346== LEAK SUMMARY:
+==40346==    definitely lost: 0 bytes in 0 blocks
+==40346==    indirectly lost: 0 bytes in 0 blocks
+==40346==      possibly lost: 201 bytes in 3 blocks
+==40346==    still reachable: 652,885 bytes in 488 blocks
+==40346==         suppressed: 0 bytes in 0 blocks
+==40346== 
+==40346== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
 ```
 
 ## Contexte

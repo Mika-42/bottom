@@ -154,6 +154,6 @@ int main(int argc, char **argv) {
 	pthread_mutex_destroy(&selection.lock);
 	ui_index_array_free(&selection.indices);
 	ssh_array_free(&sessions);
-
+	cfg_free(&cfg_file);
 	return 0;
 }
