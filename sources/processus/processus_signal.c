@@ -159,6 +159,11 @@ error_code_t wait_for_exit_with_timeout(pid_t pid, int timeout_ms) {
 }
 
 error_code_t kill_children(processus_t *p) {
+	
+	if (!p) {
+		return NULLPTR_PARAMETER_ERROR;
+	}
+
 	char path[PROC_PATH_SIZE];
 	snprintf(path, sizeof(path), "/proc/%d/task/%d/children", p->pid, p->pid);
 	FILE *f = fopen(path, "r");
