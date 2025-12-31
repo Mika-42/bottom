@@ -27,7 +27,7 @@ static const struct option long_opts[] = {
 
 error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array_t *sessions, config_file_t *cfg_file) {
 	
-	if(!argv || !flag || !sessions || !cfg_file) {
+	if (!argv || !flag || !sessions || !cfg_file) {
 		return NULLPTR_PARAMETER_ERROR;
 	}
 
@@ -36,7 +36,7 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array
     error_code_t err = SUCCESS;
     optind = 1;
 
-    while ((opt = getopt_long(argc, argv, "hc::t:P:l:s:u:p:a", long_opts,nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hc::t:P:l:s:u:p:a", long_opts, nullptr)) != -1) {
 		flag->has_opt = true;
 
 		switch (opt) {
@@ -89,11 +89,11 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array
 			break;
 		}
 
-    if (err != SUCCESS) {
-      fprintf(stderr, "Error: %s (%s).\n", err_to_str(err), optarg);
-      return err;
+		if (err != SUCCESS) {
+		fprintf(stderr, "Error: %s (%s).\n", err_to_str(err), optarg);
+		return err;
+		}
     }
-}
 
 	if (flag->exec_local && !(flag->server || flag->config)) {
 		err = INVALID_ARGUMENT;
@@ -135,5 +135,5 @@ error_code_t command_run(int argc, char *argv[], flag_t *flag, ssh_session_array
 		fprintf(stderr, "Error: %s.\n", err_to_str(err));
 	}
 
-	return err;
-	}
+	return err;	
+}
