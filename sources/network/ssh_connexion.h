@@ -83,7 +83,16 @@ ssh_session ssh_connexion_init(const char *host, int port, const char *user, con
  */
 [[maybe_unused]] error_code_t ssh_restart_processus(ssh_session session, processus_t *p);
 
-/*TODO : doc */
+/**
+ * @brief Permet d'executer une commande sur une machine distant et de récupérer le resultat dans un buffer de taille fixe
+ *
+ * @param session La session utilisé pour la communication
+ * @param buffer Buffer dans lequel sera écrit le resultat de la commande dans le teminale de la machine distante
+ * @param buffer_size Taille du buffer 
+ * @param cmd Commande à executer sur la machine distante
+ *
+ * @return Un code d'erreur défini dans error.h
+ */
 [[maybe_unused]] error_code_t ssh_cmd_exec(ssh_session session, char *buffer, size_t buffer_size, const char *cmd);
 
 #endif //SSH_CONNEXION
