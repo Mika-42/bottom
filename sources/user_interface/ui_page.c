@@ -4,9 +4,9 @@
 #include "ui_format.h"
 #include "ui_filter.h"
 
-void ui_show_array(WINDOW *win, const char (*array)[ui_max_width]) {	
+void ui_show_array(WINDOW *win, const char (*array)[ui_max_width]) {
 	
-	if(!win || !array) {
+	if (!win || !array) {
 		return;
 	}
 
@@ -84,7 +84,7 @@ error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selecti
 
 		char buf[16];
 		
-		if(array->data[index].utime + array->data[index].stime == 0) { // it's an ssh proc
+		if (array->data[index].utime + array->data[index].stime == 0) { // it's an ssh proc
 			ui_format_time(array->data[index].start_time, buf, 16); 
 		} else {
 			const long ticks_per_sec = sysconf(_SC_CLK_TCK);
