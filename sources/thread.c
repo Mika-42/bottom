@@ -10,7 +10,7 @@
 #include <pthread.h>
 
 /* Notes:
- *	array[0] is ALWAYS the local machine !
+ *  array[0] is ALWAYS the local machine !
  */
 
 static const proc_compare_t sort_func[2][header_element_count] = {
