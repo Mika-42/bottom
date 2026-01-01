@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-bool format_ram_test(const unsigned long test_count, const unsigned long long rss_bytes,double expected_v, const char* expected_unit) {
+bool format_ram_test(const unsigned long test_count, const unsigned long long rss_bytes,double expected_v, const char *expected_unit) {
     double v;
     const char *unit = ui_format_ram(rss_bytes, &v);
     const bool ret = (v == expected_v) && (strncmp(unit, expected_unit, 3) == 0);

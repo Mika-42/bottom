@@ -87,8 +87,7 @@ void ui_scroll(ui_t *ui, const int dx, const size_t selected) {
 
     if ((int)selected < hi) {
         ui->ui_scroll_y = selected;
-    }
-    else if ((int)selected >= lo) {
+    } else if ((int)selected >= lo) {
         ui->ui_scroll_y = selected - view_height + 1;
     }
     ui_utils_clamp_int(&ui->ui_scroll_y, 0, ui_pad_lines - view_height);
