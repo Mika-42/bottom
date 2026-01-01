@@ -8,9 +8,9 @@ constexpr size_t path_max_size = 4096;
 constexpr char cfg_filename[path_max_size] = ".config";
 
 typedef struct config_file_t {
-	remote_server_t *data;
-	size_t size;
-	size_t capacity;
+    remote_server_t *data;
+    size_t size;
+    size_t capacity;
 } config_file_t;
 
 void cfg_init(config_file_t *file);

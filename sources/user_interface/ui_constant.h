@@ -2,34 +2,34 @@
 #define UI_CONSTANT_H
 
 typedef enum user_mode_t {
-	NORMAL,
-	SEARCH,
-	HELP
+    NORMAL,
+    SEARCH,
+    HELP
 } user_mode_t;
 
 typedef enum proc_event_t {
-	PAUSE_CONTINUE,
-	TERMINATE,
-	KILL,
-	RELOAD,
-	NOTHING
+    PAUSE_CONTINUE,
+    TERMINATE,
+    KILL,
+    RELOAD,
+    NOTHING
 } proc_event_t;
 
 typedef enum sort_type_t {
-	DSC = 0,
-	ASC = 1
+    DSC = 0,
+    ASC = 1
 } sort_type_t;
 
 static constexpr size_t one_sec = 1'000'000'000; //nanosec
 
 static constexpr struct timespec proc_thread_time_interval = {
-	.tv_sec = 0,
-	.tv_nsec = one_sec / 40
+    .tv_sec = 0,
+    .tv_nsec = one_sec / 40
 };
 
 static constexpr struct timespec ui_thread_time_interval = {
-	.tv_sec = 0,
-	.tv_nsec = one_sec / 40
+    .tv_sec = 0,
+    .tv_nsec = one_sec / 40
 };
 
 static constexpr size_t header_element_count = 7;
@@ -45,66 +45,66 @@ static const char separator[ui_max_width] = "┃ %-10d ┃ %-24.23s ┃ %-32.31s
 static constexpr char empty_separator[ui_max_width] = "┃ %-10s ┃ %-24s ┃ %-32s ┃ %-10s ┃ %-10s ┃ %-7s ┃  %-18s ┃";
 
 static constexpr char proc_array_function_command[ui_footer_lines][ui_max_width] = {
-	"┣━━━━━━━━━━━┳┻━━━━━━━━━━━━━┳━━━━━━━━━━━━┻━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┻━━┳━━━━━━━━━┻━━━━━━┳━━━━━┻━━━━━┳━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
-	"┃ [F1] help ┃ [F2] page <- ┃ [F3] page -> ┃ [F4] search ┃ [F5] pause/continue ┃ [F6] terminate ┃ [F7] kill ┃ [F8] reload ┃ [F9] Exit ┃",
-	"┗━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
+    "┣━━━━━━━━━━━┳┻━━━━━━━━━━━━━┳━━━━━━━━━━━━┻━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┻━━┳━━━━━━━━━┻━━━━━━┳━━━━━┻━━━━━┳━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
+    "┃ [F1] help ┃ [F2] page <- ┃ [F3] page -> ┃ [F4] search ┃ [F5] pause/continue ┃ [F6] terminate ┃ [F7] kill ┃ [F8] reload ┃ [F9] Exit ┃",
+    "┗━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┻━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
 static constexpr char proc_array_search_bar[ui_footer_lines][ui_max_width] = {
-	"┣━━━━━━━━━━━━┻┳━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
-	"┃ [F1] cancel ┃ Search:                                                                                                  ┃ [F9] Exit ┃",
-	"┗━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
+    "┣━━━━━━━━━━━━┻┳━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━┻━━━━━━━━━┳━━━━━━━━━━━┫",
+    "┃ [F1] cancel ┃ Search:                                                                                                  ┃ [F9] Exit ┃",
+    "┗━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
 static constexpr char proc_array_help_footer[ui_footer_lines][ui_max_width] = {
-	"┣━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┫",
-	"┃ [F1] cancel ┃                                                                                                          ┃ [F9] Exit ┃",
-	"┗━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
+    "┣━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┫",
+    "┃ [F1] cancel ┃                                                                                                          ┃ [F9] Exit ┃",
+    "┗━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━┛",
 };
 
 static constexpr char proc_array_tab_header[ui_header_lines][ui_max_width] = {
         "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
-		"┃ %-114s processus: %4d ┃",
+        "┃ %-114s processus: %4d ┃",
         "┣━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┫",
-	   	"┃ PID      %s ┃ User                   %s ┃ Name                           %s ┃ State    %s ┃ RAM      %s ┃ CPU   %s ┃ Time(dd:hh:mm:ss) %s ┃",
+        "┃ PID      %s ┃ User                   %s ┃ Name                           %s ┃ State    %s ┃ RAM      %s ┃ CPU   %s ┃ Time(dd:hh:mm:ss) %s ┃",
         "┣━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━┫",
 };
 
 static constexpr char proc_array_help_header[ui_header_lines][ui_max_width] = {
         "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓",
-	"┃                                                                                                                                    ┃",
-	"┃                                                                                                                                    ┃",
-	"┃                                                                                                                                    ┃",
-	"┃                                                                                                                                    ┃",
+    "┃                                                                                                                                    ┃",
+    "┃                                                                                                                                    ┃",
+    "┃                                                                                                                                    ┃",
+    "┃                                                                                                                                    ┃",
 };
 
 static constexpr char proc_array_help[ui_help_lines][ui_max_width] = {
-	"┃ ---------------------- G L O B A L ----------------------                                                                          ┃",
-	"┃ [→]     scroll to right                                                                                                            ┃",
-	"┃ [←]     scroll to left                                                                                                             ┃",
-	"┃ [↑]     scroll to top                                                                                                              ┃",
-	"┃ [↓]     scroll to bottom                                                                                                           ┃",
-	"┃                                                                                                                                    ┃",
-	"┃ [tab]   select sorting field                                                                                                       ┃",
-	"┃ [enter] select ascendant/descendent sort                                                                                           ┃",
-	"┃                                                                                                                                    ┃",
-	"┃ [F9]    exit from the program                                                                                                      ┃",
-	"┃                                                                                                                                    ┃",
-	"┃ ----------------- N O R M A L ~ M O D E -----------------                                                                          ┃",
-	"┃ [F1]    show the help page                                                                                                         ┃",
-	"┃ [F2]    switch to the previous machine processus page                                                                              ┃",
-	"┃ [F3]    switch to the next machine processus page                                                                                  ┃",
-	"┃ [F4]    switch to the search mode                                                                                                  ┃",
-	"┃ [F5]    pause/continue the selected processus                                                                                      ┃",
-	"┃ [F6]    terminate the selected processus                                                                                           ┃",
-	"┃ [F7]    kill the selected processus                                                                                                ┃",
-	"┃ [F8]    reload the selected processus                                                                                              ┃",
-	"┃                                                                                                                                    ┃",
-	"┃ ----------------- S E A R C H ~ M O D E -----------------                                                                          ┃",
-	"┃ [F1]    exit from search mode (go back to normal mode)                                                                             ┃",
-	"┃ [F2]    go to the previous occurent that match                                                                                     ┃",
-	"┃ [F3]    go to the next occurent that match                                                                                         ┃",
-	"┃                                                                                                                                    ┃",
+    "┃ ---------------------- G L O B A L ----------------------                                                                          ┃",
+    "┃ [→]     scroll to right                                                                                                            ┃",
+    "┃ [←]     scroll to left                                                                                                             ┃",
+    "┃ [↑]     scroll to top                                                                                                              ┃",
+    "┃ [↓]     scroll to bottom                                                                                                           ┃",
+    "┃                                                                                                                                    ┃",
+    "┃ [tab]   select sorting field                                                                                                       ┃",
+    "┃ [enter] select ascendant/descendent sort                                                                                           ┃",
+    "┃                                                                                                                                    ┃",
+    "┃ [F9]    exit from the program                                                                                                      ┃",
+    "┃                                                                                                                                    ┃",
+    "┃ ----------------- N O R M A L ~ M O D E -----------------                                                                          ┃",
+    "┃ [F1]    show the help page                                                                                                         ┃",
+    "┃ [F2]    switch to the previous machine processus page                                                                              ┃",
+    "┃ [F3]    switch to the next machine processus page                                                                                  ┃",
+    "┃ [F4]    switch to the search mode                                                                                                  ┃",
+    "┃ [F5]    pause/continue the selected processus                                                                                      ┃",
+    "┃ [F6]    terminate the selected processus                                                                                           ┃",
+    "┃ [F7]    kill the selected processus                                                                                                ┃",
+    "┃ [F8]    reload the selected processus                                                                                              ┃",
+    "┃                                                                                                                                    ┃",
+    "┃ ----------------- S E A R C H ~ M O D E -----------------                                                                          ┃",
+    "┃ [F1]    exit from search mode (go back to normal mode)                                                                             ┃",
+    "┃ [F2]    go to the previous occurent that match                                                                                     ┃",
+    "┃ [F3]    go to the next occurent that match                                                                                         ┃",
+    "┃                                                                                                                                    ┃",
 };
 
 #endif /* UI_CONSTANT_H */

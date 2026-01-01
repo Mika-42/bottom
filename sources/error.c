@@ -42,6 +42,6 @@ const char *err_to_str(const error_code_t err) {
     case SSH_READ_FAILED: return "SSH_READ_FAILED";
     case SSH_GET_FILE_FAILED: return "SSH_GET_FILE_FAILED";
     case SPECIAL_EXIT: return "SPECIAL_EXIT";
-	default: return "UNKNOWN_ERROR";
+    default: return "UNKNOWN_ERROR";
     }
 }

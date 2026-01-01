@@ -4,9 +4,9 @@
 #include "ssh_connexion.h"
 
 typedef struct ssh_session_array_t {
-	ssh_session *data;
-	size_t size;
-	size_t capacity;
+    ssh_session *data;
+    size_t size;
+    size_t capacity;
 } ssh_session_array_t;
 
 void ssh_array_init(ssh_session_array_t *array);

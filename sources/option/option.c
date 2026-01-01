@@ -69,68 +69,68 @@ error_code_t opt_ask_user(const char *field_name, char *dest) {
 }
 
 error_code_t opt_dry_run(const config_file_t *file) {
-	
-	if (!file) {
+    
+    if (!file) {
         return NULLPTR_PARAMETER_ERROR;
     }
 
-	for (size_t i=0; i<file->size; ++i) {
-		ssh_session session = ssh_connexion_init(
-			file->data[i].address,
-			file->data[i].port,
-			file->data[i].username,
-			file->data[i].password);
+    for (size_t i=0; i<file->size; ++i) {
+        ssh_session session = ssh_connexion_init(
+            file->data[i].address,
+            file->data[i].port,
+            file->data[i].username,
+            file->data[i].password);
    
-		if (!session) {  
-			fprintf(stderr, "Error: SSH_CONNEXION_FAILED [%s](%s@%s).\n",
-				file->data[i].name,
-				file->data[i].username, 
-				file->data[i].address);
-			continue;   
-		}   
+        if (!session) {  
+            fprintf(stderr, "Error: SSH_CONNEXION_FAILED [%s](%s@%s).\n",
+                file->data[i].name,
+                file->data[i].username, 
+                file->data[i].address);
+            continue;   
+        }   
    
-		bool succeed = ssh_dry_run(session) == SUCCESS;
+        bool succeed = ssh_dry_run(session) == SUCCESS;
    
-		printf("Testing connexion on [%s](%s@%s) : %s.\n",
-					file->data[i].name,
-					file->data[i].username, 
-					file->data[i].address,
-					succeed ? "succeed" : "failed"
-					);
-		ssh_end_session(session);
-	}
+        printf("Testing connexion on [%s](%s@%s) : %s.\n",
+                    file->data[i].name,
+                    file->data[i].username, 
+                    file->data[i].address,
+                    succeed ? "succeed" : "failed"
+                    );
+        ssh_end_session(session);
+    }
 
-	return SUCCESS;
+    return SUCCESS;
 }
 
 error_code_t opt_connect(const config_file_t *file, ssh_session_array_t *array) {
 
-	if (!file || !array) return NULLPTR_PARAMETER_ERROR;
+    if (!file || !array) return NULLPTR_PARAMETER_ERROR;
 
-	if (file->size != 0) {	
-		printf("\nConnexion...\n");
-	}
+    if (file->size != 0) {  
+        printf("\nConnexion...\n");
+    }
 
-	for (size_t i=0; i<file->size; ++i) {
-		ssh_session session = ssh_connexion_init(
-			file->data[i].address,
-			file->data[i].port,
-			file->data[i].username,
-			file->data[i].password);
+    for (size_t i=0; i<file->size; ++i) {
+        ssh_session session = ssh_connexion_init(
+            file->data[i].address,
+            file->data[i].port,
+            file->data[i].username,
+            file->data[i].password);
 
-		const bool succeed = session != nullptr;
+        const bool succeed = session != nullptr;
 
-		if (succeed) {
-			if (!ssh_array_add(array, session)) {
+        if (succeed) {
+            if (!ssh_array_add(array, session)) {
             return MEMORY_ALLOCATION_FAILED;
-		    }
-		}
-		printf("(%s@%s) : %s.\n",
-			file->data[i].username,
-			file->data[i].address,
-			succeed ? "succeed" : "failed"
-		);
+            }
+        }
+        printf("(%s@%s) : %s.\n",
+            file->data[i].username,
+            file->data[i].address,
+            succeed ? "succeed" : "failed"
+        );
 
-	}
-	return SUCCESS;
+    }
+    return SUCCESS;
 }

@@ -8,7 +8,7 @@ constexpr size_t field_size = 256;
 constexpr size_t max_port = 65'535;
 
 typedef enum connexion_type_t {
-	SSH, TELNET
+    SSH, TELNET
 } connexion_type_t;
 
 typedef struct remote_server_t {
@@ -17,7 +17,7 @@ typedef struct remote_server_t {
     char username[field_size];
     char password[field_size];  
     unsigned short port;
-	connexion_type_t connexion;
+    connexion_type_t connexion;
 } remote_server_t;
 
 [[nodiscard]] error_code_t srv_str_duplicate(char *dest, char *src);

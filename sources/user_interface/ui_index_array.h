@@ -5,9 +5,9 @@
 #include "error.h"
 
 typedef struct index_array_t {
-	size_t *data;
-	size_t size;
-	size_t capacity;
+    size_t *data;
+    size_t size;
+    size_t capacity;
 } index_array_t;
 
 void ui_index_array_reset(index_array_t *array);

@@ -5,109 +5,109 @@
 #include "ui_filter.h"
 
 void ui_show_array(WINDOW *win, const char (*array)[ui_max_width]) {
-	
-	if (!win || !array) {
-		return;
-	}
+    
+    if (!win || !array) {
+        return;
+    }
 
-	box(win, 0, 0);
+    box(win, 0, 0);
 
-	for (size_t i=0; i<ui_footer_lines; ++i) {
-		mvwprintw(win, i, 0, array[i]);
-	}
+    for (size_t i=0; i<ui_footer_lines; ++i) {
+        mvwprintw(win, i, 0, array[i]);
+    }
 }
 
 void ui_show_header(const size_t header_selected, ui_t *ui, const bool asc) {
-	
-	if (!ui) {
-		return;
-	}
+    
+    if (!ui) {
+        return;
+    }
 
-	box(ui->header, 0, 0);
+    box(ui->header, 0, 0);
 
-	char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
-	if (header_selected < header_element_count) {
-		arrow[header_selected] = asc ? "▲" : "▼";
-	}
+    char *arrow[header_element_count] = {" ", " ", " ", " ", " ", " ", " "};
+    if (header_selected < header_element_count) {
+        arrow[header_selected] = asc ? "▲" : "▼";
+    }
 
-	mvwprintw(ui->header, 0, 0, proc_array_tab_header[0]);
-	mvwprintw(ui->header, 2, 0, proc_array_tab_header[2]);
-	mvwprintw(ui->header, 3, 0, proc_array_tab_header[3], arrow[0], arrow[1], arrow[2], arrow[3], arrow[4], arrow[5], arrow[6]);
-	mvwprintw(ui->header, 4, 0, proc_array_tab_header[4]);
+    mvwprintw(ui->header, 0, 0, proc_array_tab_header[0]);
+    mvwprintw(ui->header, 2, 0, proc_array_tab_header[2]);
+    mvwprintw(ui->header, 3, 0, proc_array_tab_header[3], arrow[0], arrow[1], arrow[2], arrow[3], arrow[4], arrow[5], arrow[6]);
+    mvwprintw(ui->header, 4, 0, proc_array_tab_header[4]);
 }
 
 void show_help_page(ui_t *ui) {
 
-	if (!ui) {
-		return;
-	}
+    if (!ui) {
+        return;
+    }
 
-	werase(ui->pad);	
-	
-	size_t i = 0;
+    werase(ui->pad);    
+    
+    size_t i = 0;
 
-	for (size_t i=0; i<ui_header_lines; ++i) {
-		mvwprintw(ui->header, i, 0, proc_array_help_header[i]);
-	}
+    for (size_t i=0; i<ui_header_lines; ++i) {
+        mvwprintw(ui->header, i, 0, proc_array_help_header[i]);
+    }
 
-	for (i=0; i<ui_help_lines; ++i) {
-		mvwprintw(ui->pad, i, 0, proc_array_help[i]);
-	}
+    for (i=0; i<ui_help_lines; ++i) {
+        mvwprintw(ui->pad, i, 0, proc_array_help[i]);
+    }
 
-	for (; i<(size_t)getmaxy(stdscr); ++i) {
-		mvwprintw(ui->pad, i, 0, proc_array_help[ui_help_lines - 1]);
-	}
+    for (; i<(size_t)getmaxy(stdscr); ++i) {
+        mvwprintw(ui->pad, i, 0, proc_array_help[ui_help_lines - 1]);
+    }
 
-	ui_show_array(ui->footer, proc_array_help_footer);
+    ui_show_array(ui->footer, proc_array_help_footer);
 }
 
 error_code_t ui_show_proc(const processus_array_t *array, ui_t *ui, user_selection_t *s) {
 
-	if (!array || !ui || !s) {
-		return NULLPTR_PARAMETER_ERROR;
-	}
+    if (!array || !ui || !s) {
+        return NULLPTR_PARAMETER_ERROR;
+    }
 
-	werase(ui->pad);
+    werase(ui->pad);
 
-	size_t i = 0;
+    size_t i = 0;
 
-	const error_code_t err = ui_filter_proc(array, s);
-	if (err != SUCCESS) {
-		return err;
-	}
+    const error_code_t err = ui_filter_proc(array, s);
+    if (err != SUCCESS) {
+        return err;
+    }
 
-	for (; i<s->indices.size; ++i) {
-		size_t index = s->indices.data[i];
-		
-		double ram;
-		const char *unit = ui_format_ram(array->data[index].ram, &ram);
+    for (; i<s->indices.size; ++i) {
+        size_t index = s->indices.data[i];
+        
+        double ram;
+        const char *unit = ui_format_ram(array->data[index].ram, &ram);
 
-		char buf[16];
-		
-		if (array->data[index].utime + array->data[index].stime == 0) { // it's an ssh proc
-			ui_format_time(array->data[index].start_time, buf, 16); 
-		} else {
-			const long ticks_per_sec = sysconf(_SC_CLK_TCK);
-			const time_t start_time = array->boot_time + array->data[index].start_time / ticks_per_sec;
-			const time_t now = time(nullptr);
-			ui_format_time(now - start_time, buf, 16);
-		}
-		mvwprintw(ui->pad, i, 0, separator, 
-				array->data[index].pid, 
-				array->data[index].user, 
-				array->data[index].name, 
-				ui_format_state(array->data[index].state),
-				ram, unit, 
-				array->data[index].cpu_usage,
-				buf
-			 );
-	}
+        char buf[16];
+        
+        if (array->data[index].utime + array->data[index].stime == 0) { // it's an ssh proc
+            ui_format_time(array->data[index].start_time, buf, 16); 
+        } else {
+            const long ticks_per_sec = sysconf(_SC_CLK_TCK);
+            const time_t start_time = array->boot_time + array->data[index].start_time / ticks_per_sec;
+            const time_t now = time(nullptr);
+            ui_format_time(now - start_time, buf, 16);
+        }
+        mvwprintw(ui->pad, i, 0, separator, 
+                array->data[index].pid, 
+                array->data[index].user, 
+                array->data[index].name, 
+                ui_format_state(array->data[index].state),
+                ram, unit, 
+                array->data[index].cpu_usage,
+                buf
+             );
+    }
 
-	if (s->mode == SEARCH) {
-		for (; i<(size_t)getmaxy(stdscr); ++i) {
-			mvwprintw(ui->pad, i, 0, empty_separator, "", "", "", "", "", "", "");
-		}
-	}
-	
-	return SUCCESS;
+    if (s->mode == SEARCH) {
+        for (; i<(size_t)getmaxy(stdscr); ++i) {
+            mvwprintw(ui->pad, i, 0, empty_separator, "", "", "", "", "", "", "");
+        }
+    }
+    
+    return SUCCESS;
 }
