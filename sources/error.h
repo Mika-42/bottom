@@ -1,6 +1,9 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+/**
+ * @brief Enumérateur utilisé pour renvoyer toutes les erreurs dont on a besoin dans le code
+ */
 typedef enum error_code_t : int {
   SUCCESS,
   GENERIC_ERROR,
@@ -50,6 +53,13 @@ typedef enum error_code_t : int {
   SPECIAL_EXIT,
 } error_code_t;
 
+/**
+ * @brief Change un code d'erreur en chaîne de caractère
+ *
+ * @param err Erreur à changer
+ *
+ * @return Chaîne de caractère du code d'erreur
+ */
 const char *err_to_str(const error_code_t err);
 
 #endif // ERROR_H
