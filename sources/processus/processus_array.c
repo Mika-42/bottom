@@ -126,7 +126,7 @@ processus_t *proc_array_find_by_pid(const processus_array_t *array, const pid_t 
 
 void proc_array_remove_if(processus_array_t *array, proc_predicate_t pred) {
 	
-	if(!array) {
+	if (!array) {
 		return;
 	}
 

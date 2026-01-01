@@ -94,9 +94,9 @@ bool srv_str_is_empty(char *str) {
 
 bool srv_is_valid(remote_server_t *server) {
 	return !(srv_str_is_empty(server->name) || 
-			srv_str_is_empty(server->address) ||
-			srv_str_is_empty(server->username) ||
-			srv_str_is_empty(server->password) ||
+			srv_str_is_empty(server->address) || 
+			srv_str_is_empty(server->username) || 
+			srv_str_is_empty(server->password) || 
 			server->port == 0);
 }
 
