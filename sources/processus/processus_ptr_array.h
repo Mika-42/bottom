@@ -20,14 +20,14 @@ typedef struct processus_ptr_array_t {
  *
  * @param array Un tableau de processus par pointeur
  */
-void        proc_ptr_array_init(processus_ptr_array_t *array);
+void proc_ptr_array_init(processus_ptr_array_t *array);
 
 /**
  * @brief Remise à zéro d'un tableau de processus par pointeur
  *
  * @param array Un tableau de processus par pointeur
  */
-void        proc_ptr_array_reset(processus_ptr_array_t *array);*
+void proc_ptr_array_reset(processus_ptr_array_t *array);
 
 /**
  * @brief Augmente la mémoire allouée à un tableau de processus par pointeur si besoin et ajoute un processus au tableau
@@ -44,6 +44,6 @@ void        proc_ptr_array_reset(processus_ptr_array_t *array);*
  *
  * @param array Un tableau de processus par pointeur
  */
-void        proc_ptr_array_free(processus_ptr_array_t *array);
+void proc_ptr_array_free(processus_ptr_array_t *array);
 
 #endif //PROCESSUS_PTR_ARRAY_H

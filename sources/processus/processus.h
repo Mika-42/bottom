@@ -16,20 +16,19 @@ constexpr size_t buf_max_size = 4096;
  * @brief Represente un processus avec toutes les informations dont on a besoin.
  */
 typedef struct processus_t {  
-    pid_t       pid;                			/**< ID du processus */
-    pid_t       ppid;               			/**< ID du processus parent */
-    char        name[PROC_NAME_SIZE];       		/**< Nom du processus */
-    char        state;              			/**< Etat du processus */
-    unsigned long long ram;             		/**< Mémoire utilisé en octets par le processus */
-    char        user[PROC_USERNAME_SIZE];   		/**< Nom de l'utilisateur */
-    unsigned long   utime;              		/**< Temps CPU utilisateur */
-    unsigned long   stime;              		/**< Temps CPU système */
-    unsigned long   start_time;         		/**< Durée de lancement */
-    double      cpu_usage;          			/**< Pourcentage du CPU utilisé */
-
-    char        executable[PROC_PATH_SIZE];		/**< Chemain de l'executable */
-    char        env[PROC_CMD_COUNT][PROC_CMD_LEN];	/**< Variables d'environnements */
-    char        cmdline[PROC_CMD_COUNT][PROC_CMD_LEN];	/**< Options de lancement*/
+    pid_t				pid;									/**< ID du processus */
+    pid_t				ppid;									/**< ID du processus parent */
+    char				name[PROC_NAME_SIZE];					/**< Nom du processus */
+    char			    state;									/**< Etat du processus */
+    unsigned long long	ram;									/**< Mémoire utilisé en octets par le processus */
+    char			    user[PROC_USERNAME_SIZE];				/**< Nom de l'utilisateur */
+    unsigned long		utime;									/**< Temps CPU utilisateur */
+    unsigned long		stime;									/**< Temps CPU système */
+    unsigned long		start_time;								/**< Durée de lancement */
+    double				cpu_usage;								/**< Pourcentage du CPU utilisé */
+    char				executable[PROC_PATH_SIZE];				/**< Chemain de l'executable */
+    char				env[PROC_CMD_COUNT][PROC_CMD_LEN];		/**< Variables d'environnements */
+    char				cmdline[PROC_CMD_COUNT][PROC_CMD_LEN];	/**< Options de lancement*/
 } processus_t;
 
 /**

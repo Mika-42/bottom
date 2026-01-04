@@ -12,17 +12,15 @@
  * @brief Structure qui représentant l'état de sélection et d'interaction utilisateur
  */
 typedef struct user_selection_t {
-    size_t      selected;
-    size_t      machine_selected;
-    size_t      header_selected;
-    
+    size_t			selected;
+    size_t			machine_selected;
+    size_t			header_selected;
     sort_type_t     sort;   // proc_task read-only
     user_mode_t     mode;   // proc_task read-only
     proc_event_t    event;  // proc_task read-write
-    
-    size_t      max_machine;
-    char        input[256];
-    size_t      input_length;
+    size_t			max_machine;
+    char			input[256];
+    size_t			input_length;
     index_array_t   indices;
     pthread_mutex_t lock;
 } user_selection_t;
@@ -32,10 +30,9 @@ typedef struct user_selection_t {
  * @brief Structure regroupant les éléments de l'interface utilisateur
  */
 typedef struct ui_t {
-    WINDOW *pad;	/**< Fenêtre principal */
-    WINDOW *footer;	/**< Fenêtre de pied de page */
-    WINDOW *header;	/**< Fenêtre d'en-tête de page */
-
+    WINDOW *pad;		/**< Fenêtre principal */
+    WINDOW *footer;		/**< Fenêtre de pied de page */
+    WINDOW *header;		/**< Fenêtre d'en-tête de page */
     int ui_scroll_x;	/**< Décalage horizontal du défilement */
     int ui_scroll_y;	/**< Décalage vertical du défilement */
 } ui_t;

@@ -22,7 +22,7 @@ typedef bool (*proc_predicate_t)(processus_t *);
  *
  * @param array Le tableau de processus
  */
-void        proc_array_init(processus_array_t *array);
+void proc_array_init(processus_array_t *array);
 
 /**
  * @brief Permet de récupérer le dernier processus d'un tableau
@@ -47,7 +47,7 @@ void        proc_array_init(processus_array_t *array);
  *
  * @param array Un tableau de processus
  */
-void        proc_array_free(processus_array_t *array);
+void proc_array_free(processus_array_t *array);
 
 /**
  * @brief Met à jour un tableau de processus avec les processus de la machine local
@@ -73,7 +73,7 @@ void        proc_array_free(processus_array_t *array);
  *
  * @param array Un tableau de processus
  */
-void        proc_array_reset(processus_array_t *array);
+void proc_array_reset(processus_array_t *array);
 
 /**
  * @brief Retire tout les processus pour lesquels une fonction renvoie vrai
@@ -81,7 +81,7 @@ void        proc_array_reset(processus_array_t *array);
  * @param array Un tableau de processus
  * @param pred La fonction qui vérifie si on doit supprimer un processus
  */
-void        proc_array_remove_if(processus_array_t *array, proc_predicate_t pred);
+void proc_array_remove_if(processus_array_t *array, proc_predicate_t pred);
 
 /**
  * @brief Compare la consommation cpu de chaque processus d'un tableau de processus entre deux instance

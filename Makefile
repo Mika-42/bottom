@@ -11,7 +11,7 @@ UNIT_TEST_DIR := unit-test
 BUILD_DIR := build
 BUILD_UT_DIR := build-unit-test
 
-FLAGS := -Wall -Wextra -Werror -Wpedantic -Werror=unused-result -std=gnu23 -D_GNU_SOURCE -lncursesw -lssh -lpthread
+FLAGS := -Wall -Wextra -Werror -Wpedantic -Werror=unused-result -Wunused-function -std=gnu23 -D_GNU_SOURCE -lncursesw -lssh -lpthread
 DEBUG_FLAGS := -g -Og
 RELEASE_FLAGS := -DNDEBUG -O2
 

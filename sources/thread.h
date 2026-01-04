@@ -21,9 +21,9 @@ typedef struct thread_args_t {
     user_selection_t *selection;	/**< Selection qui définie plusieurs chose propre à chaque machine */
 
     //shared
-    double_buffer_t *array;		/**< Un double buffer */
-    ssh_session session;		/**< Session SSH de la machine */
-    char machine_name[32];		/**< Nom de la machine */
+    double_buffer_t *array;			/**< Un double buffer */
+    ssh_session session;			/**< Session SSH de la machine */
+    char machine_name[32];			/**< Nom de la machine */
 } thread_args_t;
 
 /**

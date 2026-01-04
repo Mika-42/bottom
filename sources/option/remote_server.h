@@ -15,11 +15,11 @@ typedef enum connexion_type_t {
  * @brief Structure contenant toutes les informations de connexion avec une machine distante
  */
 typedef struct remote_server_t {
-    char name[field_size];		/**< Nom de la machine distante */
+    char name[field_size];			/**< Nom de la machine distante */
     char address[field_size];		/**< Address de la machine distante */
     char username[field_size];		/**< Nom d'utilisateur pour se connecter à la maachine distante */
     char password[field_size];  	/**< Mot de passe de l'utilisateur */
-    unsigned short port;		/**< Port à utiliser pour la connexion */
+    unsigned short port;			/**< Port à utiliser pour la connexion */
     connexion_type_t connexion;		/**< Type de connexion */
 } remote_server_t;
 
